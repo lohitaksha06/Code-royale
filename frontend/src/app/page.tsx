@@ -1,103 +1,202 @@
-import Image from "next/image";
+import { GlowCard } from "../components/glow-card";
+import { NeonLink } from "../components/neon-button";
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="flex flex-col gap-16">
+      <section className="relative grid gap-10 rounded-[40px] border border-slate-800/70 bg-slate-900/40 p-10 shadow-[0_10px_60px_rgba(15,118,230,0.15)] backdrop-blur-xl sm:grid-cols-[1.2fr_1fr] sm:gap-14 sm:p-14">
+        <div className="flex flex-col gap-8">
+          <span className="inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/80">
+            <span className="h-1.5 w-12 rounded-full bg-sky-500/70" />
+            Real-Time Coding Arena
+          </span>
+          <h1 className="text-4xl font-semibold leading-tight text-sky-50 md:text-6xl">
+            Battle-ready coding with neon intensity.
+          </h1>
+          <p className="max-w-xl text-base leading-relaxed text-sky-100/70 md:text-lg">
+            Duel friends, climb the Royale ladder, and sharpen your reflexes in a
+            futuristic arena crafted for developers. Every keystroke powers the
+            scoreboard.
+          </p>
+          <div className="flex flex-wrap items-center gap-4">
+            <NeonLink href="/auth/signup">Join the Beta</NeonLink>
+            <NeonLink
+              href="#get-started"
+              className="border-sky-400/40 bg-transparent text-sky-200 hover:border-sky-300 hover:bg-sky-400/10"
+            >
+              Explore Setup Steps
+            </NeonLink>
+          </div>
+          <dl className="grid gap-6 sm:grid-cols-3">
+            {[
+              {
+                label: "Concurrent Battles",
+                helper: "Connect Firebase to stream live counts.",
+              },
+              {
+                label: "Verified Coders",
+                helper: "Displays once Auth sync is enabled.",
+              },
+              {
+                label: "Average Match",
+                helper: "Timer appears after first duel.",
+              },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-2xl border border-sky-500/20 bg-slate-900/60 p-4 text-center shadow-[0_0_30px_rgba(56,189,248,0.08)]"
+              >
+                <dt className="text-xs uppercase tracking-[0.3em] text-sky-500/60">
+                  {stat.label}
+                </dt>
+                <dd className="mt-3 text-lg font-semibold text-sky-100/80">
+                  Awaiting data
+                </dd>
+                <dd className="mt-2 text-xs text-sky-400/60">{stat.helper}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <div className="relative flex flex-col justify-end gap-6 rounded-3xl border border-sky-500/20 bg-gradient-to-br from-slate-900/60 to-slate-900/10 p-8 shadow-[0_0_45px_rgba(56,189,248,0.16)]">
+          <div className="absolute inset-x-6 top-6 h-32 rounded-3xl bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.35),_transparent_70%)] blur-3xl" />
+          <div className="relative grid gap-4 text-sm">
+            <h2 className="text-lg font-semibold text-sky-100">Match Uplink</h2>
+            <div className="space-y-3 rounded-2xl border border-sky-500/20 bg-slate-950/80 p-4">
+              <p className="text-sm text-sky-100/65">
+                Live queues will populate here automatically once Socket.IO is wired
+                to the Firebase queue collection.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-sky-500/20 bg-slate-950/80 p-4">
+              <p className="text-xs uppercase tracking-[0.35em] text-sky-400/70">
+                Next Duel
+              </p>
+              <p className="mt-3 text-base font-semibold text-sky-100">
+                Waiting for your first matchmaking event.
+              </p>
+              <p className="mt-2 text-sm text-sky-100/60">
+                Once the backend pushes an active duel, details drop here in real
+                time.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-8 md:grid-cols-3">
+        <GlowCard
+          title="Lightning Modes"
+          description="Hop into Bullet, League, or Bot scrims. Every mode recalibrates pace, difficulty, and scoring curves."
+          accent="cyan"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <ul className="grid gap-3 text-sm text-sky-100/70">
+            <li className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.5)]" />
+              60s bullet rounds with adaptive prompts.
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.5)]" />
+              League ladders with ELO-calibrated rivals.
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-violet-500 shadow-[0_0_12px_rgba(139,92,246,0.5)]" />
+              Smart bots tuned for practice or chaos.
+            </li>
+          </ul>
+        </GlowCard>
+
+        <GlowCard
+          title="Telemetry Dashboard"
+          description="KPIs sync directly from Firestore once you connect live data.
+          Placeholder widgets below demonstrate layout states."
+          accent="blue"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <div className="grid gap-3 text-sm text-sky-100/70">
+            {["Streaks", "Solve velocity"].map((metric) => (
+              <div
+                key={metric}
+                className="rounded-xl border border-sky-500/20 bg-slate-950/80 p-3"
+              >
+                <p className="text-xs uppercase tracking-[0.3em] text-sky-400/70">
+                  {metric}
+                </p>
+                <p className="mt-2 text-sm text-sky-100/60">
+                  Data appears after Firebase integration.
+                </p>
+              </div>
+            ))}
+          </div>
+        </GlowCard>
+
+        <GlowCard
+          title="Secure Sandbox"
+          description="Instant verdicts stream from a hardened Firebase + Socket uplink. Compile, execute, respond in milliseconds."
+          accent="purple"
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <div className="space-y-3 text-sm text-sky-100/70">
+            <p>Optimized for TypeScript, Python, and C++ out of the box.</p>
+            <p>Custom judges &amp; rate limiting ensure fair duels.</p>
+            <p>Replay packets let you audit every keystroke.</p>
+          </div>
+        </GlowCard>
+      </section>
+
+      <section className="grid gap-10 rounded-[36px] border border-slate-800/80 bg-slate-900/40 p-10 shadow-[0_0_55px_rgba(56,189,248,0.12)] backdrop-blur-xl md:grid-cols-[1.1fr_0.9fr] md:gap-14 md:p-14">
+        <div className="flex flex-col gap-6">
+          <h2 className="text-3xl font-semibold text-sky-50 md:text-4xl">
+            Built for coders who crave adrenaline.
+          </h2>
+          <p className="text-base text-sky-100/70">
+            Code Royale fuses esports presentation with rigorous assessments. Queue with teammates, scout rivals via the dashboard, and climb neon-lit leagues.
+          </p>
+          <div className="grid gap-4 text-sm text-sky-100/75 md:grid-cols-2">
+            {["Real-time sockets", "Firebase telemetry", "Monaco editor", "Framer motion"].map((item) => (
+              <div
+                key={item}
+                className="flex items-center gap-3 rounded-xl border border-sky-500/20 bg-slate-950/60 p-4"
+              >
+                <span className="h-2.5 w-2.5 rounded-full bg-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.5)]" />
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="relative flex flex-col gap-5 rounded-3xl border border-sky-500/20 bg-slate-950/70 p-6 shadow-[0_0_50px_rgba(56,189,248,0.12)]">
+          <p className="text-xs uppercase tracking-[0.35em] text-sky-400/60">
+            Pipeline Preview
+          </p>
+          <div className="space-y-3 text-sm text-sky-100/70">
+            <p>
+              <strong className="text-sky-200">pnpm dev</strong> spins up the arena with real-time socket feeds.
+            </p>
+            <p>Firebase Auth verifies players before they enter the tunnel.</p>
+            <p>Leaderboard sync pulses every 5 seconds with incremental updates.</p>
+            <p>Match replays stream through an encrypted edge cache.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="get-started" className="relative overflow-hidden rounded-[32px] border border-sky-500/20 bg-slate-950/70 p-10 text-center shadow-[0_0_45px_rgba(56,189,248,0.14)]">
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.2),_transparent_65%)]" />
+        <h2 className="text-3xl font-semibold text-sky-50 md:text-4xl">
+          Ready to activate your arena?
+        </h2>
+        <p className="mt-4 text-sm text-sky-100/70 md:text-base">
+          Connect your Firebase project, enable Socket.IO matchmaking, and bring your
+          first duel online. The interface adapts instantly once live data flows in.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-4">
+          <NeonLink href="/auth/signup" className="px-8 py-3">
+            Get Started
+          </NeonLink>
+          <NeonLink
+            href="/auth/login"
+            className="border-sky-500/30 bg-transparent text-sky-200 hover:border-sky-400 hover:bg-sky-500/10"
+          >
+            I already have access
+          </NeonLink>
+        </div>
+      </section>
     </div>
   );
 }
