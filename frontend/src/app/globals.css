@@ -14,6 +14,12 @@ body {
   min-height: 100vh;
 }
 
+/* Optional subtle pulse you can apply via className if wanted */
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 28px rgba(56, 189, 248, 0.35); }
+  50% { box-shadow: 0 0 44px rgba(56, 189, 248, 0.55); }
+}
+
 a {
   color: inherit;
   text-decoration: none;
