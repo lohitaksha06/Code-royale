@@ -13,6 +13,10 @@ const navItems = [
 export function Navigation() {
   const pathname = usePathname();
 
+  if (pathname?.startsWith("/home")) {
+    return null;
+  }
+
   const activeMap = useMemo(() => {
     return navItems.reduce<Record<string, boolean>>((acc, item) => {
       const isActive = item.href === "/"

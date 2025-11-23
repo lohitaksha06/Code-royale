@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { GlowCard } from "../../components/glow-card";
 import { NeonLink } from "../../components/neon-button";
 
@@ -51,10 +52,143 @@ const matchTypes = [
 
 const timers = ["5 minutes", "10 minutes", "15 minutes"];
 
+const menuItems = [
+  { label: "Home", badge: "HM", href: "/home" },
+  { label: "Game Modes", badge: "GM", href: "#game-modes" },
+  { label: "Play Now", badge: "P1", href: "/auth/login" },
+  { label: "Matchmaking", badge: "MM", href: "#matchmaking" },
+  { label: "Friends", badge: "FR", href: "#friends" },
+  { label: "Leaderboards", badge: "LD", href: "#leaderboards" },
+  { label: "Tournaments", badge: "TR", href: "#tournaments" },
+  { label: "Practice Arena", badge: "PA", href: "#practice" },
+  { label: "My Profile", badge: "PR", href: "/auth/login" },
+  { label: "Notifications", badge: "NT", href: "#notifications" },
+];
+
+const SearchIcon = () => (
+  <svg
+    aria-hidden
+    className="h-4 w-4 text-sky-300"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+  >
+    <circle cx="11" cy="11" r="6" />
+    <path d="M20 20l-3.6-3.6" />
+  </svg>
+);
+
+const featurePanels = [
+  {
+    id: "friends",
+    title: "Friends Hub",
+    description:
+      "Track online status, queue together, and celebrate streaks with animated team banners.",
+    accent: "cyan" as const,
+    linkLabel: "Manage Squad",
+    href: "/auth/login",
+  },
+  {
+    id: "leaderboards",
+    title: "Leaderboards",
+    description:
+      "Browse divisions, scout rivals, and chase seasonal trophies with transparent scoring updates.",
+    accent: "blue" as const,
+    linkLabel: "View Rankings",
+    href: "/auth/login",
+  },
+  {
+    id: "practice",
+    title: "Practice Arena",
+    description:
+      "Warm up with curated drills that adapt to your weak spots and track daily improvement streaks.",
+    accent: "purple" as const,
+    linkLabel: "Start Warmup",
+    href: "/auth/signup",
+  },
+  {
+    id: "notifications",
+    title: "Event Pulse",
+    description:
+      "Get alerts for tournament invites, balance updates, and featured matches you should not miss.",
+    accent: "cyan" as const,
+    linkLabel: "Update Preferences",
+    href: "/auth/login",
+  },
+];
+
 export default function HomePage() {
   return (
-    <div className="flex flex-col gap-12">
-      <section className="rounded-[40px] border border-sky-500/20 bg-slate-950/70 p-10 shadow-[0_0_55px_rgba(56,189,248,0.14)] backdrop-blur-xl sm:p-14">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-16 px-6 pb-16">
+      <header className="sticky top-6 z-40">
+        <div className="rounded-[30px] border border-sky-500/30 bg-slate-950/70 p-4 shadow-[0_18px_60px_rgba(56,189,248,0.22)] backdrop-blur-2xl">
+          <div className="flex flex-wrap items-center gap-4">
+            <Link href="/" className="flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full border border-sky-500/50 bg-slate-900/80 text-sm font-semibold text-sky-200 shadow-[0_0_28px_rgba(56,189,248,0.45)]">
+                CR
+              </span>
+              <span className="text-lg font-semibold tracking-[0.35em] text-sky-100">
+                CODE ROYALE
+              </span>
+            </Link>
+            <nav className="flex flex-1 items-center gap-2 overflow-x-auto rounded-full border border-sky-500/20 bg-slate-900/70 px-3 py-2 text-sm text-sky-100/80">
+              {menuItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="flex shrink-0 items-center gap-2 rounded-full border border-transparent px-3 py-2 transition hover:border-sky-400/40 hover:bg-sky-500/15 hover:text-sky-100"
+                >
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-500/20 text-[0.65rem] font-semibold text-sky-200">
+                    {item.badge}
+                  </span>
+                  <span className="whitespace-nowrap">{item.label}</span>
+                </Link>
+              ))}
+            </nav>
+            <form className="flex w-full min-w-[220px] flex-1 items-center gap-2 rounded-full border border-sky-500/20 bg-slate-900/80 px-4 py-2 text-sm text-sky-100/70 sm:w-auto">
+              <label htmlFor="search" className="sr-only">
+                Search players or friends
+              </label>
+              <SearchIcon />
+              <input
+                id="search"
+                type="search"
+                placeholder="Search players or friends"
+                className="w-full bg-transparent text-sky-100 placeholder:text-sky-400/50 focus:outline-none"
+              />
+            </form>
+          </div>
+        </div>
+      </header>
+
+      <section className="rounded-[40px] border border-sky-500/20 bg-gradient-to-br from-slate-950/85 via-slate-950/65 to-slate-900/55 p-12 text-center shadow-[0_0_70px_rgba(56,189,248,0.2)]">
+        <span className="text-xs font-semibold uppercase tracking-[0.45em] text-sky-400/80">
+          Enter the arena
+        </span>
+        <h1 className="mt-6 text-4xl font-semibold text-sky-50 sm:text-5xl md:text-6xl">
+          Real-time coding battles. Neon-lit glory.
+        </h1>
+        <p className="mx-auto mt-4 max-w-2xl text-sm text-sky-100/70 sm:text-base">
+          Challenge rivals in lightning-fast PvP, dominate seasonal tournaments, and broadcast your highlight reels. Code Royale powers every match with real-time judge feedback.
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <NeonLink href="/auth/signup" className="px-8 py-3">
+            Start Battle
+          </NeonLink>
+          <NeonLink
+            href="/auth/login"
+            className="border-sky-500/30 bg-transparent text-sky-200 hover:border-sky-400 hover:bg-sky-500/10"
+          >
+            Watch Live Matches
+          </NeonLink>
+        </div>
+      </section>
+
+      <section
+        id="game-modes"
+        className="rounded-[40px] border border-sky-500/20 bg-slate-950/70 p-10 shadow-[0_0_55px_rgba(56,189,248,0.14)] backdrop-blur-xl sm:p-14"
+      >
         <div className="flex flex-col gap-6 text-center">
           <span className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">
             Select your arena
@@ -84,7 +218,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="grid gap-8 md:grid-cols-3">
+      <section id="tournaments" className="grid gap-8 md:grid-cols-3">
         {battleModes.map((mode, index) => (
           <GlowCard key={mode.title} title={mode.title} description={mode.description} accent={index === 2 ? "purple" : index === 1 ? "blue" : "cyan"}>
             <ul className="mt-4 space-y-3 text-sm text-sky-100/70">
@@ -99,7 +233,10 @@ export default function HomePage() {
         ))}
       </section>
 
-      <section className="grid gap-6 rounded-[32px] border border-sky-500/20 bg-slate-950/70 p-10 shadow-[0_0_55px_rgba(56,189,248,0.12)] backdrop-blur-xl md:grid-cols-2 md:gap-10 md:p-14">
+      <section
+        id="matchmaking"
+        className="grid gap-6 rounded-[32px] border border-sky-500/20 bg-slate-950/70 p-10 shadow-[0_0_55px_rgba(56,189,248,0.12)] backdrop-blur-xl md:grid-cols-2 md:gap-10 md:p-14"
+      >
         <div className="flex flex-col gap-4">
           <h2 className="text-3xl font-semibold text-sky-50">Match Types</h2>
           <p className="text-sm text-sky-100/70">
@@ -136,6 +273,27 @@ export default function HomePage() {
             </NeonLink>
           </div>
         </div>
+      </section>
+
+      <section className="grid gap-8 md:grid-cols-2">
+        {featurePanels.map((panel) => (
+          <div key={panel.id} id={panel.id} className="h-full">
+            <GlowCard
+              title={panel.title}
+              description={panel.description}
+              accent={panel.accent}
+            >
+              <div className="mt-4 flex flex-wrap gap-3">
+                <NeonLink
+                  href={panel.href}
+                  className="text-xs uppercase tracking-[0.35em]"
+                >
+                  {panel.linkLabel}
+                </NeonLink>
+              </div>
+            </GlowCard>
+          </div>
+        ))}
       </section>
     </div>
   );
