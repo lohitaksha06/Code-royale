@@ -1,7 +1,7 @@
-import Image from "next/image";
-import Link from "next/link";
 import { GlowCard } from "../../components/glow-card";
 import { NeonLink } from "../../components/neon-button";
+import { HomeNav } from "./home-nav";
+import Image from "next/image";
 
 const battleModes = [
   {
@@ -53,41 +53,14 @@ const matchTypes = [
 
 const timers = ["5 minutes", "10 minutes", "15 minutes"];
 
-const menuItems = [
-  { label: "Home", badge: "HM", href: "/home" },
-  { label: "Game Modes", badge: "GM", href: "#game-modes" },
-  { label: "Play Now", badge: "P1", href: "/auth/login" },
-  { label: "Matchmaking", badge: "MM", href: "#matchmaking" },
-  { label: "Friends", badge: "FR", href: "#friends" },
-  { label: "Leaderboards", badge: "LD", href: "#leaderboards" },
-  { label: "Tournaments", badge: "TR", href: "#tournaments" },
-  { label: "Practice Arena", badge: "PA", href: "#practice" },
-  { label: "My Profile", badge: "PR", href: "/auth/login" },
-  { label: "Notifications", badge: "NT", href: "#notifications" },
-];
-
-const SearchIcon = () => (
-  <svg
-    aria-hidden
-    className="h-4 w-4 text-sky-300"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-  >
-    <circle cx="11" cy="11" r="6" />
-    <path d="M20 20l-3.6-3.6" />
-  </svg>
-);
-
 const featurePanels = [
   {
-    id: "friends",
-    title: "Friends Hub",
+    id: "profile",
+    title: "Pilot Profile",
     description:
-      "Track online status, queue together, and celebrate streaks with animated team banners.",
+      "Monitor your rating, streaks, and unlockable cosmetics from one command center. Export share cards straight to social feeds.",
     accent: "cyan" as const,
-    linkLabel: "Manage Squad",
+    linkLabel: "View Profile",
     href: "/auth/login",
   },
   {
@@ -121,54 +94,8 @@ const featurePanels = [
 
 export default function HomePage() {
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-16 px-6 pb-16">
-      <header className="sticky top-6 z-40">
-        <div className="rounded-[30px] border border-sky-500/30 bg-slate-950/70 p-4 shadow-[0_18px_60px_rgba(56,189,248,0.22)] backdrop-blur-2xl">
-          <div className="flex flex-wrap items-center gap-4">
-            <Link href="/" className="flex items-center gap-3">
-              <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-sky-500/50 bg-slate-900/80 shadow-[0_0_28px_rgba(56,189,248,0.45)]">
-                <Image
-                  src="/images/crimage.png"
-                  alt="Code Royale logo"
-                  fill
-                  className="object-cover"
-                  sizes="48px"
-                  priority
-                />
-              </span>
-              <span className="text-lg font-semibold tracking-[0.35em] text-sky-100">
-                CODE ROYALE
-              </span>
-            </Link>
-            <nav className="flex flex-1 items-center gap-2 overflow-x-auto rounded-full border border-sky-500/20 bg-slate-900/70 px-3 py-2 text-sm text-sky-100/80">
-              {menuItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="flex shrink-0 items-center gap-2 rounded-full border border-transparent px-3 py-2 transition hover:border-sky-400/40 hover:bg-sky-500/15 hover:text-sky-100"
-                >
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-500/20 text-[0.65rem] font-semibold text-sky-200">
-                    {item.badge}
-                  </span>
-                  <span className="whitespace-nowrap">{item.label}</span>
-                </Link>
-              ))}
-            </nav>
-            <form className="flex w-full min-w-[220px] flex-1 items-center gap-2 rounded-full border border-sky-500/20 bg-slate-900/80 px-4 py-2 text-sm text-sky-100/70 sm:w-auto">
-              <label htmlFor="search" className="sr-only">
-                Search players or friends
-              </label>
-              <SearchIcon />
-              <input
-                id="search"
-                type="search"
-                placeholder="Search players or friends"
-                className="w-full bg-transparent text-sky-100 placeholder:text-sky-400/50 focus:outline-none"
-              />
-            </form>
-          </div>
-        </div>
-      </header>
+    <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-16 px-6 pb-16 pt-36">
+      <HomeNav />
 
       <section className="rounded-[40px] border border-sky-500/20 bg-gradient-to-br from-slate-950/85 via-slate-950/65 to-slate-900/55 p-12 text-center shadow-[0_0_70px_rgba(56,189,248,0.2)]">
         <span className="text-xs font-semibold uppercase tracking-[0.45em] text-sky-400/80">
@@ -184,10 +111,10 @@ export default function HomePage() {
           <NeonLink href="/auth/signup" className="px-8 py-3">
             Start Battle
           </NeonLink>
-          <NeonLink
-            href="/auth/login"
-            className="border-sky-500/30 bg-transparent text-sky-200 hover:border-sky-400 hover:bg-sky-500/10"
-          >
+              <NeonLink
+                href="/auth/login"
+                className="border-sky-500/30 bg-transparent text-sky-200 hover:border-sky-400 hover:bg-sky-500/10"
+              >
             Watch Live Matches
           </NeonLink>
         </div>
@@ -382,3 +309,31 @@ export default function HomePage() {
     </div>
   );
 }
+
+const BellIcon = () => (
+  <svg
+    aria-hidden
+    className="h-4 w-4"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+  >
+    <path d="M15.5 17h-7c-1.1 0-2-.9-2-2v-3a5.5 5.5 0 0 1 11 0v3c0 1.1-.9 2-2 2Z" />
+    <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
+  </svg>
+);
+
+const GearIcon = () => (
+  <svg
+    aria-hidden
+    className="h-4 w-4"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+  >
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09c0 .66.39 1.25 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06c-.46.46-.6 1.15-.33 1.82.26.67.86 1.16 1.51 1.2H21a2 2 0 1 1 0 4h-.09c-.66 0-1.25.39-1.51 1Z" />
+  </svg>
+);

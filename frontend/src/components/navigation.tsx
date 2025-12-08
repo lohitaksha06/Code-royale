@@ -51,10 +51,6 @@ export function Navigation() {
     }
   };
 
-  if (pathname?.startsWith("/home")) {
-    return null;
-  }
-
   const activeMap = useMemo(() => {
     return navItems.reduce<Record<string, boolean>>((acc, item) => {
       const isActive = item.href === "/"
@@ -64,6 +60,10 @@ export function Navigation() {
       return acc;
     }, {});
   }, [pathname]);
+
+  if (pathname?.startsWith("/home")) {
+    return null;
+  }
 
   const visibilityClass = isHidden && !isHovering
     ? "-translate-y-full opacity-0 pointer-events-none"
