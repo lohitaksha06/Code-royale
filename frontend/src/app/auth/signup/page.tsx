@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { NeonButton } from "../../../components/neon-button";
-import { supabase } from "../../../lib/supabase";
+import { supabase } from "../../../lib/supabase-browser";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -21,10 +21,16 @@ export default function SignupPage() {
     setError(null);
     setSuccess(null);
 
+    const redirectTo =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/login`
+        : undefined;
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: redirectTo,
         data: {
           display_name: displayName,
         },
@@ -38,8 +44,9 @@ export default function SignupPage() {
     }
 
     const user = authData.user;
+    const hasSession = Boolean(authData.session);
 
-    if (user) {
+    if (user && hasSession) {
       const { error: profileError } = await supabase.from("users").insert({
         id: user.id,
         username: displayName,
@@ -55,11 +62,15 @@ export default function SignupPage() {
       }
     }
 
-    setSuccess(
-      authData.session
-        ? "Account ready. Redirecting to your arena..."
-        : "Check your inbox to confirm the account before logging in."
-    );
+    if (!hasSession) {
+      setSuccess(
+        "Verification email sent. Confirm your address and you'll land on the login screen."
+      );
+      setProcessing(false);
+      return;
+    }
+
+    setSuccess("Account ready. Redirecting to your arena...");
 
     setProcessing(false);
 

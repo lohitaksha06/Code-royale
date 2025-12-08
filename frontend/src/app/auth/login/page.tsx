@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { NeonButton, NeonLink } from "../../../components/neon-button";
-import { supabase } from "../../../lib/supabase";
+import { supabase } from "../../../lib/supabase-browser";
 
 export default function LoginPage() {
   const router = useRouter();
