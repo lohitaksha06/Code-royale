@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { PracticeArenaShell } from "./practice-arena-shell";
+import { PracticeScaffold } from "../practice-scaffold";
 
 type PageProps = {
   params: { slug: string };
@@ -33,7 +34,7 @@ export default async function PracticeSessionPage({ params, searchParams }: Page
     : languages[0];
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-16 pt-24 md:px-6">
+    <PracticeScaffold>
       <PracticeArenaShell
         question={{
           id: question.id,
@@ -47,6 +48,6 @@ export default async function PracticeSessionPage({ params, searchParams }: Page
         initialTimer={initialTimer}
         initialLanguage={initialLanguage}
       />
-    </div>
+    </PracticeScaffold>
   );
 }

@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const navItems = [
   { href: "/", label: "Dashboard" },
+  { href: "/practice", label: "Practice Arena" },
   { href: "/auth/login", label: "Login" },
   { href: "/auth/signup", label: "Sign up" },
 ];
@@ -61,7 +62,7 @@ export function Navigation() {
     }, {});
   }, [pathname]);
 
-  if (pathname?.startsWith("/home")) {
+  if (pathname?.startsWith("/home") || pathname?.startsWith("/practice")) {
     return null;
   }
 

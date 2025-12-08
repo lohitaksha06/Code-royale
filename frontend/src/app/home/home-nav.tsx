@@ -7,11 +7,15 @@ import { useEffect, useRef, useState } from "react";
 const menuItems = [
   { label: "Game Modes", href: "#game-modes" },
   { label: "Tournaments", href: "#tournaments" },
-  { label: "Practice Arena", href: "#practice" },
+  { label: "Practice Arena", href: "/practice" },
   { label: "Profile", href: "#profile" },
 ];
 
-export function HomeNav() {
+type HomeNavProps = {
+  onMenuToggle?: () => void;
+};
+
+export function HomeNav({ onMenuToggle }: HomeNavProps) {
   const [isHidden, setIsHidden] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const lastScrollRef = useRef(0);
@@ -67,21 +71,33 @@ export function HomeNav() {
       >
         <div className="border-b border-sky-500/12 bg-[#05070f]/95 shadow-[0_12px_45px_rgba(5,12,28,0.55)] backdrop-blur-xl">
           <div className="mx-auto flex w-full max-w-7xl items-center gap-6 px-6 py-4 md:px-8">
-            <Link href="/home" className="group inline-flex items-center gap-3">
-              <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-sky-500/50 bg-slate-900/80 shadow-[0_0_24px_rgba(56,189,248,0.4)] transition group-hover:border-sky-300 group-hover:shadow-[0_0_32px_rgba(56,189,248,0.55)]">
-                <Image
-                  src="/images/crimage.png"
-                  alt="Code Royale logo"
-                  fill
-                  className="object-cover"
-                  sizes="40px"
-                  priority
-                />
-              </span>
-              <span className="text-lg font-semibold tracking-[0.28em] text-sky-100 group-hover:text-sky-200">
-                CODE ROYALE
-              </span>
-            </Link>
+            <div className="flex items-center gap-4">
+              {onMenuToggle && (
+                <button
+                  type="button"
+                  aria-label="Toggle sidebar"
+                  onClick={onMenuToggle}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-500/20 bg-[#070d18] text-sky-100 transition hover:border-sky-400/60 hover:text-sky-200"
+                >
+                  <MenuIcon />
+                </button>
+              )}
+              <Link href="/home" className="group inline-flex items-center gap-3">
+                <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-sky-500/50 bg-slate-900/80 shadow-[0_0_24px_rgba(56,189,248,0.4)] transition group-hover:border-sky-300 group-hover:shadow-[0_0_32px_rgba(56,189,248,0.55)]">
+                  <Image
+                    src="/images/crimage.png"
+                    alt="Code Royale logo"
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                    priority
+                  />
+                </span>
+                <span className="text-lg font-semibold tracking-[0.28em] text-sky-100 group-hover:text-sky-200">
+                  CODE ROYALE
+                </span>
+              </Link>
+            </div>
 
             <form className="ml-6 hidden min-w-[220px] flex-1 items-center gap-2 rounded-full border border-sky-500/15 bg-[#070d18] px-4 py-2 text-sm text-sky-100/75 lg:flex">
               <label htmlFor="player-search" className="sr-only">
@@ -178,5 +194,20 @@ const GearIcon = () => (
   >
     <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
     <path d="M20.12 12a2.1 2.1 0 0 0-.042-.41l1.74-1.34-1.5-2.598-2.046.404a2.1 2.1 0 0 0-.71-.41l-.597-2.03H14.67l-.596 2.03a2.1 2.1 0 0 0-.71.41l-2.047-.404-1.5 2.598 1.74 1.34a2.1 2.1 0 0 0 0 .82l-1.74 1.34 1.5 2.598 2.047-.403c.2.172.44.31.71.41l.596 2.03h2.78l.597-2.03c.27-.1.51-.238.71-.41l2.046.403 1.5-2.598-1.74-1.34c.029-.134.042-.27.042-.41Z" />
+  </svg>
+);
+
+const MenuIcon = () => (
+  <svg
+    aria-hidden
+    className="h-4 w-4 text-current"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+  >
+    <path d="M4 6h16" />
+    <path d="M6 12h12" />
+    <path d="M8 18h8" />
   </svg>
 );

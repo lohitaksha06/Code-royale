@@ -79,7 +79,7 @@ const featurePanels = [
       "Warm up with curated drills that adapt to your weak spots and track daily improvement streaks.",
     accent: "purple" as const,
     linkLabel: "Start Warmup",
-    href: "/auth/signup",
+    href: "/practice",
   },
   {
     id: "notifications",
