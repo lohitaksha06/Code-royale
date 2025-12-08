@@ -1,16 +1,71 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { NeonButton } from "../../../components/neon-button";
+import { supabase } from "../../../lib/supabase";
 
 export default function SignupPage() {
+  const router = useRouter();
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setProcessing(true);
-    setTimeout(() => setProcessing(false), 1600);
+    setError(null);
+    setSuccess(null);
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          display_name: displayName,
+        },
+      },
+    });
+
+    if (authError) {
+      setError(authError.message);
+      setProcessing(false);
+      return;
+    }
+
+    const user = authData.user;
+
+    if (user) {
+      const { error: profileError } = await supabase.from("users").insert({
+        id: user.id,
+        username: displayName,
+        rating: 1200,
+        wins: 0,
+        losses: 0,
+      });
+
+      if (profileError) {
+        setError(profileError.message);
+        setProcessing(false);
+        return;
+      }
+    }
+
+    setSuccess(
+      authData.session
+        ? "Account ready. Redirecting to your arena..."
+        : "Check your inbox to confirm the account before logging in."
+    );
+
+    setProcessing(false);
+
+    if (authData.session) {
+      setTimeout(() => router.push("/home"), 1200);
+    }
   };
 
   return (
@@ -35,6 +90,8 @@ export default function SignupPage() {
               <input
                 required
                 placeholder="NeonAce"
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
                 className="rounded-2xl border border-sky-500/30 bg-slate-900/80 px-4 py-3 text-sky-100 placeholder:text-sky-400/40 focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
               />
             </label>
@@ -44,6 +101,8 @@ export default function SignupPage() {
                 type="email"
                 required
                 placeholder="ace@coderoyale.gg"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 className="rounded-2xl border border-sky-500/30 bg-slate-900/80 px-4 py-3 text-sky-100 placeholder:text-sky-400/40 focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
               />
             </label>
@@ -55,6 +114,8 @@ export default function SignupPage() {
               type="password"
               required
               placeholder="••••••••"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
               className="rounded-2xl border border-sky-500/30 bg-slate-900/80 px-4 py-3 text-sky-100 placeholder:text-sky-400/40 focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
             />
           </label>
@@ -86,9 +147,24 @@ export default function SignupPage() {
             </label>
           </div>
 
-          <NeonButton type="submit" disabled={processing} className="mt-4">
+          <NeonButton
+            type="submit"
+            disabled={processing || !displayName || !email || !password}
+            className="mt-4"
+          >
             {processing ? "Calibrating loadout..." : "Deploy Account"}
           </NeonButton>
+
+          {error && (
+            <p className="text-sm text-rose-300/90">
+              {error}
+            </p>
+          )}
+          {success && (
+            <p className="text-sm text-emerald-300/90">
+              {success}
+            </p>
+          )}
         </form>
 
         <div className="mt-10 rounded-2xl border border-sky-500/20 bg-slate-950/70 p-6 text-sm text-sky-100/65">

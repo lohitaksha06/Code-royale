@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { createBrowserClient, createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -26,3 +27,6 @@ export const createSupabaseServerClient = () => {
     },
   });
 };
+
+// Client-side singleton used by React components handling auth flows.
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

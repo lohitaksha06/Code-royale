@@ -1,16 +1,42 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { NeonButton, NeonLink } from "../../../components/neon-button";
+import { supabase } from "../../../lib/supabase";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
-    setTimeout(() => setLoading(false), 1500);
+    setError(null);
+
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
+      setError(authError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (!data.session) {
+      setError("No active session returned. Try again.");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
+    router.push("/home");
   };
 
   return (
@@ -42,6 +68,8 @@ export default function LoginPage() {
               type="email"
               required
               placeholder="you@coderoyale.gg"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               className="rounded-2xl border border-sky-500/30 bg-slate-900/80 px-4 py-3 text-sky-100 placeholder:text-sky-400/40 focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
             />
           </label>
@@ -51,6 +79,8 @@ export default function LoginPage() {
               type="password"
               required
               placeholder="••••••••"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
               className="rounded-2xl border border-sky-500/30 bg-slate-900/80 px-4 py-3 text-sky-100 placeholder:text-sky-400/40 focus:border-sky-300 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
             />
           </label>
@@ -70,9 +100,18 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <NeonButton type="submit" disabled={loading} className="mt-2">
+          <NeonButton
+            type="submit"
+            disabled={loading || !email || !password}
+            className="mt-2"
+          >
             {loading ? "Synchronizing..." : "Enter the Arena"}
           </NeonButton>
+          {error && (
+            <p className="text-sm text-rose-300/90">
+              {error}
+            </p>
+          )}
           <Link
             href="#"
             className="justify-self-start text-xs text-sky-300 underline decoration-sky-500/40 underline-offset-4"
