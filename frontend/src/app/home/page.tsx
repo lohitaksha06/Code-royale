@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { GlowCard } from "../../components/glow-card";
 import { NeonLink } from "../../components/neon-button";
@@ -185,6 +186,45 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="grid gap-8 rounded-[36px] border border-sky-500/20 bg-slate-950/80 p-8 shadow-[0_0_55px_rgba(56,189,248,0.18)] backdrop-blur-xl md:grid-cols-[1.15fr_1fr] md:p-12">
+        <div className="flex flex-col justify-between gap-6">
+          <div className="space-y-4">
+            <span className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-400/70">
+              Live Bracket Preview
+            </span>
+            <h2 className="text-3xl font-semibold text-sky-50">
+              Neon clash from the caster booth
+            </h2>
+            <p className="text-sm text-sky-100/70">
+              Every match streams with split-screen analytics. Spectators follow keystrokes, judge
+              verdicts, and streak multipliers second by second.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3 text-xs text-sky-300">
+            <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
+              60 FPS HUD
+            </span>
+            <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
+              Judge Timeline
+            </span>
+            <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
+              Real-time Code Feed
+            </span>
+          </div>
+        </div>
+        <div className="relative overflow-hidden rounded-[28px] border border-sky-500/25 bg-slate-900/80 shadow-[0_0_60px_rgba(56,189,248,0.25)]">
+          <Image
+            src="/images/bluebracket.jpg"
+            alt="Futuristic code battle interface"
+            width={960}
+            height={640}
+            className="h-full w-full object-cover object-center opacity-90"
+            priority
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-950/30 via-sky-500/10 to-transparent" />
+        </div>
+      </section>
+
       <section
         id="game-modes"
         className="rounded-[40px] border border-sky-500/20 bg-slate-950/70 p-10 shadow-[0_0_55px_rgba(56,189,248,0.14)] backdrop-blur-xl sm:p-14"
@@ -294,6 +334,43 @@ export default function HomePage() {
             </GlowCard>
           </div>
         ))}
+      </section>
+
+      <section className="overflow-hidden rounded-[36px] border border-sky-500/20 bg-slate-950/85 shadow-[0_0_55px_rgba(56,189,248,0.18)]">
+        <div className="grid gap-0 md:grid-cols-[1.35fr_1fr]">
+          <div className="relative order-2 h-72 w-full md:order-1 md:h-full">
+            <Image
+              src="/images/bluecode.jpg"
+              alt="Close-up code editor with neon syntax"
+              fill
+              className="object-cover object-center opacity-90"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-slate-950/70 via-slate-950/30 to-transparent" />
+          </div>
+          <div className="order-1 flex flex-col justify-center gap-4 p-10 md:order-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-400/70">
+              Analyst Desk Feed
+            </span>
+            <h2 className="text-3xl font-semibold text-sky-50">
+              Decode every micro-adjustment live
+            </h2>
+            <p className="text-sm text-sky-100/70">
+              Pull up telemetry overlays while you prep for your queue. Observe keystroke cadence,
+              fallback snippets, and time-to-pass metrics to reverse engineer elite strategies.
+            </p>
+            <div className="flex flex-wrap gap-3 text-xs text-sky-300">
+              <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
+                Strategy Vault
+              </span>
+              <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
+                Ghost Replays
+              </span>
+              <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
+                Overlay API
+              </span>
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );
