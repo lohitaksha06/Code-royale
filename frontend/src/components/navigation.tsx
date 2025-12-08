@@ -7,7 +7,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const navItems = [
   { href: "/", label: "Dashboard" },
-  { href: "/practice", label: "Practice Arena" },
   { href: "/auth/login", label: "Login" },
   { href: "/auth/signup", label: "Sign up" },
 ];
