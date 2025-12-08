@@ -126,8 +126,15 @@ export default function HomePage() {
         <div className="rounded-[30px] border border-sky-500/30 bg-slate-950/70 p-4 shadow-[0_18px_60px_rgba(56,189,248,0.22)] backdrop-blur-2xl">
           <div className="flex flex-wrap items-center gap-4">
             <Link href="/" className="flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full border border-sky-500/50 bg-slate-900/80 text-sm font-semibold text-sky-200 shadow-[0_0_28px_rgba(56,189,248,0.45)]">
-                CR
+              <span className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-sky-500/50 bg-slate-900/80 shadow-[0_0_28px_rgba(56,189,248,0.45)]">
+                <Image
+                  src="/images/crimage.png"
+                  alt="Code Royale logo"
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                  priority
+                />
               </span>
               <span className="text-lg font-semibold tracking-[0.35em] text-sky-100">
                 CODE ROYALE

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
@@ -31,7 +32,16 @@ export function Navigation() {
     <header className="sticky top-0 z-50 backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="group inline-flex items-center gap-3">
-          <span className="h-10 w-10 rounded-full bg-sky-500/20 ring-2 ring-sky-500/50 transition group-hover:bg-sky-500/30 group-hover:ring-sky-400/90" />
+          <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-sky-500/50 bg-slate-900/80 shadow-[0_0_24px_rgba(56,189,248,0.3)] transition group-hover:border-sky-300 group-hover:shadow-[0_0_32px_rgba(56,189,248,0.45)]">
+            <Image
+              src="/images/crimage.png"
+              alt="Code Royale logo"
+              fill
+              className="object-cover"
+              sizes="40px"
+              priority
+            />
+          </span>
           <span className="text-lg font-semibold tracking-widest text-sky-100 group-hover:text-sky-200">
             CODE ROYALE
           </span>
