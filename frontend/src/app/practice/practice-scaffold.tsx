@@ -1,23 +1,24 @@
-'use client';
+"use client";
 
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
+
 import { HomeNav } from "../home/home-nav";
 
 const sidebarLinks = [
   {
     id: "daily-quest",
     title: "Daily Quest",
-    subtitle: "Tackle today\u2019s featured challenge and earn bonus XP.",
+    subtitle: "Tackle today's featured challenge and earn bonus XP.",
   },
   {
     id: "leaderboard",
     title: "Leaderboard",
-    subtitle: "See who\u2019s dominating the arena this week.",
+    subtitle: "See who's dominating the arena this week.",
   },
   {
     id: "streak",
     title: "Your Streak",
-    subtitle: "Keep the momentum \u2013 don\u2019t break your practice chain.",
+    subtitle: "Keep the momentum - don't break your practice chain.",
   },
   {
     id: "workshop",
@@ -33,45 +34,29 @@ type PracticeScaffoldProps = {
 type PracticeSidebarProps = {
   isOpen: boolean;
   onClose: () => void;
+  onToggle: () => void;
 };
 
 export function PracticeScaffold({ children }: PracticeScaffoldProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia("(min-width: 1024px)");
-    const syncSidebar = () => setIsSidebarOpen(mediaQuery.matches);
-
-    syncSidebar();
-
-    const addListener = mediaQuery.addEventListener?.bind(mediaQuery);
-    const removeListener = mediaQuery.removeEventListener?.bind(mediaQuery);
-
-    if (addListener) {
-      addListener("change", syncSidebar);
-    } else {
-      mediaQuery.addListener?.(syncSidebar);
-    }
-
-    return () => {
-      if (removeListener) {
-        removeListener("change", syncSidebar);
-      } else {
-        mediaQuery.removeListener?.(syncSidebar);
-      }
-    };
-  }, []);
-
-  const paddingClass = useMemo(() => (isSidebarOpen ? "lg:pl-72" : "lg:pl-28"), [isSidebarOpen]);
+  const paddingClass = useMemo(
+    () => (isSidebarOpen ? "lg:pl-[19rem]" : "lg:pl-0"),
+    [isSidebarOpen],
+  );
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#040a16] via-[#041225] to-[#050a17] text-sky-50">
-      <HomeNav onMenuToggle={() => setIsSidebarOpen((current) => !current)} />
-      <PracticeSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <HomeNav
+        onMenuToggle={() => setIsSidebarOpen((current) => !current)}
+        sidebarOpen={isSidebarOpen}
+      />
+      <PracticeSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onToggle={() => setIsSidebarOpen((current) => !current)}
+      />
+      {!isSidebarOpen && <CollapsedSidebarHandle onToggle={() => setIsSidebarOpen(true)} />}
       {isSidebarOpen && (
         <button
           type="button"
@@ -91,11 +76,11 @@ export function PracticeScaffold({ children }: PracticeScaffoldProps) {
   );
 }
 
-function PracticeSidebar({ isOpen, onClose }: PracticeSidebarProps) {
+function PracticeSidebar({ isOpen, onClose, onToggle }: PracticeSidebarProps) {
   return (
     <aside
-      className={`fixed top-24 z-40 flex h-[calc(100vh-6rem)] w-72 flex-col gap-6 border-r border-sky-500/10 bg-[#060b15]/95 p-6 shadow-[0_0_45px_rgba(15,118,211,0.35)] backdrop-blur-xl transition-transform duration-300 ease-out lg:top-28 lg:h-[calc(100vh-7rem)] ${
-        isOpen ? "translate-x-0" : "-translate-x-full lg:-translate-x-56"
+      className={`fixed left-0 top-24 z-40 flex h-[calc(100vh-6rem)] w-72 flex-col gap-6 border-r border-sky-500/10 bg-[#060b15]/95 p-6 shadow-[0_0_45px_rgba(15,118,211,0.35)] backdrop-blur-xl transition-transform duration-300 ease-out lg:top-28 lg:h-[calc(100vh-7rem)] ${
+        isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
       <div className="flex items-center justify-between text-xs uppercase tracking-[0.35em] text-sky-400/70">
@@ -117,17 +102,54 @@ function PracticeSidebar({ isOpen, onClose }: PracticeSidebarProps) {
             onClick={onClose}
             className="rounded-2xl border border-sky-500/15 bg-slate-950/60 p-4 text-left transition hover:border-sky-400/40 hover:bg-slate-900/70"
           >
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-200">{link.title}</p>
+            <div className="text-sm font-semibold uppercase tracking-[0.15em] text-sky-50/90">
+              {link.title}
+            </div>
             <p className="mt-2 text-xs text-sky-100/70">{link.subtitle}</p>
           </button>
         ))}
       </nav>
-      <div className="rounded-2xl border border-sky-500/15 bg-slate-950/70 p-4 text-xs text-sky-200/80">
-        <p className="font-semibold uppercase tracking-[0.3em] text-sky-300/80">Quick Tip</p>
-        <p className="mt-3 leading-relaxed text-sky-100/70">
-          Warming up daily keeps pattern recognition sharp. Start with a short timer and increase the challenge as you gain confidence.
-        </p>
-      </div>
+      {isOpen && (
+        <button
+          type="button"
+          aria-label="Collapse sidebar"
+          onClick={onToggle}
+          className="absolute right-[-22px] top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-sky-500/30 bg-[#060b15] text-sky-200 shadow-[0_0_20px_rgba(56,189,248,0.25)] transition hover:border-sky-400/60 hover:text-sky-50 lg:flex"
+        >
+          <ChevronIcon direction="collapse" />
+        </button>
+      )}
     </aside>
+  );
+}
+
+function CollapsedSidebarHandle({ onToggle }: { onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label="Open sidebar"
+      onClick={onToggle}
+      className="fixed left-3 top-1/2 z-30 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-sky-500/30 bg-[#060b15] text-sky-200 shadow-[0_0_20px_rgba(56,189,248,0.25)] transition hover:border-sky-400/60 hover:text-sky-50"
+    >
+      <ChevronIcon direction="expand" />
+    </button>
+  );
+}
+
+function ChevronIcon({ direction }: { direction: "expand" | "collapse" }) {
+  const rotation = direction === "collapse" ? "rotate-180" : "rotate-0";
+
+  return (
+    <svg
+      className={`h-5 w-5 text-sky-300 transition ${rotation}`}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 18l6-6-6-6" />
+    </svg>
   );
 }

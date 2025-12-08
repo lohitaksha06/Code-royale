@@ -13,9 +13,10 @@ const menuItems = [
 
 type HomeNavProps = {
   onMenuToggle?: () => void;
+  sidebarOpen?: boolean;
 };
 
-export function HomeNav({ onMenuToggle }: HomeNavProps) {
+export function HomeNav({ onMenuToggle, sidebarOpen = false }: HomeNavProps) {
   const [isHidden, setIsHidden] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const lastScrollRef = useRef(0);
@@ -71,15 +72,19 @@ export function HomeNav({ onMenuToggle }: HomeNavProps) {
       >
         <div className="border-b border-sky-500/12 bg-[#05070f]/95 shadow-[0_12px_45px_rgba(5,12,28,0.55)] backdrop-blur-xl">
           <div className="mx-auto flex w-full max-w-7xl items-center gap-6 px-6 py-4 md:px-8">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5">
               {onMenuToggle && (
                 <button
                   type="button"
                   aria-label="Toggle sidebar"
                   onClick={onMenuToggle}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-500/20 bg-[#070d18] text-sky-100 transition hover:border-sky-400/60 hover:text-sky-200"
+                  aria-pressed={sidebarOpen}
+                  className={`flex items-center gap-2 rounded-xl border bg-[#070d18] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition shadow-[0_0_20px_rgba(56,189,248,0.2)] hover:border-sky-400/60 hover:text-sky-100 ${
+                    sidebarOpen ? "border-sky-400/60 text-sky-100" : "border-sky-500/25 text-sky-200"
+                  }`}
                 >
-                  <MenuIcon />
+                  {sidebarOpen ? <CloseIcon /> : <MenuIcon />}
+                  <span className="hidden sm:inline">Menu</span>
                 </button>
               )}
               <Link href="/home" className="group inline-flex items-center gap-3">
@@ -200,7 +205,7 @@ const GearIcon = () => (
 const MenuIcon = () => (
   <svg
     aria-hidden
-    className="h-4 w-4 text-current"
+    className="h-5 w-5 text-current"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -209,5 +214,19 @@ const MenuIcon = () => (
     <path d="M4 6h16" />
     <path d="M6 12h12" />
     <path d="M8 18h8" />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg
+    aria-hidden
+    className="h-5 w-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+  >
+    <path d="M18 6 6 18" strokeLinecap="round" />
+    <path d="M6 6l12 12" strokeLinecap="round" />
   </svg>
 );
