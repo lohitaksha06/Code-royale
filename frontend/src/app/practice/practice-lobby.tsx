@@ -25,7 +25,7 @@ const timerOptions = [
 ];
 
 const languageOptions = [
-  { label: "JavaScript (Node)", value: "javascript" },
+  { label: "JavaScript (Node)", value: "node" },
   { label: "Python 3", value: "python" },
   { label: "C++", value: "cpp" },
   { label: "Java", value: "java" },
