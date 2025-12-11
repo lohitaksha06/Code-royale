@@ -13,7 +13,7 @@ export default async function PracticeSessionPage({ params, searchParams }: Page
 
   const { data: question, error } = await supabase
     .from("practice_questions")
-    .select("id,title,description,difficulty,sample_input,sample_output,languages")
+    .select("*")
     .eq("slug", params.slug)
     .single();
 
@@ -24,14 +24,42 @@ export default async function PracticeSessionPage({ params, searchParams }: Page
   const parsedTimer = Number(searchParams?.timer ?? 300);
   const initialTimer = Number.isFinite(parsedTimer) && parsedTimer > 0 ? parsedTimer : 300;
 
-  const languages = Array.isArray(question.languages)
-    ? (question.languages as string[])
+  const rawLanguages = Array.isArray(question.languages)
+    ? (question.languages as string[]).filter((lang): lang is string => typeof lang === "string" && !!lang)
     : ["javascript", "python", "cpp"];
+
+  const languages = rawLanguages.length > 0 ? rawLanguages : ["javascript", "python", "cpp"];
 
   const requestedLanguage = searchParams?.language;
   const initialLanguage = requestedLanguage && languages.includes(requestedLanguage)
     ? requestedLanguage
-    : languages[0];
+    : languages[0] ?? "javascript";
+
+  const rawTestcases = Array.isArray(question.testcases)
+    ? (question.testcases as Array<{ id?: string; input?: string; output?: string; stdin?: string; expected_output?: string }>)
+    : [];
+
+  let testcases = rawTestcases.map((testcase, index) => ({
+    id: testcase.id ?? `${question.id}-case-${index + 1}`,
+    input: testcase.input ?? testcase.stdin ?? "",
+    output: testcase.output ?? testcase.expected_output ?? "",
+  }));
+
+  if (testcases.length === 0) {
+    const { data: legacyTestcases } = await supabase
+      .from("practice_testcases")
+      .select("id,stdin,expected_output")
+      .eq("question_id", question.id)
+      .order("id", { ascending: true });
+
+    testcases = (legacyTestcases ?? []).map((testcase, index) => ({
+      id: String(testcase.id ?? `${question.id}-legacy-${index + 1}`),
+      input: testcase.stdin ?? "",
+      output: testcase.expected_output ?? "",
+    }));
+  }
+
+  const meta = question.meta && typeof question.meta === "object" ? question.meta : null;
 
   return (
     <PracticeScaffold>
@@ -41,10 +69,14 @@ export default async function PracticeSessionPage({ params, searchParams }: Page
           title: question.title,
           description: question.description,
           difficulty: question.difficulty,
-          sampleInput: question.sample_input,
-          sampleOutput: question.sample_output,
           languages,
+          meta: meta as {
+            timeComplexity?: string | null;
+            spaceComplexity?: string | null;
+            topics?: string[] | null;
+          } | null,
         }}
+        testcases={testcases}
         initialTimer={initialTimer}
         initialLanguage={initialLanguage}
       />

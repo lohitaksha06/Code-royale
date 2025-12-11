@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useState } from "react";
 
 import { HomeNav } from "../home/home-nav";
 
@@ -34,41 +34,40 @@ type PracticeScaffoldProps = {
 type PracticeSidebarProps = {
   isOpen: boolean;
   onClose: () => void;
-  onToggle: () => void;
+  onCollapse: () => void;
 };
 
 export function PracticeScaffold({ children }: PracticeScaffoldProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const paddingClass = useMemo(
-    () => (isSidebarOpen ? "lg:pl-[19rem]" : "lg:pl-0"),
-    [isSidebarOpen],
-  );
+  const openSidebar = () => setIsSidebarOpen(true);
+  const closeSidebar = () => setIsSidebarOpen(false);
+  const toggleSidebar = () => setIsSidebarOpen((current) => !current);
+  const mainPaddingClass = isSidebarOpen ? "lg:pl-[19rem]" : "lg:pl-0";
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#040a16] via-[#041225] to-[#050a17] text-sky-50">
       <HomeNav
-        onMenuToggle={() => setIsSidebarOpen((current) => !current)}
+        onMenuToggle={toggleSidebar}
         sidebarOpen={isSidebarOpen}
       />
       <PracticeSidebar
         isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        onToggle={() => setIsSidebarOpen((current) => !current)}
+        onClose={closeSidebar}
+        onCollapse={closeSidebar}
       />
-      {!isSidebarOpen && <CollapsedSidebarHandle onToggle={() => setIsSidebarOpen(true)} />}
+      {!isSidebarOpen && <CollapsedSidebarHandle onToggle={openSidebar} />}
       {isSidebarOpen && (
         <button
           type="button"
           aria-label="Close sidebar"
           className="fixed inset-0 z-30 bg-slate-950/60 backdrop-blur-sm lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
+          onClick={closeSidebar}
         />
       )}
       <main
-        className={`relative z-40 flex min-h-screen w-full flex-col transition-[padding-left] duration-300 ease-out ${paddingClass}`}
+        className={`relative z-40 flex min-h-screen w-full flex-col transition-[padding-left] duration-300 ease-out ${mainPaddingClass}`}
       >
-        <div className="flex w-full flex-1 flex-col gap-8 px-5 pb-16 pt-32 sm:px-8 lg:px-16">
+        <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-8 px-5 pb-16 pt-28 sm:px-8 lg:px-14 xl:px-16">
           {children}
         </div>
       </main>
@@ -76,7 +75,7 @@ export function PracticeScaffold({ children }: PracticeScaffoldProps) {
   );
 }
 
-function PracticeSidebar({ isOpen, onClose, onToggle }: PracticeSidebarProps) {
+function PracticeSidebar({ isOpen, onClose, onCollapse }: PracticeSidebarProps) {
   return (
     <aside
       className={`fixed left-0 top-24 z-40 flex h-[calc(100vh-6rem)] w-72 flex-col gap-6 border-r border-sky-500/10 bg-[#060b15]/95 p-6 shadow-[0_0_45px_rgba(15,118,211,0.35)] backdrop-blur-xl transition-transform duration-300 ease-out lg:top-28 lg:h-[calc(100vh-7rem)] ${
@@ -113,7 +112,7 @@ function PracticeSidebar({ isOpen, onClose, onToggle }: PracticeSidebarProps) {
         <button
           type="button"
           aria-label="Collapse sidebar"
-          onClick={onToggle}
+          onClick={onCollapse}
           className="absolute right-[-22px] top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-sky-500/30 bg-[#060b15] text-sky-200 shadow-[0_0_20px_rgba(56,189,248,0.25)] transition hover:border-sky-400/60 hover:text-sky-50 lg:flex"
         >
           <ChevronIcon direction="collapse" />

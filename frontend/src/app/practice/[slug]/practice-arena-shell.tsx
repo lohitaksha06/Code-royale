@@ -1,5 +1,6 @@
 'use client';
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type PracticeTestcase = {
@@ -237,16 +238,24 @@ export function PracticeArenaShell({ question, testcases, initialTimer, initialL
   };
 
   return (
-    <div className="grid gap-8 rounded-[40px] border border-sky-500/22 bg-slate-950/85 p-6 shadow-[0_0_70px_rgba(56,189,248,0.2)] backdrop-blur-xl sm:p-8 xl:grid-cols-[1.2fr_1fr]">
+    <div className="mx-auto grid w-full max-w-[1400px] gap-10 rounded-[44px] border border-sky-500/22 bg-slate-950/90 p-8 shadow-[0_0_80px_rgba(56,189,248,0.22)] backdrop-blur-2xl sm:p-10 xl:grid-cols-[1.3fr_1fr]">
       <article className="space-y-8">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-sky-400/70">
-            <span>{question.difficulty} practice</span>
-            <span className="rounded-full border border-sky-500/30 px-3 py-1 text-[10px] text-sky-300">
-              {timerState}
-            </span>
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-sky-400/70">
+              <span>{question.difficulty} practice</span>
+              <span className="rounded-full border border-sky-500/30 px-3 py-1 text-[10px] text-sky-300">
+                {timerState}
+              </span>
+            </div>
+            <h2 className="text-3xl font-semibold text-sky-50 md:text-4xl xl:text-5xl">{question.title}</h2>
           </div>
-          <h2 className="text-3xl font-semibold text-sky-50 md:text-4xl">{question.title}</h2>
+          <Link
+            href="/practice"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-slate-600/50 bg-slate-900/70 px-6 text-xs font-semibold uppercase tracking-[0.3em] text-sky-200 shadow-[0_0_26px_rgba(56,189,248,0.22)] transition hover:border-sky-400/60 hover:text-sky-50"
+          >
+            Exit Session
+          </Link>
         </div>
 
         <div className="space-y-4 text-sm leading-relaxed text-sky-100/75">
@@ -350,7 +359,7 @@ export function PracticeArenaShell({ question, testcases, initialTimer, initialL
         </div>
       </article>
 
-      <section className="flex flex-col gap-5">
+      <section className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <label className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-400/60">Language</label>
           <select
@@ -371,7 +380,7 @@ export function PracticeArenaShell({ question, testcases, initialTimer, initialL
             value={code}
             onChange={(event) => setCode(event.target.value)}
             spellCheck={false}
-            className="min-h-[420px] w-full resize-none rounded-[28px] border border-slate-700/70 bg-[#04070f] p-6 font-mono text-sm text-sky-100 shadow-[0_0_40px_rgba(56,189,248,0.16)] focus:border-sky-400/60 focus:outline-none"
+            className="min-h-[520px] w-full resize-none rounded-[32px] border border-slate-700/70 bg-[#04070f] p-7 font-mono text-sm text-sky-100 shadow-[0_0_48px_rgba(56,189,248,0.2)] focus:border-sky-400/60 focus:outline-none xl:min-h-[640px]"
           />
         </div>
 
@@ -380,7 +389,7 @@ export function PracticeArenaShell({ question, testcases, initialTimer, initialL
             type="button"
             onClick={() => handleSubmit("run")}
             disabled={isSubmitting}
-            className="rounded-full border border-sky-500/40 bg-sky-500/20 px-6 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-sky-50 shadow-[0_0_35px_rgba(56,189,248,0.32)] transition hover:border-sky-300 disabled:opacity-60"
+            className="rounded-full border border-sky-500/40 bg-sky-500/20 px-7 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-sky-50 shadow-[0_0_40px_rgba(56,189,248,0.32)] transition hover:border-sky-300 disabled:opacity-60"
           >
             {isSubmitting ? "Running..." : "Run Tests"}
           </button>
@@ -388,7 +397,7 @@ export function PracticeArenaShell({ question, testcases, initialTimer, initialL
             type="button"
             onClick={() => handleSubmit("submit")}
             disabled={isSubmitting}
-            className="rounded-full border border-emerald-500/60 bg-emerald-500/25 px-6 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-50 shadow-[0_0_35px_rgba(16,185,129,0.38)] transition hover:border-emerald-400 disabled:opacity-60"
+            className="rounded-full border border-emerald-500/60 bg-emerald-500/25 px-7 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-50 shadow-[0_0_42px_rgba(16,185,129,0.38)] transition hover:border-emerald-400 disabled:opacity-60"
           >
             {isSubmitting ? "Submitting..." : "Submit Solution"}
           </button>
@@ -401,7 +410,7 @@ export function PracticeArenaShell({ question, testcases, initialTimer, initialL
           </button>
         </div>
 
-        <div className="rounded-[28px] border border-slate-700/60 bg-[#050b18] p-5 shadow-[0_0_42px_rgba(56,189,248,0.18)]">
+        <div className="rounded-[32px] border border-slate-700/60 bg-[#050b18] p-6 shadow-[0_0_48px_rgba(56,189,248,0.2)]">
           <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-sky-400/70">
             <span>Execution console</span>
             <span className="rounded-full border border-sky-500/25 px-3 py-1 text-[10px] text-sky-300">

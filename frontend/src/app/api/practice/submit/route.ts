@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase-service";
 
 const languageMap: Record<string, number> = {
-  javascript: 63, // Node.js 16.13.0
+  node: 63, // Node.js 16.13.0
+  javascript: 63,
   python: 71, // Python 3.8.1
   cpp: 54, // GCC 9.2.0
+  java: 62, // Java 13.0.1
+  c: 50, // GCC 9.2.0
 };
 
 const judge0BaseUrl = (process.env.JUDGE0_BASE_URL ?? process.env.JUDGE0_ENDPOINT)?.replace(/\/$/, "");
@@ -54,7 +57,7 @@ export async function POST(request: Request) {
 
   const { data: question, error: questionError } = await supabase
     .from("practice_questions")
-    .select("id,languages")
+    .select("id,languages,testcases")
     .eq("id", questionId)
     .single();
 
@@ -71,14 +74,34 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Language not allowed for this question" }, { status: 400 });
   }
 
-  const { data: testcases, error: testcasesError } = await supabase
-    .from("practice_testcases")
-    .select("id,stdin,expected_output")
-    .eq("question_id", questionId)
-    .order("id", { ascending: true });
+  const rawTestcases = Array.isArray(question.testcases)
+    ? (question.testcases as Array<{ id?: string; input?: string; output?: string; stdin?: string; expected_output?: string }>)
+    : [];
 
-  if (testcasesError || !testcases || testcases.length === 0) {
-    console.error("Failed to load testcases", testcasesError);
+  let normalizedTestcases = rawTestcases.map((testcase, index) => ({
+    id: testcase.id ?? `${question.id}-case-${index + 1}`,
+    input: testcase.input ?? testcase.stdin ?? "",
+    expected: testcase.output ?? testcase.expected_output ?? "",
+    index,
+  }));
+
+  if (normalizedTestcases.length === 0) {
+    const { data: legacyTestcases } = await supabase
+      .from("practice_testcases")
+      .select("id,stdin,expected_output")
+      .eq("question_id", questionId)
+      .order("id", { ascending: true });
+
+    normalizedTestcases = (legacyTestcases ?? []).map((testcase, index) => ({
+      id: String(testcase.id ?? `${question.id}-legacy-${index + 1}`),
+      input: testcase.stdin ?? "",
+      expected: testcase.expected_output ?? "",
+      index,
+    }));
+  }
+
+  if (normalizedTestcases.length === 0) {
+    console.error("No testcases configured for question", question.id);
     return NextResponse.json({ error: "No testcases configured" }, { status: 500 });
   }
 
@@ -95,16 +118,18 @@ export async function POST(request: Request) {
   }
 
   const results = [] as Array<{
-    id: number;
+    index: number;
     status: string;
-    stdout: string | null;
+    actual: string;
     stderr: string | null;
     time: string | null;
     memory: number | null;
     passed: boolean;
+    expected: string;
+    input: string;
   }>;
 
-  for (const testcase of testcases) {
+  for (const testcase of normalizedTestcases) {
     try {
       const response = await fetch(
         `${judge0BaseUrl}/submissions?base64_encoded=false&wait=true`,
@@ -114,8 +139,8 @@ export async function POST(request: Request) {
           body: JSON.stringify({
             language_id: languageMap[language],
             source_code: code,
-            stdin: testcase.stdin,
-            expected_output: testcase.expected_output,
+            stdin: testcase.input,
+            expected_output: testcase.expected,
           }),
         },
       );
@@ -140,13 +165,15 @@ export async function POST(request: Request) {
       const passed = status.toLowerCase() === "accepted";
 
       results.push({
-        id: testcase.id,
+        index: testcase.index,
         status,
-        stdout,
+        actual: stdout ?? "",
         stderr,
         time: submission.time ?? null,
         memory: submission.memory ?? null,
         passed,
+        expected: testcase.expected,
+        input: testcase.input,
       });
 
       if (!passed) {
