@@ -42,10 +42,10 @@ export function PracticeScaffold({ children }: PracticeScaffoldProps) {
   const openSidebar = () => setIsSidebarOpen(true);
   const closeSidebar = () => setIsSidebarOpen(false);
   const toggleSidebar = () => setIsSidebarOpen((current) => !current);
-  const mainPaddingClass = isSidebarOpen ? "lg:pl-[19rem]" : "lg:pl-0";
+  const mainPaddingClass = isSidebarOpen ? "lg:pl-[18rem]" : "lg:pl-0";
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-[#040a16] via-[#041225] to-[#050a17] text-sky-50">
+    <div className="relative min-h-screen bg-[#030915] text-sky-50">
       <HomeNav
         onMenuToggle={toggleSidebar}
         sidebarOpen={isSidebarOpen}
@@ -65,9 +65,9 @@ export function PracticeScaffold({ children }: PracticeScaffoldProps) {
         />
       )}
       <main
-        className={`relative z-40 flex min-h-screen w-full flex-col transition-[padding-left] duration-300 ease-out ${mainPaddingClass}`}
+        className={`relative z-30 flex min-h-screen w-full flex-col transition-[padding-left] duration-300 ease-out ${mainPaddingClass}`}
       >
-        <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-8 px-5 pb-16 pt-28 sm:px-8 lg:px-14 xl:px-16">
+        <div className="flex w-full flex-1 flex-col gap-8 px-0 pb-16 pt-24">
           {children}
         </div>
       </main>
@@ -78,7 +78,7 @@ export function PracticeScaffold({ children }: PracticeScaffoldProps) {
 function PracticeSidebar({ isOpen, onClose, onCollapse }: PracticeSidebarProps) {
   return (
     <aside
-      className={`fixed left-0 top-24 z-40 flex h-[calc(100vh-6rem)] w-72 flex-col gap-6 border-r border-sky-500/10 bg-[#060b15]/95 p-6 shadow-[0_0_45px_rgba(15,118,211,0.35)] backdrop-blur-xl transition-transform duration-300 ease-out lg:top-28 lg:h-[calc(100vh-7rem)] ${
+      className={`fixed left-0 top-24 z-50 flex h-[calc(100vh-6rem)] w-72 flex-col gap-6 border-r border-sky-500/10 bg-[#060b15]/95 p-6 shadow-[0_0_45px_rgba(15,118,211,0.35)] backdrop-blur-xl transition-transform duration-300 ease-out lg:top-28 lg:h-[calc(100vh-7rem)] ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
@@ -128,7 +128,7 @@ function CollapsedSidebarHandle({ onToggle }: { onToggle: () => void }) {
       type="button"
       aria-label="Open sidebar"
       onClick={onToggle}
-      className="fixed left-3 top-1/2 z-30 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-sky-500/30 bg-[#060b15] text-sky-200 shadow-[0_0_20px_rgba(56,189,248,0.25)] transition hover:border-sky-400/60 hover:text-sky-50"
+      className="fixed left-0 top-1/2 z-40 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-r-full border border-sky-500/30 border-l-transparent bg-[#060b15] text-sky-200 shadow-[0_0_20px_rgba(56,189,248,0.25)] transition hover:border-sky-400/60 hover:text-sky-50"
     >
       <ChevronIcon direction="expand" />
     </button>

@@ -96,8 +96,8 @@ const featurePanels = [
 export default function HomePage() {
   return (
     <PracticeScaffold>
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-16 pb-16">
-        <section className="rounded-[40px] border border-sky-500/20 bg-gradient-to-br from-slate-950/85 via-slate-950/65 to-slate-900/55 p-12 text-center shadow-[0_0_70px_rgba(56,189,248,0.2)]">
+      <div className="flex w-full flex-col gap-20 pb-20">
+        <section className="w-full px-8 pb-16 pt-12 text-center sm:px-12 md:px-16">
           <span className="text-xs font-semibold uppercase tracking-[0.45em] text-sky-400/80">
             Enter the arena
           </span>
@@ -120,7 +120,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="grid gap-8 rounded-[36px] border border-sky-500/20 bg-slate-950/80 p-8 shadow-[0_0_55px_rgba(56,189,248,0.18)] backdrop-blur-xl md:grid-cols-[1.15fr_1fr] md:p-12">
+        <section className="grid w-full gap-10 px-8 py-12 sm:px-12 md:grid-cols-[1.15fr_1fr] md:px-16">
           <div className="flex flex-col justify-between gap-6">
             <div className="space-y-4">
               <span className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-400/70">
@@ -145,7 +145,7 @@ export default function HomePage() {
               </span>
             </div>
           </div>
-          <div className="relative overflow-hidden rounded-[28px] border border-sky-500/25 bg-slate-900/80 shadow-[0_0_60px_rgba(56,189,248,0.25)]">
+          <div className="relative overflow-hidden rounded-[28px] bg-slate-900/80 shadow-[0_0_60px_rgba(56,189,248,0.25)]">
             <Image
               src="/images/bluebracket.jpg"
               alt="Futuristic code battle interface"
@@ -160,7 +160,7 @@ export default function HomePage() {
 
         <section
           id="game-modes"
-          className="rounded-[40px] border border-sky-500/20 bg-slate-950/70 p-10 shadow-[0_0_55px_rgba(56,189,248,0.14)] backdrop-blur-xl sm:p-14"
+          className="w-full px-8 py-16 sm:px-12"
         >
           <div className="flex flex-col gap-6 text-center">
             <span className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">
@@ -177,7 +177,7 @@ export default function HomePage() {
             {timers.map((timer) => (
               <div
                 key={timer}
-                className="rounded-3xl border border-sky-500/20 bg-slate-900/60 px-6 py-8 text-center shadow-[0_0_35px_rgba(56,189,248,0.1)]"
+                className="rounded-3xl bg-slate-900/60 px-6 py-8 text-center shadow-[0_0_35px_rgba(56,189,248,0.1)]"
               >
                 <p className="text-xs uppercase tracking-[0.3em] text-sky-400/60">
                   Timer Preset
@@ -191,7 +191,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="tournaments" className="grid gap-8 md:grid-cols-3">
+        <section id="tournaments" className="grid gap-8 px-8 pb-20 sm:px-12 md:grid-cols-3">
           {battleModes.map((mode, index) => (
             <GlowCard
               key={mode.title}

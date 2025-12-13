@@ -103,8 +103,8 @@ export function PracticeLobby() {
   };
 
   return (
-    <section className="w-full rounded-[40px] border border-sky-500/22 bg-slate-950/80 p-8 shadow-[0_0_65px_rgba(56,189,248,0.22)] backdrop-blur-2xl sm:p-10 lg:p-14">
-      <div className="grid gap-10 lg:grid-cols-[1.15fr_0.9fr]">
+    <section className="w-full px-6 pb-20 pt-10 sm:px-8 lg:px-10">
+      <div className="grid gap-12 lg:grid-cols-[1.15fr_0.9fr]">
         <div className="space-y-10">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-400/60">Pick difficulty</p>
@@ -117,7 +117,7 @@ export function PracticeLobby() {
                   className={`rounded-2xl border px-4 py-4 text-sm font-semibold transition ${
                     difficulty === option.value
                       ? "border-sky-400 bg-sky-500/20 text-sky-100 shadow-[0_0_30px_rgba(56,189,248,0.28)]"
-                      : "border-sky-500/20 bg-slate-900/70 text-sky-100/70 hover:border-sky-400/40 hover:text-sky-100"
+                      : "border-slate-600/40 bg-slate-900/70 text-sky-100/70 hover:border-sky-400/40 hover:text-sky-100"
                   }`}
                 >
                   {option.label}
@@ -132,7 +132,7 @@ export function PracticeLobby() {
               <select
                 value={timer}
                 onChange={(event) => setTimer(Number(event.target.value))}
-                className="mt-3 w-full rounded-2xl border border-sky-500/22 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-sky-100/80 focus:border-sky-400/60 focus:outline-none"
+                className="mt-3 w-full rounded-2xl border border-slate-600/40 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-sky-100/80 focus:border-sky-400/60 focus:outline-none"
               >
                 {timerOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -147,7 +147,7 @@ export function PracticeLobby() {
               <select
                 value={language}
                 onChange={(event) => setLanguage(event.target.value)}
-                className="mt-3 w-full rounded-2xl border border-sky-500/22 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-sky-100/80 focus:border-sky-400/60 focus:outline-none"
+                className="mt-3 w-full rounded-2xl border border-slate-600/40 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-sky-100/80 focus:border-sky-400/60 focus:outline-none"
               >
                 {languageOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -160,7 +160,7 @@ export function PracticeLobby() {
         </div>
 
         <div className="flex flex-col gap-6">
-          <div className="rounded-[28px] border border-sky-500/20 bg-slate-900/65 p-6 shadow-[0_0_36px_rgba(56,189,248,0.18)]">
+          <div className="rounded-[28px] border border-slate-600/40 bg-slate-900/65 p-6 shadow-[0_0_36px_rgba(56,189,248,0.18)]">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-400/60">Next challenge preview</p>
             <div className="mt-4 space-y-3 text-sm text-sky-100/75">
               {loading && <p>Fetching curated problems...</p>}

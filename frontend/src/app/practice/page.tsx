@@ -4,7 +4,7 @@ import { PracticeScaffold } from "./practice-scaffold";
 export default function PracticePage() {
   return (
     <PracticeScaffold>
-      <header className="max-w-3xl space-y-3">
+      <header className="w-full space-y-3 px-6 sm:px-8 lg:px-10">
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">
           Solo training grounds
         </p>
