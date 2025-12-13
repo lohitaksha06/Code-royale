@@ -108,7 +108,7 @@ export default function HomePage() {
             Challenge rivals in lightning-fast PvP, dominate seasonal tournaments, and broadcast your highlight reels. Code Royale powers every match with real-time judge feedback.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <NeonLink href="/auth/signup" className="px-8 py-3">
+            <NeonLink href="/game-modes" className="px-8 py-3">
               Start Battle
             </NeonLink>
             <NeonLink

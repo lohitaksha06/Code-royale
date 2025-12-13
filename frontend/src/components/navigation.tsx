@@ -7,9 +7,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const navItems = [
   { href: "/", label: "Dashboard" },
+  { href: "/game-modes", label: "Game Modes" },
   { href: "/auth/login", label: "Login" },
   { href: "/auth/signup", label: "Sign up" },
 ];
+
+const publicRoutes = ["/", "/auth/login", "/auth/signup"];
 
 export function Navigation() {
   const pathname = usePathname();
@@ -51,15 +54,23 @@ export function Navigation() {
     }
   };
 
+  const isPublicShell = !pathname || publicRoutes.some((route) => pathname.startsWith(route));
+
+  const visibleNavItems = useMemo(() => {
+    return isPublicShell
+      ? navItems.filter((item) => item.href === "/auth/login" || item.href === "/auth/signup")
+      : navItems;
+  }, [isPublicShell]);
+
   const activeMap = useMemo(() => {
-    return navItems.reduce<Record<string, boolean>>((acc, item) => {
+    return visibleNavItems.reduce<Record<string, boolean>>((acc, item) => {
       const isActive = item.href === "/"
         ? pathname === "/"
         : pathname?.startsWith(item.href);
       acc[item.href] = Boolean(isActive);
       return acc;
     }, {});
-  }, [pathname]);
+  }, [pathname, visibleNavItems]);
 
   if (pathname?.startsWith("/home") || pathname?.startsWith("/practice")) {
     return null;
@@ -68,8 +79,6 @@ export function Navigation() {
   const visibilityClass = isHidden && !isHovering
     ? "-translate-y-full opacity-0 pointer-events-none"
     : "opacity-100 pointer-events-auto";
-
-  const isPublicShell = !pathname || ["/", "/auth/login", "/auth/signup"].some((route) => pathname.startsWith(route));
 
   return (
     <>
@@ -117,7 +126,7 @@ export function Navigation() {
             )}
 
             <nav className="ml-auto flex items-center gap-1">
-              {navItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 const isActive = activeMap[item.href];
                 return (
                   <Link
