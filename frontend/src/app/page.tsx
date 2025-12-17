@@ -20,6 +20,9 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <NeonLink href="/auth/signup">Join the Beta</NeonLink>
+            <NeonLink href="/game-modes" className="border-sky-400/40 bg-transparent text-sky-200 hover:border-sky-300 hover:bg-sky-400/10">
+              Explore Game Modes
+            </NeonLink>
             <NeonLink
               href="#get-started"
               className="border-sky-400/40 bg-transparent text-sky-200 hover:border-sky-300 hover:bg-sky-400/10"

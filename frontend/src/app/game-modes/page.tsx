@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { HomeNav } from "../home/home-nav";
 
 const trophyIcon = (
   <svg
@@ -273,7 +274,8 @@ export default function GameModesPage() {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-[#030915] pb-20 text-sky-100">
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-6 pt-16 sm:px-10 lg:px-16">
+      <HomeNav />
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-6 pt-28 sm:px-10 lg:px-16">
         <header className="flex flex-col justify-between gap-6 rounded-3xl border border-sky-500/20 bg-gradient-to-br from-[#061532] via-[#051029] to-[#020710] p-8 shadow-[0_0_60px_rgba(14,165,233,0.28)] sm:flex-row sm:items-center sm:gap-8">
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-400/80">Command Center</p>
@@ -376,7 +378,7 @@ type ModeCardProps = {
 
 function ModeCard({ mode, onClick, playful = false }: ModeCardProps) {
   const { title, subtitle, badge, details, enabled, accent, impact } = mode;
-  const baseClasses = "relative flex h-full flex-col justify-between gap-6 rounded-3xl border px-6 py-8 transition";
+  const baseClasses = "group relative flex h-full flex-col justify-between gap-6 rounded-3xl border px-6 py-8 transition";
   const enabledClasses = enabled
     ? `border-sky-500/25 bg-gradient-to-br ${accent} hover:-translate-y-1 hover:shadow-[0_0_45px_rgba(56,189,248,0.25)] hover:border-sky-300/60`
     : "border-slate-700/60 bg-slate-900/60 text-slate-400";
@@ -384,6 +386,10 @@ function ModeCard({ mode, onClick, playful = false }: ModeCardProps) {
   const impactStyles = playful
     ? "border-fuchsia-300/60 bg-fuchsia-400/10 text-fuchsia-100"
     : "border-emerald-300/60 bg-emerald-400/10 text-emerald-200";
+
+  const playNowStyles = playful
+    ? "border-fuchsia-400/60 bg-fuchsia-500/15 text-fuchsia-100 group-hover:border-fuchsia-200 group-hover:bg-fuchsia-500/30 group-hover:text-fuchsia-50"
+    : "border-sky-400/60 bg-sky-500/15 text-sky-100 group-hover:border-sky-200 group-hover:bg-sky-500/30 group-hover:text-sky-50";
 
   const content = (
     <div className="flex h-full flex-col gap-6">
@@ -413,6 +419,23 @@ function ModeCard({ mode, onClick, playful = false }: ModeCardProps) {
           </span>
         )}
       </div>
+      {enabled && (
+        <span
+          className={`mt-4 inline-flex w-max items-center gap-2 rounded-full border px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] shadow-[0_0_24px_rgba(56,189,248,0.3)] transition ${playNowStyles}`}
+        >
+          Play Now
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            className="h-3.5 w-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+          >
+            <path d="m8 5 8 7-8 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      )}
       {!enabled && (
         <div className="absolute right-6 top-6 flex items-center gap-2 text-xs uppercase tracking-[0.35em] text-slate-300">
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const menuItems = [
-  { label: "Game Modes", href: "#game-modes" },
+  { label: "Game Modes", href: "/game-modes" },
   { label: "Tournaments", href: "#tournaments" },
   { label: "Practice Arena", href: "/practice" },
   { label: "Profile", href: "#profile" },

@@ -54,13 +54,32 @@ export function Navigation() {
     }
   };
 
-  const isPublicShell = !pathname || publicRoutes.some((route) => pathname.startsWith(route));
+  const isPublicShell = !pathname || publicRoutes.some((route) => {
+    if (route === "/") {
+      return pathname === "/";
+    }
+    return pathname?.startsWith(route) ?? false;
+  });
+  const isAuthScreen = pathname?.startsWith("/auth/login") || pathname?.startsWith("/auth/signup");
 
   const visibleNavItems = useMemo(() => {
-    return isPublicShell
-      ? navItems.filter((item) => item.href === "/auth/login" || item.href === "/auth/signup")
-      : navItems;
-  }, [isPublicShell]);
+    if (isAuthScreen) {
+      return navItems.filter((item) =>
+        item.href === "/" ||
+        item.href === "/auth/login" ||
+        item.href === "/auth/signup"
+      );
+    }
+
+    if (isPublicShell) {
+      return navItems.filter((item) =>
+        item.href === "/" ||
+        item.href === "/auth/login" ||
+        item.href === "/auth/signup"
+      );
+    }
+    return navItems;
+  }, [isAuthScreen, isPublicShell]);
 
   const activeMap = useMemo(() => {
     return visibleNavItems.reduce<Record<string, boolean>>((acc, item) => {
@@ -72,7 +91,7 @@ export function Navigation() {
     }, {});
   }, [pathname, visibleNavItems]);
 
-  if (pathname?.startsWith("/home") || pathname?.startsWith("/practice")) {
+  if (pathname?.startsWith("/home") || pathname?.startsWith("/practice") || pathname?.startsWith("/game-modes")) {
     return null;
   }
 
