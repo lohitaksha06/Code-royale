@@ -25,6 +25,18 @@ const sidebarLinks = [
     title: "Tactics Workshop",
     subtitle: "Replay curated patterns to sharpen fundamentals.",
   },
+  {
+    id: "profile",
+    title: "Profile",
+    subtitle: "Review your match history and cosmetics.",
+    href: "/home",
+  },
+  {
+    id: "settings",
+    title: "Settings",
+    subtitle: "Update account preferences and theme.",
+    href: "/settings",
+  },
 ];
 
 type PracticeScaffoldProps = {
@@ -94,19 +106,40 @@ function PracticeSidebar({ isOpen, onClose, onCollapse }: PracticeSidebarProps) 
         </button>
       </div>
       <nav className="flex flex-1 flex-col gap-4 overflow-y-auto">
-        {sidebarLinks.map((link) => (
-          <button
-            key={link.id}
-            type="button"
-            onClick={onClose}
-            className="rounded-2xl border border-sky-500/15 bg-slate-950/60 p-4 text-left transition hover:border-sky-400/40 hover:bg-slate-900/70"
-          >
-            <div className="text-sm font-semibold uppercase tracking-[0.15em] text-sky-50/90">
-              {link.title}
+        {sidebarLinks.map((link) => {
+          const inner = (
+            <div className="flex flex-col">
+              <div className="text-sm font-semibold uppercase tracking-[0.15em] text-sky-50/90">
+                {link.title}
+              </div>
+              <p className="mt-2 text-xs text-sky-100/70">{link.subtitle}</p>
             </div>
-            <p className="mt-2 text-xs text-sky-100/70">{link.subtitle}</p>
-          </button>
-        ))}
+          );
+
+          if (link.href) {
+            return (
+              <a
+                key={link.id}
+                href={link.href}
+                onClick={onClose}
+                className="rounded-2xl border border-sky-500/15 bg-slate-950/60 p-4 text-left transition hover:border-sky-400/40 hover:bg-slate-900/70"
+              >
+                {inner}
+              </a>
+            );
+          }
+
+          return (
+            <button
+              key={link.id}
+              type="button"
+              onClick={onClose}
+              className="rounded-2xl border border-sky-500/15 bg-slate-950/60 p-4 text-left transition hover:border-sky-400/40 hover:bg-slate-900/70"
+            >
+              {inner}
+            </button>
+          );
+        })}
       </nav>
       {isOpen && (
         <button

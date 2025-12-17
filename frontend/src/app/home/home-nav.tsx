@@ -8,7 +8,7 @@ const menuItems = [
   { label: "Game Modes", href: "/game-modes" },
   { label: "Tournaments", href: "#tournaments" },
   { label: "Practice Arena", href: "/practice" },
-  { label: "Profile", href: "#profile" },
+  { label: "Profile", href: "/settings" },
 ];
 
 type HomeNavProps = {
@@ -145,13 +145,13 @@ export function HomeNav({ onMenuToggle, sidebarOpen = false }: HomeNavProps) {
               >
                 <BellIcon />
               </button>
-              <button
-                type="button"
+              <a
+                href="/settings"
                 aria-label="Settings"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-500/15 bg-[#070d18] hover:border-sky-400/40 hover:text-sky-100"
               >
                 <GearIcon />
-              </button>
+              </a>
             </div>
           </div>
         </div>

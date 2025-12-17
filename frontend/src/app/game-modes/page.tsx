@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { HomeNav } from "../home/home-nav";
+import { PracticeScaffold } from "../practice/practice-scaffold";
 
 const trophyIcon = (
   <svg
@@ -273,9 +273,8 @@ export default function GameModesPage() {
   const activeMode = selectedMode ?? RANKED_MODES[0];
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col bg-[#030915] pb-20 text-sky-100">
-      <HomeNav />
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-6 pt-28 sm:px-10 lg:px-16">
+    <PracticeScaffold>
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-6 pt-8 sm:px-10 lg:px-16">
         <header className="flex flex-col justify-between gap-6 rounded-3xl border border-sky-500/20 bg-gradient-to-br from-[#061532] via-[#051029] to-[#020710] p-8 shadow-[0_0_60px_rgba(14,165,233,0.28)] sm:flex-row sm:items-center sm:gap-8">
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-400/80">Command Center</p>
@@ -366,7 +365,7 @@ export default function GameModesPage() {
           />
         )}
       </div>
-    </div>
+    </PracticeScaffold>
   );
 }
 
