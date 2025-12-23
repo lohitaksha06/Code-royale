@@ -20,8 +20,22 @@ type UserRow = {
 type FriendPreview = {
   id: string;
   username: string;
-  status: "online" | "offline" | "in_match";
+  statusLabel?: string;
 };
+
+type ConnectionRow = {
+  user_id: string;
+  connection_id: string;
+  status: "pending" | "accepted" | "blocked";
+};
+
+type RelationshipState =
+  | "none"
+  | "friends"
+  | "outgoing_pending"
+  | "incoming_pending"
+  | "blocked"
+  | "blocked_by_other";
 
 function getRankFromRating(rating: number) {
   if (rating >= 600) return "Gold";
@@ -55,14 +69,14 @@ export default function ProfilePage() {
   const resolvedUserId = targetUserIdParam ?? viewerUserId;
   const isSelf = Boolean(resolvedUserId && viewerUserId && resolvedUserId === viewerUserId);
 
-  const demoFriends: FriendPreview[] = useMemo(
-    () => [
-      { id: "demo-1", username: "NeonGhost", status: "online" },
-      { id: "demo-2", username: "ByteBandit", status: "in_match" },
-      { id: "demo-3", username: "SyntaxSiren", status: "offline" },
-    ],
-    [],
-  );
+  const [connections, setConnections] = useState<FriendPreview[]>([]);
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
+  const [connectionsError, setConnectionsError] = useState<string | null>(null);
+
+  const [relationship, setRelationship] = useState<RelationshipState>("none");
+  const [relationshipLoading, setRelationshipLoading] = useState(false);
+
+  const emptyConnections = useMemo(() => [] as FriendPreview[], []);
 
   useEffect(() => {
     let mounted = true;
@@ -119,6 +133,142 @@ export default function ProfilePage() {
     };
   }, [targetUserIdParam]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    const loadConnections = async (profileUserId: string) => {
+      setConnectionsLoading(true);
+      setConnectionsError(null);
+
+      const { data: connectionRows, error: connectionError } = await supabase
+        .from("connections")
+        .select("user_id,connection_id,status")
+        .or(`user_id.eq.${profileUserId},connection_id.eq.${profileUserId}`)
+        .eq("status", "accepted");
+
+      if (!mounted) return;
+
+      if (connectionError) {
+        setConnections([]);
+        setConnectionsError("Connections are unavailable.");
+        setConnectionsLoading(false);
+        return;
+      }
+
+      const rows = (connectionRows ?? []) as ConnectionRow[];
+      const otherIds = Array.from(
+        new Set(
+          rows
+            .map((row) => (row.user_id === profileUserId ? row.connection_id : row.user_id))
+            .filter(Boolean),
+        ),
+      );
+
+      if (otherIds.length === 0) {
+        setConnections(emptyConnections);
+        setConnectionsLoading(false);
+        return;
+      }
+
+      const { data: userRows, error: usersError } = await supabase
+        .from("users")
+        .select("id,username")
+        .in("id", otherIds);
+
+      if (!mounted) return;
+
+      if (usersError) {
+        setConnections([]);
+        setConnectionsError("Unable to load profiles for connections.");
+        setConnectionsLoading(false);
+        return;
+      }
+
+      const nameMap = new Map<string, string>();
+      (userRows ?? []).forEach((row: { id: string; username: string | null }) => {
+        nameMap.set(row.id, row.username ?? "Unknown Pilot");
+      });
+
+      setConnections(
+        otherIds.map((id) => ({
+          id,
+          username: nameMap.get(id) ?? "Unknown Pilot",
+          statusLabel: "Friend",
+        })),
+      );
+      setConnectionsLoading(false);
+    };
+
+    if (!resolvedUserId) {
+      setConnections(emptyConnections);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    void loadConnections(resolvedUserId);
+
+    return () => {
+      mounted = false;
+    };
+  }, [resolvedUserId, emptyConnections]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadRelationship = async (viewerId: string, targetId: string) => {
+      setRelationshipLoading(true);
+      setRelationship("none");
+
+      const filter = `and(user_id.eq.${viewerId},connection_id.eq.${targetId}),and(user_id.eq.${targetId},connection_id.eq.${viewerId})`;
+      const { data, error: relError } = await supabase
+        .from("connections")
+        .select("user_id,connection_id,status")
+        .or(filter);
+
+      if (!mounted) return;
+
+      if (relError) {
+        setRelationship("none");
+        setRelationshipLoading(false);
+        return;
+      }
+
+      const rows = (data ?? []) as ConnectionRow[];
+      const outgoing = rows.find((row) => row.user_id === viewerId && row.connection_id === targetId);
+      const incoming = rows.find((row) => row.user_id === targetId && row.connection_id === viewerId);
+
+      if (outgoing?.status === "blocked") {
+        setRelationship("blocked");
+      } else if (incoming?.status === "blocked") {
+        setRelationship("blocked_by_other");
+      } else if (outgoing?.status === "accepted" || incoming?.status === "accepted") {
+        setRelationship("friends");
+      } else if (outgoing?.status === "pending") {
+        setRelationship("outgoing_pending");
+      } else if (incoming?.status === "pending") {
+        setRelationship("incoming_pending");
+      } else {
+        setRelationship("none");
+      }
+
+      setRelationshipLoading(false);
+    };
+
+    if (!viewerUserId || !resolvedUserId || viewerUserId === resolvedUserId) {
+      setRelationship("none");
+      return () => {
+        mounted = false;
+      };
+    }
+
+    void loadRelationship(viewerUserId, resolvedUserId);
+
+    return () => {
+      mounted = false;
+    };
+  }, [viewerUserId, resolvedUserId]);
+
   const displayName = profile?.username ?? "Unknown Pilot";
   const rating = profile?.rating ?? 0;
   const rank = getRankFromRating(rating);
@@ -128,6 +278,66 @@ export default function ProfilePage() {
   const teamName = (profile?.team_name ?? "").trim() || "not in team";
 
   const canModerate = Boolean(resolvedUserId && viewerUserId && resolvedUserId !== viewerUserId);
+
+  const handleAddOrAcceptFriend = async () => {
+    if (!viewerUserId || !resolvedUserId || viewerUserId === resolvedUserId) return;
+
+    setError(null);
+    setActionMessage(null);
+
+    if (relationship === "incoming_pending") {
+      const { error: acceptError } = await supabase
+        .from("connections")
+        .update({ status: "accepted" })
+        .eq("user_id", resolvedUserId)
+        .eq("connection_id", viewerUserId)
+        .eq("status", "pending");
+
+      if (acceptError) {
+        setError(acceptError.message);
+        return;
+      }
+
+      setActionMessage("✅ Friend request accepted!");
+    } else {
+      const { error: requestError } = await supabase
+        .from("connections")
+        .insert({ user_id: viewerUserId, connection_id: resolvedUserId, status: "pending" });
+
+      if (requestError) {
+        setError(requestError.message);
+        return;
+      }
+
+      setActionMessage("🤝 Friend request sent!");
+    }
+
+    setRelationshipLoading(true);
+    setTimeout(() => setRelationshipLoading(false), 200);
+  };
+
+  const handleBlockUser = async () => {
+    if (!viewerUserId || !resolvedUserId || viewerUserId === resolvedUserId) return;
+
+    setError(null);
+    setActionMessage(null);
+
+    const { error: blockError } = await supabase
+      .from("connections")
+      .upsert({ user_id: viewerUserId, connection_id: resolvedUserId, status: "blocked" }, { onConflict: "user_id,connection_id" });
+
+    if (blockError) {
+      setError(blockError.message);
+      return;
+    }
+
+    setActionMessage("🚫 Player blocked.");
+    setRelationship("blocked");
+  };
+
+  const handleReportUser = async () => {
+    setActionMessage("🧾 Report submitted (not yet persisted). Add a reports table when ready.");
+  };
 
   const handleSignOut = async () => {
     setActionMessage(null);
@@ -261,19 +471,24 @@ export default function ProfilePage() {
               <div className="mt-8 rounded-2xl border border-sky-500/20 bg-slate-950/40 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">Actions</p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <NeonButton className="w-full justify-center" onClick={() => setActionMessage("Friend request sent (demo).")}
-                  >
-                    🤝 Add Friend
+                    <NeonButton
+                      className="w-full justify-center"
+                      disabled={relationshipLoading || relationship === "friends" || relationship === "outgoing_pending" || relationship === "blocked" || relationship === "blocked_by_other"}
+                      onClick={handleAddOrAcceptFriend}
+                    >
+                      {relationship === "incoming_pending" ? "✅ Accept" : relationship === "outgoing_pending" ? "⏳ Pending" : "🤝 Add Friend"}
                   </NeonButton>
                   <NeonButton
                     className="w-full justify-center border-amber-400/60 bg-amber-400/10 hover:border-amber-300 hover:bg-amber-400/20"
-                    onClick={() => setActionMessage("Player blocked (demo).")}
+                      disabled={relationshipLoading || relationship === "blocked"}
+                      onClick={handleBlockUser}
                   >
                     🚫 Block
                   </NeonButton>
                   <NeonButton
                     className="w-full justify-center border-rose-500/50 bg-rose-500/10 hover:border-rose-400 hover:bg-rose-500/20"
-                    onClick={() => setActionMessage("Report submitted (demo).")}
+                      disabled={relationshipLoading}
+                      onClick={handleReportUser}
                   >
                     🧾 Report
                   </NeonButton>
@@ -287,24 +502,27 @@ export default function ProfilePage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold text-sky-50">Connections</h2>
-                <p className="mt-2 text-sm text-sky-100/70">Preview list (demo) until connections are wired to the database.</p>
+                <p className="mt-2 text-sm text-sky-100/70">
+                  {connectionsLoading
+                    ? "Loading connections…"
+                    : connectionsError
+                      ? connectionsError
+                      : isSelf
+                        ? "Your accepted connections."
+                        : "Connections may be hidden due to privacy settings."}
+                </p>
               </div>
               <span className="rounded-full border border-sky-500/25 bg-slate-950/50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-200/80">
-                Connections ({demoFriends.length})
+                Connections ({connections.length})
               </span>
             </div>
 
             <div className="mt-6 grid gap-4">
-              {demoFriends.map((friend) => {
+              {connections.map((friend) => {
                 const statusPill =
-                  friend.status === "online"
-                    ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-200"
-                    : friend.status === "in_match"
-                      ? "border-fuchsia-400/40 bg-fuchsia-500/10 text-fuchsia-200"
-                      : "border-slate-500/30 bg-slate-900/40 text-slate-200";
+                  "border-sky-400/40 bg-sky-500/10 text-sky-200";
 
-                const statusLabel =
-                  friend.status === "online" ? "Online" : friend.status === "in_match" ? "In Match" : "Offline";
+                const statusLabel = friend.statusLabel ?? "Friend";
 
                 return (
                   <div key={friend.id} className="rounded-2xl border border-sky-500/20 bg-slate-950/50 p-5">
@@ -330,6 +548,12 @@ export default function ProfilePage() {
                   </div>
                 );
               })}
+
+              {!connectionsLoading && connections.length === 0 && (
+                <div className="rounded-2xl border border-sky-500/15 bg-slate-950/40 p-5 text-sm text-sky-100/70">
+                  No connections yet.
+                </div>
+              )}
             </div>
           </div>
         </section>
