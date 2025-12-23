@@ -260,7 +260,7 @@ export default function GameModesPage() {
   const rankedCards = RANKED_MODES.map((mode) => ({
     mode,
     onClick:
-      mode.enabled && mode.id === "ranked"
+      mode.enabled && (mode.id === "ranked" || mode.id === "unranked")
         ? () => handleRankedClick(mode)
         : undefined,
   }));
