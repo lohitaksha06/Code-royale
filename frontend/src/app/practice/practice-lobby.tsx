@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Difficulty = "easy" | "medium" | "hard";5
+type Difficulty = "easy" | "medium" | "hard";
 
 type QuestionMeta = {
   id: string;

@@ -50,9 +50,10 @@ export default function SignupPage() {
       const { error: profileError } = await supabase.from("users").insert({
         id: user.id,
         username: displayName,
-        rating: 1200,
+        rating: 0,
         wins: 0,
         losses: 0,
+        team_name: null,
       });
 
       if (profileError) {

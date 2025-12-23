@@ -8,7 +8,7 @@ const menuItems = [
   { label: "Game Modes", href: "/game-modes" },
   { label: "Tournaments", href: "#tournaments" },
   { label: "Practice Arena", href: "/practice" },
-  { label: "Profile", href: "/settings" },
+  { label: "Profile", href: "/profile" },
 ];
 
 type HomeNavProps = {

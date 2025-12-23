@@ -91,7 +91,7 @@ export function Navigation() {
     }, {});
   }, [pathname, visibleNavItems]);
 
-  if (pathname?.startsWith("/home") || pathname?.startsWith("/practice") || pathname?.startsWith("/game-modes") || pathname?.startsWith("/settings")) {
+  if (pathname?.startsWith("/home") || pathname?.startsWith("/practice") || pathname?.startsWith("/game-modes") || pathname?.startsWith("/settings") || pathname?.startsWith("/profile")) {
     return null;
   }
 

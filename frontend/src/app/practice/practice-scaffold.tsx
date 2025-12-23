@@ -29,7 +29,7 @@ const sidebarLinks = [
     id: "profile",
     title: "Profile",
     subtitle: "Review your match history and cosmetics.",
-    href: "/home",
+    href: "/profile",
   },
   {
     id: "settings",
@@ -37,10 +37,17 @@ const sidebarLinks = [
     subtitle: "Update account preferences and theme.",
     href: "/settings",
   },
+  {
+    id: "join-team",
+    title: "Join club/team",
+    subtitle: "Find a squad to represent in the arena.",
+    href: "/team",
+  },
 ];
 
 type PracticeScaffoldProps = {
   children: ReactNode;
+  defaultSidebarOpen?: boolean;
 };
 
 type PracticeSidebarProps = {
@@ -49,8 +56,8 @@ type PracticeSidebarProps = {
   onCollapse: () => void;
 };
 
-export function PracticeScaffold({ children }: PracticeScaffoldProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+export function PracticeScaffold({ children, defaultSidebarOpen = false }: PracticeScaffoldProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(defaultSidebarOpen);
   const openSidebar = () => setIsSidebarOpen(true);
   const closeSidebar = () => setIsSidebarOpen(false);
   const toggleSidebar = () => setIsSidebarOpen((current) => !current);
