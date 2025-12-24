@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { HomeNav } from "../home/home-nav";
 import { NeonButton } from "../../components/neon-button";
+import { supabase } from "../../lib/supabase-browser";
 
 const themeOptions = [
   {
@@ -17,10 +18,112 @@ export default function SettingsPage() {
   const [spectateEnabled, setSpectateEnabled] = useState(true);
   const [theme, setTheme] = useState("neon-blue");
 
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const [displayName, setDisplayName] = useState("");
+  const [tagline, setTagline] = useState("");
+
   const spectateLabel = useMemo(
     () => (spectateEnabled ? "Friends can spectate" : "Spectate disabled"),
     [spectateEnabled],
   );
+
+  useEffect(() => {
+    try {
+      const savedSpectate = localStorage.getItem("cr_settings_spectate_enabled");
+      if (savedSpectate !== null) setSpectateEnabled(savedSpectate === "true");
+
+      const savedTheme = localStorage.getItem("cr_settings_theme");
+      if (savedTheme) setTheme(savedTheme);
+
+      const savedTagline = localStorage.getItem("cr_settings_tagline");
+      if (savedTagline !== null) setTagline(savedTagline);
+    } catch {
+      // ignore localStorage errors
+    }
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadProfile = async () => {
+      setLoadingProfile(true);
+      setError(null);
+      setSuccess(null);
+
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (!mounted) return;
+
+      if (authError || !authData.user?.id) {
+        setError(authError?.message ?? "You must be signed in to edit settings.");
+        setLoadingProfile(false);
+        return;
+      }
+
+      const { data: userRow, error: profileError } = await supabase
+        .from("users")
+        .select("username")
+        .eq("id", authData.user.id)
+        .maybeSingle();
+
+      if (!mounted) return;
+
+      if (profileError) {
+        setError(profileError.message);
+        setLoadingProfile(false);
+        return;
+      }
+
+      setDisplayName(userRow?.username ?? "");
+      setLoadingProfile(false);
+    };
+
+    void loadProfile();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      localStorage.setItem("cr_settings_spectate_enabled", String(spectateEnabled));
+      localStorage.setItem("cr_settings_theme", theme);
+      localStorage.setItem("cr_settings_tagline", tagline);
+    } catch {
+      // ignore localStorage errors
+    }
+
+    const nextName = displayName.trim();
+
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user?.id) {
+      setError(authError?.message ?? "You must be signed in to save changes.");
+      setSaving(false);
+      return;
+    }
+
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({ username: nextName.length ? nextName : null })
+      .eq("id", authData.user.id);
+
+    if (updateError) {
+      setError(updateError.message);
+      setSaving(false);
+      return;
+    }
+
+    setSuccess("Saved. Your profile will show the updated name.");
+    setSaving(false);
+  };
 
   return (
     <div className="relative flex min-h-screen w-full flex-col bg-[#030915] text-sky-100">
@@ -56,7 +159,10 @@ export default function SettingsPage() {
                 Display name
                 <input
                   type="text"
-                  placeholder="NeonAce"
+                  placeholder={loadingProfile ? "Loading…" : "NeonAce"}
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  disabled={loadingProfile || saving}
                   className="rounded-2xl border border-sky-500/25 bg-[#050d1a] px-4 py-3 text-sm text-sky-100 focus:border-sky-300 focus:outline-none"
                 />
               </label>
@@ -66,6 +172,9 @@ export default function SettingsPage() {
                 <textarea
                   rows={4}
                   placeholder="Drop a short description so rivals know what they’re up against."
+                  value={tagline}
+                  onChange={(event) => setTagline(event.target.value)}
+                  disabled={saving}
                   className="resize-none rounded-2xl border border-sky-500/25 bg-[#050d1a] px-4 py-3 text-sm text-sky-100 focus:border-sky-300 focus:outline-none"
                 />
               </label>
@@ -117,6 +226,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={() => setSpectateEnabled((previous) => !previous)}
+                disabled={saving}
                 className={`relative inline-flex h-10 w-20 items-center rounded-full border transition ${
                   spectateEnabled
                     ? "border-emerald-400 bg-emerald-500/30"
@@ -162,6 +272,7 @@ export default function SettingsPage() {
                     value={option.id}
                     checked={theme === option.id}
                     onChange={() => setTheme(option.id)}
+                    disabled={saving}
                     className="h-4 w-4 accent-sky-400"
                   />
                 </label>
@@ -170,8 +281,24 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {(error || success) && (
+          <div
+            className={`rounded-2xl border p-4 text-sm ${
+              error
+                ? "border-rose-500/30 bg-rose-500/10 text-rose-100"
+                : "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"
+            }`}
+          >
+            {error ?? success}
+          </div>
+        )}
+
         <div className="flex flex-wrap justify-end gap-4">
-          <NeonButton className="px-8 py-3 uppercase tracking-[0.35em]">
+          <NeonButton
+            className="px-8 py-3 uppercase tracking-[0.35em]"
+            onClick={handleSave}
+            disabled={saving || loadingProfile}
+          >
             Save changes
           </NeonButton>
         </div>
