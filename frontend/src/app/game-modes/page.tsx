@@ -208,41 +208,115 @@ export default function GameModesPage() {
   const [selectedMode, setSelectedMode] = useState<ModeDefinition | null>(null);
   const [configSelection, setConfigSelection] = useState<ModeConfigSelection | null>(null);
   const [matchId, setMatchId] = useState<string | null>(null);
-  const [timerRef, setTimerRef] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [pollRef, setPollRef] = useState<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (state !== "searching") {
-      return undefined;
-    }
-
-    const handle = setTimeout(() => {
-      setMatchId("demo-match");
-      setState("match_found");
-    }, 3200);
-
-    setTimerRef(handle);
-
     return () => {
-      clearTimeout(handle);
+      if (pollRef) clearInterval(pollRef);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   const resetQueue = () => {
-    if (timerRef) {
-      clearTimeout(timerRef);
-      setTimerRef(null);
+    if (pollRef) {
+      clearInterval(pollRef);
+      setPollRef(null);
     }
     setMatchId(null);
     setConfigSelection(null);
     setSelectedMode(null);
+    setErrorMessage(null);
     setState("idle");
+  };
+
+  const parseTimerSeconds = (selection: ModeConfigSelection | null) => {
+    const raw = selection?.timer ?? "";
+    const minutesMatch = raw.match(/(\d+)\s*minute/i);
+    if (minutesMatch?.[1]) return Number(minutesMatch[1]) * 60;
+    return 8 * 60;
+  };
+
+  const startMatchmaking = async (modeId: string, selection: ModeConfigSelection | null) => {
+    setErrorMessage(null);
+    setMatchId(null);
+    setState("searching");
+
+    const timeLimitSeconds = parseTimerSeconds(selection);
+
+    let joinResponse: Response;
+    try {
+      joinResponse = await fetch("/api/matchmaking/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: modeId === "unranked" ? "unranked" : "ranked",
+          timeLimitSeconds,
+        }),
+      });
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Matchmaking is unavailable right now.");
+      setState("error");
+      return;
+    }
+
+    if (!joinResponse.ok) {
+      const text = await joinResponse.text().catch(() => "");
+      console.error("Join matchmaking failed", joinResponse.status, text);
+      setErrorMessage("Unable to start matchmaking.");
+      setState("error");
+      return;
+    }
+
+    const joinData = (await joinResponse.json().catch(() => ({}))) as
+      | { matchId: string }
+      | { status: "queued" }
+      | { error: string };
+
+    if ("matchId" in joinData && joinData.matchId) {
+      setMatchId(joinData.matchId);
+      setState("match_found");
+      return;
+    }
+
+    // Poll briefly; if nobody joins around the same time, show “No match found”.
+    const started = Date.now();
+    const timeoutMs = 12_000;
+    const intervalMs = 1_500;
+
+    const interval = setInterval(async () => {
+      if (Date.now() - started > timeoutMs) {
+        clearInterval(interval);
+        setPollRef(null);
+        setErrorMessage("No match found. Come back later.");
+        setState("error");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/matchmaking/status", { method: "GET" });
+        if (!res.ok) return;
+        const data = (await res.json().catch(() => ({}))) as { matchId?: string | null };
+        if (data.matchId) {
+          clearInterval(interval);
+          setPollRef(null);
+          setMatchId(data.matchId);
+          setState("match_found");
+        }
+      } catch {
+        // ignore transient network errors
+      }
+    }, intervalMs);
+
+    setPollRef(interval);
   };
 
   const handleRankedClick = (mode: ModeDefinition) => {
     setSelectedMode(mode);
     setConfigSelection(null);
     setMatchId(null);
-    setState("searching");
+    void startMatchmaking(mode.id, null);
   };
 
   const handleNonRankedClick = (mode: ModeDefinition) => {
@@ -255,6 +329,15 @@ export default function GameModesPage() {
     if (matchId) {
       router.push(`/match/${matchId}`);
     }
+  };
+
+  const handleCancelSearch = async () => {
+    try {
+      await fetch("/api/matchmaking/cancel", { method: "POST" });
+    } catch {
+      // ignore
+    }
+    resetQueue();
   };
 
   const rankedCards = RANKED_MODES.map((mode) => ({
@@ -343,7 +426,7 @@ export default function GameModesPage() {
             onStart={(selection) => {
               setConfigSelection(selection);
               setMatchId(null);
-              setState("searching");
+              void startMatchmaking(selectedMode.id, selection);
             }}
           />
         )}
@@ -352,7 +435,7 @@ export default function GameModesPage() {
           <MatchmakingPanel
             mode={activeMode}
             config={configSelection}
-            onCancel={resetQueue}
+            onCancel={handleCancelSearch}
           />
         )}
 
@@ -362,6 +445,17 @@ export default function GameModesPage() {
             config={configSelection}
             onEnter={handleEnterMatch}
             onStay={resetQueue}
+          />
+        )}
+
+        {state === "error" && (
+          <NoMatchPanel
+            mode={activeMode}
+            message={errorMessage ?? "No match found. Come back later."}
+            onBack={resetQueue}
+            onTryAgain={() => {
+              void startMatchmaking(activeMode.id, configSelection);
+            }}
           />
         )}
       </div>
@@ -657,7 +751,7 @@ function MatchFoundPanel({ mode, config, onEnter, onStay }: MatchFoundPanelProps
         <p className={`text-xs font-semibold uppercase tracking-[0.45em] ${headlineAccent}`}>Opponent found</p>
         <h2 className={`text-4xl font-semibold ${titleColor}`}>{mode.title}</h2>
         <p className={`max-w-lg text-sm ${bodyColor}`}>
-          This is a demo preview. Once realtime matchmaking is connected, you’ll dive straight into the Code Royale arena from here.
+          Match created. Enter the arena to start your duel.
         </p>
         <p className={`text-xs uppercase tracking-[0.35em] ${statAccent}`}>{mode.impact}</p>
         {config && (
@@ -670,10 +764,55 @@ function MatchFoundPanel({ mode, config, onEnter, onStay }: MatchFoundPanelProps
       </div>
       <div className="flex flex-wrap justify-center gap-4">
         <button type="button" onClick={onEnter} className={primaryButton}>
-          Enter match (demo)
+          Enter match
         </button>
         <button type="button" onClick={onStay} className={secondaryButton}>
           Back to modes
+        </button>
+      </div>
+    </section>
+  );
+}
+
+type NoMatchPanelProps = {
+  mode: ModeDefinition;
+  message: string;
+  onBack: () => void;
+  onTryAgain: () => void;
+};
+
+function NoMatchPanel({ mode, message, onBack, onTryAgain }: NoMatchPanelProps) {
+  const accentBorder = mode.category === "non-ranked" ? "border-fuchsia-400/40" : "border-rose-400/40";
+  const accentGlow = mode.category === "non-ranked" ? "shadow-[0_0_60px_rgba(217,70,239,0.28)]" : "shadow-[0_0_60px_rgba(244,63,94,0.22)]";
+  const gradientClass =
+    mode.category === "non-ranked"
+      ? "bg-gradient-to-br from-fuchsia-500/12 via-[#200a2a] to-[#090510]"
+      : "bg-gradient-to-br from-rose-500/10 via-[#18060d] to-[#06020a]";
+  const headlineAccent = mode.category === "non-ranked" ? "text-fuchsia-300/80" : "text-rose-300/80";
+  const titleColor = mode.category === "non-ranked" ? "text-fuchsia-100" : "text-rose-100";
+  const bodyColor = mode.category === "non-ranked" ? "text-fuchsia-100/70" : "text-rose-100/70";
+  const primaryButton =
+    mode.category === "non-ranked"
+      ? "rounded-full border border-fuchsia-300/80 bg-fuchsia-400/20 px-10 py-3 text-sm font-semibold uppercase tracking-[0.35em] text-fuchsia-50 transition hover:border-fuchsia-200 hover:bg-fuchsia-400/35"
+      : "rounded-full border border-rose-300/80 bg-rose-400/15 px-10 py-3 text-sm font-semibold uppercase tracking-[0.35em] text-rose-50 transition hover:border-rose-200 hover:bg-rose-400/25";
+  const secondaryButton =
+    mode.category === "non-ranked"
+      ? "rounded-full border border-fuchsia-300/40 px-10 py-3 text-sm font-semibold uppercase tracking-[0.35em] text-fuchsia-100 transition hover:border-fuchsia-200/60 hover:bg-fuchsia-300/10"
+      : "rounded-full border border-rose-300/40 px-10 py-3 text-sm font-semibold uppercase tracking-[0.35em] text-rose-100 transition hover:border-rose-200/60 hover:bg-rose-300/10";
+
+  return (
+    <section className={`relative flex flex-1 flex-col items-center justify-center gap-10 overflow-hidden rounded-3xl ${accentBorder} ${gradientClass} p-12 text-center ${accentGlow}`}>
+      <div className="space-y-3">
+        <p className={`text-xs font-semibold uppercase tracking-[0.45em] ${headlineAccent}`}>Matchmaking</p>
+        <h2 className={`text-4xl font-semibold ${titleColor}`}>No match found</h2>
+        <p className={`max-w-lg text-sm ${bodyColor}`}>{message}</p>
+      </div>
+      <div className="flex flex-wrap justify-center gap-4">
+        <button type="button" onClick={onTryAgain} className={primaryButton}>
+          Try again
+        </button>
+        <button type="button" onClick={onBack} className={secondaryButton}>
+          Back
         </button>
       </div>
     </section>

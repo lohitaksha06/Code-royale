@@ -25,6 +25,7 @@ type PracticeArenaShellProps = {
   testcases: PracticeTestcase[];
   initialTimer: number;
   initialLanguage: string;
+  exitHref?: string;
 };
 
 type SubmissionIntent = "run" | "submit";
@@ -85,7 +86,7 @@ const buildTemplate = (language: string, title: string) => {
   return template.replaceAll("${title}", title);
 };
 
-export function PracticeArenaShell({ question, testcases, initialTimer, initialLanguage }: PracticeArenaShellProps) {
+export function PracticeArenaShell({ question, testcases, initialTimer, initialLanguage, exitHref = "/practice" }: PracticeArenaShellProps) {
   const router = useRouter();
   const normalizedInitialLanguage = normalizeLanguage(initialLanguage);
   const availableLanguages = useMemo(
@@ -195,7 +196,7 @@ export function PracticeArenaShell({ question, testcases, initialTimer, initialL
 
   const handleConfirmExit = () => {
     setShowExitConfirm(false);
-    router.push("/practice");
+    router.push(exitHref);
   };
 
   const handleSubmit = async (intent: SubmissionIntent) => {

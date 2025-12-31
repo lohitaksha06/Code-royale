@@ -2,6 +2,16 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### PvP matchmaking (ranked/unranked)
+
+This project supports real 1v1 matchmaking via Supabase tables `matchmaking_queue`, `matches`, and `match_players`.
+
+Before using PvP matchmaking you must seed the curated PvP questions into `practice_questions`:
+
+1. Create `frontend/.env.local` from `frontend/.env.local.example`
+2. Fill in `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`
+3. Run `pnpm seed:pvp`
+
 First, run the development server:
 
 ```bash
