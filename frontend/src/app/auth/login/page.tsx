@@ -18,10 +18,25 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    let data: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>["data"];
+    let authError: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>["error"];
+    try {
+      const result = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      data = result.data;
+      authError = result.error;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(
+        message.toLowerCase().includes("failed to fetch")
+          ? "Cannot reach Supabase (network/CORS). Verify NEXT_PUBLIC_SUPABASE_URL is correct/https, and that your Supabase project is reachable."
+          : message,
+      );
+      setLoading(false);
+      return;
+    }
 
     if (authError) {
       setError(authError.message);

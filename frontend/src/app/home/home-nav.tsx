@@ -70,7 +70,7 @@ export function HomeNav({ onMenuToggle, sidebarOpen = false }: HomeNavProps) {
         onMouseLeave={handleMouseLeave}
         className={`fixed left-0 right-0 top-0 z-[65] transition-all duration-300 ease-out ${visibilityClass}`}
       >
-        <div className="border-b border-sky-500/12 bg-[#05070f]/95 shadow-[0_12px_45px_rgba(5,12,28,0.55)] backdrop-blur-xl">
+        <div className="border-b border-[rgba(var(--cr-accent-rgb),0.12)] bg-[#05070f]/95 shadow-[0_12px_45px_rgba(5,12,28,0.55)] backdrop-blur-xl">
           <div className="mx-auto flex w-full max-w-7xl items-center gap-6 px-6 py-4 md:px-8">
             <div className="flex items-center gap-5">
               {onMenuToggle && (
@@ -79,8 +79,10 @@ export function HomeNav({ onMenuToggle, sidebarOpen = false }: HomeNavProps) {
                   aria-label="Toggle sidebar"
                   onClick={onMenuToggle}
                   aria-pressed={sidebarOpen}
-                  className={`flex items-center gap-2 rounded-xl border bg-[#070d18] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition shadow-[0_0_20px_rgba(56,189,248,0.2)] hover:border-sky-400/60 hover:text-sky-100 ${
-                    sidebarOpen ? "border-sky-400/60 text-sky-100" : "border-sky-500/25 text-sky-200"
+                  className={`flex items-center gap-2 rounded-xl border bg-[#070d18] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition shadow-[0_0_20px_rgba(var(--cr-accent-rgb),0.2)] hover:border-[rgba(var(--cr-accent-rgb),0.6)] hover:text-sky-100 ${
+                    sidebarOpen
+                      ? "border-[rgba(var(--cr-accent-rgb),0.6)] text-sky-100"
+                      : "border-[rgba(var(--cr-accent-rgb),0.25)] text-[rgba(var(--cr-accent-rgb),0.8)]"
                   }`}
                 >
                   {sidebarOpen ? <CloseIcon /> : <MenuIcon />}
@@ -88,7 +90,7 @@ export function HomeNav({ onMenuToggle, sidebarOpen = false }: HomeNavProps) {
                 </button>
               )}
               <Link href="/home" className="group inline-flex items-center gap-3">
-                <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-sky-500/50 bg-slate-900/80 shadow-[0_0_24px_rgba(56,189,248,0.4)] transition group-hover:border-sky-300 group-hover:shadow-[0_0_32px_rgba(56,189,248,0.55)]">
+                <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[rgba(var(--cr-accent-rgb),0.50)] bg-slate-900/80 shadow-[0_0_24px_rgba(var(--cr-accent-rgb),0.40)] transition group-hover:border-[rgba(var(--cr-accent-rgb),0.75)] group-hover:shadow-[0_0_32px_rgba(var(--cr-accent-rgb),0.55)]">
                   <Image
                     src="/images/crimage.png"
                     alt="Code Royale logo"
@@ -98,13 +100,13 @@ export function HomeNav({ onMenuToggle, sidebarOpen = false }: HomeNavProps) {
                     priority
                   />
                 </span>
-                <span className="text-lg font-semibold tracking-[0.28em] text-sky-100 group-hover:text-sky-200">
+                <span className="text-lg font-semibold tracking-[0.28em] text-sky-100 group-hover:text-[rgba(var(--cr-accent-rgb),0.85)]">
                   CODE ROYALE
                 </span>
               </Link>
             </div>
 
-            <form className="ml-6 hidden min-w-[220px] flex-1 items-center gap-2 rounded-full border border-sky-500/15 bg-[#070d18] px-4 py-2 text-sm text-sky-100/75 lg:flex">
+            <form className="ml-6 hidden min-w-[220px] flex-1 items-center gap-2 rounded-full border border-[rgba(var(--cr-accent-rgb),0.15)] bg-[#070d18] px-4 py-2 text-sm text-sky-100/75 lg:flex">
               <label htmlFor="player-search" className="sr-only">
                 Search players or friends
               </label>
@@ -113,7 +115,7 @@ export function HomeNav({ onMenuToggle, sidebarOpen = false }: HomeNavProps) {
                 id="player-search"
                 type="search"
                 placeholder="Search players or friends"
-                className="w-full bg-transparent text-sky-100 placeholder:text-sky-400/50 focus:outline-none"
+                className="w-full bg-transparent text-sky-100 placeholder:text-[rgba(var(--cr-accent-rgb),0.45)] focus:outline-none"
               />
             </form>
 
@@ -124,7 +126,7 @@ export function HomeNav({ onMenuToggle, sidebarOpen = false }: HomeNavProps) {
                   href={item.href}
                   className="group relative px-1 py-1 transition-colors hover:text-sky-100"
                 >
-                  <span className="absolute inset-x-0 -bottom-2 h-[2px] w-full origin-center scale-x-0 bg-sky-400/80 transition-transform duration-200 group-hover:scale-x-100" />
+                  <span className="absolute inset-x-0 -bottom-2 h-[2px] w-full origin-center scale-x-0 bg-[rgba(var(--cr-accent-rgb),0.80)] transition-transform duration-200 group-hover:scale-x-100" />
                   {item.label}
                 </Link>
               ))}
@@ -134,21 +136,21 @@ export function HomeNav({ onMenuToggle, sidebarOpen = false }: HomeNavProps) {
               <button
                 type="button"
                 aria-label="Search (mobile)"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-500/15 bg-[#070d18] lg:hidden"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(var(--cr-accent-rgb),0.15)] bg-[#070d18] lg:hidden"
               >
                 <SearchIcon />
               </button>
               <button
                 type="button"
                 aria-label="Notifications"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-500/15 bg-[#070d18] hover:border-sky-400/40 hover:text-sky-100"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(var(--cr-accent-rgb),0.15)] bg-[#070d18] hover:border-[rgba(var(--cr-accent-rgb),0.40)] hover:text-sky-100"
               >
                 <BellIcon />
               </button>
               <a
                 href="/settings"
                 aria-label="Settings"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-sky-500/15 bg-[#070d18] hover:border-sky-400/40 hover:text-sky-100"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(var(--cr-accent-rgb),0.15)] bg-[#070d18] hover:border-[rgba(var(--cr-accent-rgb),0.40)] hover:text-sky-100"
               >
                 <GearIcon />
               </a>
@@ -163,7 +165,7 @@ export function HomeNav({ onMenuToggle, sidebarOpen = false }: HomeNavProps) {
 const SearchIcon = () => (
   <svg
     aria-hidden
-    className="h-4 w-4 text-sky-300"
+    className="h-4 w-4 text-[rgba(var(--cr-accent-rgb),0.75)]"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -177,7 +179,7 @@ const SearchIcon = () => (
 const BellIcon = () => (
   <svg
     aria-hidden
-    className="h-4 w-4 text-sky-200"
+    className="h-4 w-4 text-[rgba(var(--cr-accent-rgb),0.70)]"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -191,7 +193,7 @@ const BellIcon = () => (
 const GearIcon = () => (
   <svg
     aria-hidden
-    className="h-4 w-4 text-sky-200"
+    className="h-4 w-4 text-[rgba(var(--cr-accent-rgb),0.70)]"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"

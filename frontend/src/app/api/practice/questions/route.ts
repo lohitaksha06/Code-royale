@@ -5,7 +5,13 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const difficulty = url.searchParams.get("difficulty");
 
-  const supabase = createSupabaseServerClient();
+  let supabase;
+  try {
+    supabase = createSupabaseServerClient();
+  } catch (error) {
+    console.error("Supabase server client error", error);
+    return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+  }
   let query = supabase
     .from("practice_questions")
     .select("id,title,slug,difficulty")

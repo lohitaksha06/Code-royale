@@ -97,17 +97,17 @@ export function PracticeScaffold({ children, defaultSidebarOpen = false }: Pract
 function PracticeSidebar({ isOpen, onClose, onCollapse }: PracticeSidebarProps) {
   return (
     <aside
-      className={`fixed left-0 top-24 z-50 flex h-[calc(100vh-6rem)] w-72 flex-col gap-6 border-r border-sky-500/10 bg-[#060b15]/95 p-6 shadow-[0_0_45px_rgba(15,118,211,0.35)] backdrop-blur-xl transition-transform duration-300 ease-out lg:top-28 lg:h-[calc(100vh-7rem)] ${
+      className={`fixed left-0 top-24 z-50 flex h-[calc(100vh-6rem)] w-72 flex-col gap-6 border-r border-[rgba(var(--cr-accent-rgb),0.10)] bg-[#060b15]/95 p-6 shadow-[0_0_45px_rgba(var(--cr-accent-rgb),0.20)] backdrop-blur-xl transition-transform duration-300 ease-out lg:top-28 lg:h-[calc(100vh-7rem)] ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
-      <div className="flex items-center justify-between text-xs uppercase tracking-[0.35em] text-sky-400/70">
+      <div className="flex items-center justify-between text-xs uppercase tracking-[0.35em] text-[rgba(var(--cr-accent-rgb),0.70)]">
         <span>Practice Hub</span>
         <button
           type="button"
           aria-label="Close sidebar"
           onClick={onClose}
-          className="rounded-full border border-sky-500/20 px-2 py-1 text-[10px] text-sky-100/80 transition hover:border-sky-400/50 lg:hidden"
+          className="rounded-full border border-[rgba(var(--cr-accent-rgb),0.20)] px-2 py-1 text-[10px] text-sky-100/80 transition hover:border-[rgba(var(--cr-accent-rgb),0.50)] lg:hidden"
         >
           Close
         </button>
@@ -129,7 +129,7 @@ function PracticeSidebar({ isOpen, onClose, onCollapse }: PracticeSidebarProps) 
                 key={link.id}
                 href={link.href}
                 onClick={onClose}
-                className="rounded-2xl border border-sky-500/15 bg-slate-950/60 p-4 text-left transition hover:border-sky-400/40 hover:bg-slate-900/70"
+                className="rounded-2xl border border-[rgba(var(--cr-accent-rgb),0.15)] bg-slate-950/60 p-4 text-left transition hover:border-[rgba(var(--cr-accent-rgb),0.40)] hover:bg-slate-900/70"
               >
                 {inner}
               </a>
@@ -141,7 +141,7 @@ function PracticeSidebar({ isOpen, onClose, onCollapse }: PracticeSidebarProps) 
               key={link.id}
               type="button"
               onClick={onClose}
-              className="rounded-2xl border border-sky-500/15 bg-slate-950/60 p-4 text-left transition hover:border-sky-400/40 hover:bg-slate-900/70"
+              className="rounded-2xl border border-[rgba(var(--cr-accent-rgb),0.15)] bg-slate-950/60 p-4 text-left transition hover:border-[rgba(var(--cr-accent-rgb),0.40)] hover:bg-slate-900/70"
             >
               {inner}
             </button>
@@ -153,7 +153,7 @@ function PracticeSidebar({ isOpen, onClose, onCollapse }: PracticeSidebarProps) 
           type="button"
           aria-label="Collapse sidebar"
           onClick={onCollapse}
-          className="absolute right-[-22px] top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-sky-500/30 bg-[#060b15] text-sky-200 shadow-[0_0_20px_rgba(56,189,248,0.25)] transition hover:border-sky-400/60 hover:text-sky-50 lg:flex"
+          className="absolute right-[-22px] top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-[rgba(var(--cr-accent-rgb),0.30)] bg-[#060b15] text-[rgba(var(--cr-accent-rgb),0.80)] shadow-[0_0_20px_rgba(var(--cr-accent-rgb),0.25)] transition hover:border-[rgba(var(--cr-accent-rgb),0.60)] hover:text-sky-50 lg:flex"
         >
           <ChevronIcon direction="collapse" />
         </button>
@@ -168,7 +168,7 @@ function CollapsedSidebarHandle({ onToggle }: { onToggle: () => void }) {
       type="button"
       aria-label="Open sidebar"
       onClick={onToggle}
-      className="fixed left-0 top-1/2 z-40 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-r-full border border-sky-500/30 border-l-transparent bg-[#060b15] text-sky-200 shadow-[0_0_20px_rgba(56,189,248,0.25)] transition hover:border-sky-400/60 hover:text-sky-50"
+      className="fixed left-0 top-1/2 z-40 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-r-full border border-[rgba(var(--cr-accent-rgb),0.30)] border-l-transparent bg-[#060b15] text-[rgba(var(--cr-accent-rgb),0.80)] shadow-[0_0_20px_rgba(var(--cr-accent-rgb),0.25)] transition hover:border-[rgba(var(--cr-accent-rgb),0.60)] hover:text-sky-50"
     >
       <ChevronIcon direction="expand" />
     </button>
@@ -180,7 +180,7 @@ function ChevronIcon({ direction }: { direction: "expand" | "collapse" }) {
 
   return (
     <svg
-      className={`h-5 w-5 text-sky-300 transition ${rotation}`}
+      className={`h-5 w-5 text-[rgba(var(--cr-accent-rgb),0.75)] transition ${rotation}`}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

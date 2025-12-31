@@ -355,7 +355,7 @@ export default function ProfilePage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <a
             href="/home"
-            className="inline-flex items-center gap-2 rounded-full border border-sky-500/25 bg-slate-950/40 px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-100/80 transition hover:border-sky-300 hover:bg-sky-500/10"
+            className="inline-flex items-center gap-2 rounded-full border border-[rgba(var(--cr-accent-rgb),0.25)] bg-slate-950/40 px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-100/80 transition hover:border-[rgba(var(--cr-accent-rgb),0.55)] hover:bg-[rgba(var(--cr-accent-rgb),0.10)]"
           >
             <span aria-hidden>←</span>
             Back to Dashboard
@@ -370,7 +370,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={handleSignOut}
-              className="inline-flex items-center justify-center rounded-full border border-sky-500/25 bg-slate-950/40 px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-100/80 transition hover:border-sky-300 hover:bg-sky-500/10"
+              className="inline-flex items-center justify-center rounded-full border border-[rgba(var(--cr-accent-rgb),0.25)] bg-slate-950/40 px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-100/80 transition hover:border-[rgba(var(--cr-accent-rgb),0.55)] hover:bg-[rgba(var(--cr-accent-rgb),0.10)]"
             >
               Sign out
             </button>
@@ -390,7 +390,7 @@ export default function ProfilePage() {
         )}
 
         <section className="grid gap-8 lg:grid-cols-[1.35fr_0.85fr]">
-          <div className="overflow-hidden rounded-3xl border border-sky-500/20 bg-[#040b18]/80 shadow-[0_0_45px_rgba(56,189,248,0.14)]">
+          <div className="overflow-hidden rounded-3xl border border-[rgba(var(--cr-accent-rgb),0.20)] bg-[#040b18]/80 shadow-[0_0_45px_rgba(var(--cr-accent-rgb),0.14)]">
             <div className="relative h-32 w-full">
               <Image
                 src="/images/bluebracket.jpg"
@@ -401,65 +401,65 @@ export default function ProfilePage() {
                 priority
               />
               <div className="absolute inset-0 bg-gradient-to-br from-[#040b18]/40 via-[#040b18]/70 to-[#040b18]" />
-              <div className="absolute left-6 top-6 flex items-center gap-3 rounded-full border border-sky-500/20 bg-slate-950/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.4em] text-sky-300/80">
+              <div className="absolute left-6 top-6 flex items-center gap-3 rounded-full border border-[rgba(var(--cr-accent-rgb),0.20)] bg-slate-950/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.4em] text-[rgba(var(--cr-accent-rgb),0.80)]">
                 🧑‍🚀 Pilot profile
               </div>
             </div>
 
             <div className="p-8">
               <div className="flex flex-wrap items-center gap-5">
-                <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-sky-500/30 bg-slate-950/80 shadow-[0_0_30px_rgba(56,189,248,0.25)]">
+                <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-[rgba(var(--cr-accent-rgb),0.30)] bg-slate-950/80 shadow-[0_0_30px_rgba(var(--cr-accent-rgb),0.25)]">
                   <Image src="/images/crimage.png" alt="Avatar" fill className="object-cover opacity-30" sizes="96px" />
-                  <span className="relative z-10 text-lg font-semibold uppercase tracking-[0.35em] text-sky-200">
+                  <span className="relative z-10 text-lg font-semibold uppercase tracking-[0.35em] text-[rgba(var(--cr-accent-rgb),0.85)]">
                     {initialsFromName(displayName)}
                   </span>
                 </div>
                 <div className="flex min-w-[240px] flex-1 flex-col gap-2">
                   <h1 className="text-4xl font-semibold tracking-tight text-sky-50">{loading ? "Loading…" : displayName}</h1>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-sky-100/70">
-                    <span className="text-sky-200/80">@{(profile?.username ?? "unknown").toLowerCase().replace(/\s+/g, "")}</span>
+                    <span className="text-[rgba(var(--cr-accent-rgb),0.80)]">@{(profile?.username ?? "unknown").toLowerCase().replace(/\s+/g, "")}</span>
                     <span className="text-sky-100/40">•</span>
                     <span className="truncate">{viewerEmail && isSelf ? viewerEmail : resolvedUserId ? `ID ${resolvedUserId}` : "Signed out"}</span>
                   </div>
-                  <span className="mt-1 inline-flex w-max items-center gap-2 rounded-full border border-sky-500/25 bg-slate-950/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-sky-200/80">
+                  <span className="mt-1 inline-flex w-max items-center gap-2 rounded-full border border-[rgba(var(--cr-accent-rgb),0.25)] bg-slate-950/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-[rgba(var(--cr-accent-rgb),0.80)]">
                     ⚡ {rating} pts
                   </span>
                 </div>
               </div>
 
               <div className="mt-8 grid gap-4">
-                <div className="flex items-center justify-between gap-4 rounded-2xl border border-sky-500/20 bg-slate-950/50 p-5">
+                <div className="flex items-center justify-between gap-4 rounded-2xl border border-[rgba(var(--cr-accent-rgb),0.20)] bg-slate-950/50 p-5">
                   <div className="flex flex-col">
-                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">🏆 Rank</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[rgba(var(--cr-accent-rgb),0.70)]">🏆 Rank</p>
                     <p className="mt-2 text-xs text-sky-100/60">Bronze 200 · Silver 400 · Gold 600</p>
                   </div>
                   <p className="text-2xl font-semibold text-sky-50">{rank}</p>
                 </div>
 
-                <div className="flex items-center justify-between gap-4 rounded-2xl border border-sky-500/20 bg-slate-950/50 p-5">
+                <div className="flex items-center justify-between gap-4 rounded-2xl border border-[rgba(var(--cr-accent-rgb),0.20)] bg-slate-950/50 p-5">
                   <div className="flex flex-col">
-                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">🛡️ Team</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[rgba(var(--cr-accent-rgb),0.70)]">🛡️ Team</p>
                     <p className="mt-2 text-xs text-sky-100/60">Your current club/team</p>
                   </div>
                   <p className="text-2xl font-semibold text-sky-50">{teamName}</p>
                 </div>
 
-                <div className="flex items-center justify-between gap-4 rounded-2xl border border-sky-500/20 bg-slate-950/50 p-5">
+                <div className="flex items-center justify-between gap-4 rounded-2xl border border-[rgba(var(--cr-accent-rgb),0.20)] bg-slate-950/50 p-5">
                   <div className="flex flex-col">
-                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">📊 Record</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[rgba(var(--cr-accent-rgb),0.70)]">📊 Record</p>
                     <p className="mt-2 text-xs text-sky-100/60">Win rate {winRate}%</p>
                   </div>
                   <p className="text-2xl font-semibold text-sky-50">{wins}W · {losses}L</p>
                 </div>
               </div>
 
-              <div className="mt-8 rounded-2xl border border-sky-500/20 bg-slate-950/40 p-6">
+              <div className="mt-8 rounded-2xl border border-[rgba(var(--cr-accent-rgb),0.20)] bg-slate-950/40 p-6">
                 <div className="flex items-start gap-4">
-                  <div className="relative mt-1 h-12 w-12 overflow-hidden rounded-2xl border border-sky-500/20 bg-slate-950/50">
+                  <div className="relative mt-1 h-12 w-12 overflow-hidden rounded-2xl border border-[rgba(var(--cr-accent-rgb),0.20)] bg-slate-950/50">
                     <Image src="/images/bluecode.jpg" alt="Code preview" fill className="object-cover opacity-70" sizes="48px" />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">✨ About</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[rgba(var(--cr-accent-rgb),0.70)]">✨ About</p>
                     <p className="text-sm text-sky-100/70">
                       Add a bio later from Settings. For now, this space keeps the profile from feeling empty.
                     </p>
@@ -468,8 +468,8 @@ export default function ProfilePage() {
               </div>
 
               {canModerate && (
-              <div className="mt-8 rounded-2xl border border-sky-500/20 bg-slate-950/40 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">Actions</p>
+              <div className="mt-8 rounded-2xl border border-[rgba(var(--cr-accent-rgb),0.20)] bg-slate-950/40 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[rgba(var(--cr-accent-rgb),0.70)]">Actions</p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                     <NeonButton
                       className="w-full justify-center"
@@ -498,7 +498,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-sky-500/20 bg-[#040b18]/80 p-8 shadow-[0_0_45px_rgba(56,189,248,0.14)]">
+          <div className="rounded-3xl border border-[rgba(var(--cr-accent-rgb),0.20)] bg-[#040b18]/80 p-8 shadow-[0_0_45px_rgba(var(--cr-accent-rgb),0.14)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold text-sky-50">Connections</h2>
@@ -512,7 +512,7 @@ export default function ProfilePage() {
                         : "Connections may be hidden due to privacy settings."}
                 </p>
               </div>
-              <span className="rounded-full border border-sky-500/25 bg-slate-950/50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-200/80">
+              <span className="rounded-full border border-[rgba(var(--cr-accent-rgb),0.25)] bg-slate-950/50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-[rgba(var(--cr-accent-rgb),0.80)]">
                 Connections ({connections.length})
               </span>
             </div>
@@ -520,15 +520,15 @@ export default function ProfilePage() {
             <div className="mt-6 grid gap-4">
               {connections.map((friend) => {
                 const statusPill =
-                  "border-sky-400/40 bg-sky-500/10 text-sky-200";
+                  "border-[rgba(var(--cr-accent-rgb),0.40)] bg-[rgba(var(--cr-accent-rgb),0.10)] text-[rgba(var(--cr-accent-rgb),0.85)]";
 
                 const statusLabel = friend.statusLabel ?? "Friend";
 
                 return (
-                  <div key={friend.id} className="rounded-2xl border border-sky-500/20 bg-slate-950/50 p-5">
+                  <div key={friend.id} className="rounded-2xl border border-[rgba(var(--cr-accent-rgb),0.20)] bg-slate-950/50 p-5">
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex min-w-0 items-center gap-4">
-                        <div className="relative h-12 w-12 overflow-hidden rounded-full border border-sky-500/20 bg-slate-950/60">
+                        <div className="relative h-12 w-12 overflow-hidden rounded-full border border-[rgba(var(--cr-accent-rgb),0.20)] bg-slate-950/60">
                           <Image src="/images/crimage.webp" alt="Connection avatar" fill className="object-cover opacity-70" sizes="48px" />
                         </div>
                         <div className="flex min-w-0 flex-col gap-2">
@@ -540,7 +540,7 @@ export default function ProfilePage() {
                       </div>
                       <a
                         href={`/profile?userId=${friend.id}`}
-                        className="rounded-full border border-sky-500/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-100/80 transition hover:border-sky-300 hover:bg-sky-500/10"
+                        className="rounded-full border border-[rgba(var(--cr-accent-rgb),0.25)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-100/80 transition hover:border-[rgba(var(--cr-accent-rgb),0.55)] hover:bg-[rgba(var(--cr-accent-rgb),0.10)]"
                       >
                         View
                       </a>
@@ -550,7 +550,7 @@ export default function ProfilePage() {
               })}
 
               {!connectionsLoading && connections.length === 0 && (
-                <div className="rounded-2xl border border-sky-500/15 bg-slate-950/40 p-5 text-sm text-sky-100/70">
+                <div className="rounded-2xl border border-[rgba(var(--cr-accent-rgb),0.15)] bg-slate-950/40 p-5 text-sm text-sky-100/70">
                   No connections yet.
                 </div>
               )}

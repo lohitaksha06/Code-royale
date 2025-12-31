@@ -3,12 +3,33 @@
 :root {
   --background: #030712;
   --foreground: #e2f3ff;
+
+  /* Theme primitives (RGB vars allow alpha via rgba(var(--*), a)) */
+  --cr-bg: #030712;
+  --cr-fg: #e2f3ff;
+  --cr-accent-rgb: 56, 189, 248; /* neon blue */
+  --cr-accent-2-rgb: 14, 165, 233;
+}
+
+html[data-theme="neon-blue"] {
+  --cr-accent-rgb: 56, 189, 248;
+  --cr-accent-2-rgb: 14, 165, 233;
+}
+
+html[data-theme="ember-red"] {
+  --cr-accent-rgb: 244, 63, 94; /* rose-500 */
+  --cr-accent-2-rgb: 220, 38, 38; /* red-600 */
+}
+
+html[data-theme="hazard-orange"] {
+  --cr-accent-rgb: 249, 115, 22; /* orange-500 */
+  --cr-accent-2-rgb: 217, 119, 6; /* amber-600 */
 }
 
 body {
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--cr-bg);
+  color: var(--cr-fg);
   font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
   min-height: 100vh;
@@ -16,8 +37,8 @@ body {
 
 /* Optional subtle pulse you can apply via className if wanted */
 @keyframes neonPulse {
-  0%, 100% { box-shadow: 0 0 28px rgba(56, 189, 248, 0.35); }
-  50% { box-shadow: 0 0 44px rgba(56, 189, 248, 0.55); }
+  0%, 100% { box-shadow: 0 0 28px rgba(var(--cr-accent-rgb), 0.35); }
+  50% { box-shadow: 0 0 44px rgba(var(--cr-accent-rgb), 0.55); }
 }
 
 a {
@@ -34,6 +55,6 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(56, 189, 248, 0.7), rgba(14, 116, 144, 0.8));
+  background: linear-gradient(180deg, rgba(var(--cr-accent-rgb), 0.72), rgba(var(--cr-accent-2-rgb), 0.82));
   border-radius: 9999px;
 }

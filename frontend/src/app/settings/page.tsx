@@ -12,6 +12,18 @@ const themeOptions = [
     description: "Signature Code Royale glow. Futuristic blues with cyan highlights.",
     swatch: "bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700",
   },
+  {
+    id: "ember-red",
+    name: "Ember Red",
+    description: "High-contrast red core with deep black falloff.",
+    swatch: "bg-gradient-to-br from-rose-500 via-red-600 to-slate-950",
+  },
+  {
+    id: "hazard-orange",
+    name: "Hazard Orange",
+    description: "Warm orange glow with a midnight-black finish.",
+    swatch: "bg-gradient-to-br from-orange-500 via-amber-600 to-slate-950",
+  },
 ];
 
 export default function SettingsPage() {

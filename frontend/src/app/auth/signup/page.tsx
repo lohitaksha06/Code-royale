@@ -26,16 +26,31 @@ export default function SignupPage() {
         ? `${window.location.origin}/auth/login`
         : undefined;
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectTo,
-        data: {
-          display_name: displayName,
+    let authData: Awaited<ReturnType<typeof supabase.auth.signUp>>["data"];
+    let authError: Awaited<ReturnType<typeof supabase.auth.signUp>>["error"];
+    try {
+      const result = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectTo,
+          data: {
+            display_name: displayName,
+          },
         },
-      },
-    });
+      });
+      authData = result.data;
+      authError = result.error;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(
+        message.toLowerCase().includes("failed to fetch")
+          ? "Cannot reach Supabase (network/CORS). Verify NEXT_PUBLIC_SUPABASE_URL is correct/https, and that your Supabase project is reachable."
+          : message,
+      );
+      setProcessing(false);
+      return;
+    }
 
     if (authError) {
       setError(authError.message);
