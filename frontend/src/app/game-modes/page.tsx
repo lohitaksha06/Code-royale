@@ -321,9 +321,27 @@ export default function GameModesPage() {
     }
 
     if (!joinResponse.ok) {
-      const text = await joinResponse.text().catch(() => "");
-      console.error("Join matchmaking failed", joinResponse.status, text);
-      setErrorMessage("Unable to start matchmaking.");
+      let details = "";
+      const contentType = joinResponse.headers.get("content-type") ?? "";
+      if (contentType.includes("application/json")) {
+        const json = (await joinResponse.json().catch(() => null)) as null | { error?: string };
+        details = json?.error ?? "";
+      }
+
+      if (!details) {
+        details = await joinResponse.text().catch(() => "");
+      }
+
+      console.error("Join matchmaking failed", joinResponse.status, details);
+
+      const friendly =
+        joinResponse.status === 401
+          ? "You must be signed in to start matchmaking."
+          : details?.trim()
+            ? details
+            : "Unable to start matchmaking.";
+
+      setErrorMessage(friendly);
       setState("error");
       return;
     }

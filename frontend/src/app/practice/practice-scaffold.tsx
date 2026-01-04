@@ -32,6 +32,12 @@ const sidebarLinks = [
     href: "/profile",
   },
   {
+    id: "friends",
+    title: "Friends",
+    subtitle: "Search players and manage connections.",
+    href: "/friends",
+  },
+  {
     id: "settings",
     title: "Settings",
     subtitle: "Update account preferences and theme.",
@@ -102,7 +108,7 @@ function PracticeSidebar({ isOpen, onClose, onCollapse }: PracticeSidebarProps) 
       }`}
     >
       <div className="flex items-center justify-between text-xs uppercase tracking-[0.35em] text-[rgba(var(--cr-accent-rgb),0.70)]">
-        <span>Practice Hub</span>
+        <span>Other Options</span>
         <button
           type="button"
           aria-label="Close sidebar"
