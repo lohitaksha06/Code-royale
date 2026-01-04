@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PracticeScaffold } from "../practice/practice-scaffold";
+import { supabase } from "../../lib/supabase-browser";
 
 const trophyIcon = (
   <svg
@@ -20,6 +21,11 @@ const trophyIcon = (
 type ModeCategory = "ranked" | "non-ranked";
 type TrophyImpact = "High Trophy Impact" | "Low Trophy Impact" | "No Trophy Impact";
 type MatchmakingState = "idle" | "configuring" | "searching" | "match_found" | "error";
+
+type FriendRow = {
+  id: string;
+  username: string;
+};
 
 type ModeDefinition = {
   id: string;
@@ -257,6 +263,33 @@ export default function GameModesPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [pollRef, setPollRef] = useState<ReturnType<typeof setInterval> | null>(null);
 
+  const [viewerId, setViewerId] = useState<string | null>(null);
+  const [friendPickerOpen, setFriendPickerOpen] = useState(false);
+  const [friendsLoading, setFriendsLoading] = useState(false);
+  const [friendsError, setFriendsError] = useState<string | null>(null);
+  const [friends, setFriends] = useState<FriendRow[]>([]);
+  const [selectedFriend, setSelectedFriend] = useState<FriendRow | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadViewer = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (!mounted) return;
+      if (error) {
+        setViewerId(null);
+        return;
+      }
+      setViewerId(data.user?.id ?? null);
+    };
+
+    void loadViewer();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   useEffect(() => {
     return () => {
       if (pollRef) clearInterval(pollRef);
@@ -274,6 +307,68 @@ export default function GameModesPage() {
     setSelectedMode(null);
     setErrorMessage(null);
     setState("idle");
+  };
+
+  const openFriendPicker = async () => {
+    setFriendsError(null);
+
+    if (!viewerId) {
+      setErrorMessage("You must be signed in to invite a friend.");
+      setSelectedMode(RANKED_MODES.find((mode) => mode.id === "friend") ?? null);
+      setState("error");
+      return;
+    }
+
+    setFriendPickerOpen(true);
+    setFriendsLoading(true);
+    setFriends([]);
+
+    const { data: connectionRows, error: connError } = await supabase
+      .from("connections")
+      .select("user_id,connection_id,status")
+      .or(`user_id.eq.${viewerId},connection_id.eq.${viewerId}`)
+      .eq("status", "accepted");
+
+    if (connError) {
+      setFriendsError("Unable to load friends.");
+      setFriendsLoading(false);
+      return;
+    }
+
+    const rows = (connectionRows ?? []) as Array<{ user_id: string; connection_id: string; status: string }>;
+    const otherIds = Array.from(
+      new Set(
+        rows
+          .map((row) => (row.user_id === viewerId ? row.connection_id : row.user_id))
+          .filter(Boolean),
+      ),
+    );
+
+    if (otherIds.length === 0) {
+      setFriends([]);
+      setFriendsLoading(false);
+      return;
+    }
+
+    const { data: userRows, error: usersError } = await supabase
+      .from("users")
+      .select("id,username")
+      .in("id", otherIds);
+
+    if (usersError) {
+      setFriendsError("Unable to load friend profiles.");
+      setFriendsLoading(false);
+      return;
+    }
+
+    const mapped = (userRows ?? []).map((row: { id: string; username: string | null }) => ({
+      id: row.id,
+      username: (row.username ?? "Unknown Pilot").trim() || "Unknown Pilot",
+    }));
+
+    mapped.sort((a, b) => a.username.localeCompare(b.username));
+    setFriends(mapped);
+    setFriendsLoading(false);
   };
 
   const parseTimerSeconds = (selection: ModeConfigSelection | null) => {
@@ -422,7 +517,9 @@ export default function GameModesPage() {
     onClick:
       mode.enabled && (mode.id === "ranked" || mode.id === "unranked")
         ? () => handleRankedClick(mode)
-        : undefined,
+        : mode.enabled && mode.id === "friend"
+          ? () => void openFriendPicker()
+          : undefined,
   }));
 
   const nonRankedCards = NON_RANKED_MODES.map((mode) => ({
@@ -458,6 +555,12 @@ export default function GameModesPage() {
             </div>
           </div>
         </header>
+
+        {selectedFriend && state === "idle" && (
+          <div className="rounded-2xl border border-violet-400/30 bg-violet-500/10 px-5 py-4 text-sm text-violet-100">
+            Selected friend: <span className="font-semibold">{selectedFriend.username}</span>
+          </div>
+        )}
 
         {state === "idle" && (
           <div className="flex flex-col gap-16">
@@ -536,7 +639,133 @@ export default function GameModesPage() {
           />
         )}
       </div>
+
+      <FriendPickerModal
+        open={friendPickerOpen}
+        loading={friendsLoading}
+        error={friendsError}
+        onlineFriends={[]}
+        offlineFriends={friends}
+        onClose={() => setFriendPickerOpen(false)}
+        onSelect={(friend) => {
+          setSelectedFriend(friend);
+          setFriendPickerOpen(false);
+        }}
+      />
     </PracticeScaffold>
+  );
+}
+
+type FriendPickerModalProps = {
+  open: boolean;
+  loading: boolean;
+  error: string | null;
+  onlineFriends: FriendRow[];
+  offlineFriends: FriendRow[];
+  onClose: () => void;
+  onSelect: (friend: FriendRow) => void;
+};
+
+function FriendPickerModal({ open, loading, error, onlineFriends, offlineFriends, onClose, onSelect }: FriendPickerModalProps) {
+  if (!open) return null;
+
+  const hasOnline = onlineFriends.length > 0;
+  const hasOffline = offlineFriends.length > 0;
+
+  const initials = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return "CR";
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    const first = parts[0]?.[0] ?? "C";
+    const second = parts.length > 1 ? parts[1]?.[0] : parts[0]?.[1];
+    return `${first}${second ?? "R"}`.toUpperCase();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-5">
+      <button
+        type="button"
+        aria-label="Close friend picker"
+        className="absolute inset-0 bg-black/60"
+        onClick={onClose}
+      />
+      <div className="relative w-full max-w-lg rounded-3xl border border-violet-400/30 bg-[#050b18] p-7 shadow-[0_0_60px_rgba(139,92,246,0.25)]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-violet-300/80">Play with a friend</p>
+            <h2 className="mt-2 text-2xl font-semibold text-sky-50">Choose who to invite</h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-violet-400/30 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.35em] text-sky-100/80 transition hover:border-violet-200 hover:bg-violet-500/15"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="mt-6 space-y-5">
+          {loading && <p className="text-sm text-sky-100/70">Loading friends…</p>}
+          {!loading && error && (
+            <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-100">{error}</div>
+          )}
+
+          {!loading && !error && !hasOnline && !hasOffline && (
+            <div className="rounded-2xl border border-slate-600/30 bg-slate-950/50 p-4 text-sm text-sky-100/70">
+              No friends yet.
+            </div>
+          )}
+
+          {!loading && !error && hasOnline && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300/80">Online</p>
+              <div className="mt-3 grid gap-2">
+                {onlineFriends.map((friend) => (
+                  <button
+                    key={friend.id}
+                    type="button"
+                    onClick={() => onSelect(friend)}
+                    className="flex items-center justify-between gap-4 rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-4 py-3 text-left transition hover:border-emerald-200 hover:bg-emerald-500/15"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-500/15 text-xs font-semibold text-emerald-100">
+                        {initials(friend.username)}
+                      </span>
+                      <span className="truncate text-sm font-semibold text-sky-50">{friend.username}</span>
+                    </div>
+                    <span className="text-xs uppercase tracking-[0.35em] text-emerald-200/80">Invite</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!loading && !error && hasOffline && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-300/75">Offline</p>
+              <div className="mt-3 grid gap-2">
+                {offlineFriends.map((friend) => (
+                  <button
+                    key={friend.id}
+                    type="button"
+                    onClick={() => onSelect(friend)}
+                    className="flex items-center justify-between gap-4 rounded-2xl border border-slate-600/35 bg-slate-950/45 px-4 py-3 text-left transition hover:border-violet-300/50 hover:bg-violet-500/10"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-500/40 bg-slate-900/40 text-xs font-semibold text-sky-100/85">
+                        {initials(friend.username)}
+                      </span>
+                      <span className="truncate text-sm font-semibold text-sky-50">{friend.username}</span>
+                    </div>
+                    <span className="text-xs uppercase tracking-[0.35em] text-sky-100/70">Invite</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
