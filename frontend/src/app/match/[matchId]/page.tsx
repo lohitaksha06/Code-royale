@@ -12,11 +12,13 @@ function parseTimerFromMetadata(metadata: unknown) {
   const questionId = record?.question_id;
   const timeLimit = record?.time_limit;
   const startedAt = record?.started_at;
+  const language = record?.language;
 
   return {
     questionId: typeof questionId === "string" ? questionId : null,
     timeLimitSeconds: typeof timeLimit === "number" ? timeLimit : Number(timeLimit),
     startedAt: typeof startedAt === "string" ? startedAt : null,
+    language: typeof language === "string" ? language : null,
   };
 }
 
@@ -52,7 +54,7 @@ export default async function MatchPage({ params }: PageProps) {
     notFound();
   }
 
-  const { questionId, timeLimitSeconds, startedAt } = parseTimerFromMetadata(matchRow.metadata);
+  const { questionId, timeLimitSeconds, startedAt, language } = parseTimerFromMetadata(matchRow.metadata);
 
   if (!questionId) {
     notFound();
@@ -73,7 +75,12 @@ export default async function MatchPage({ params }: PageProps) {
     : ["javascript", "python", "cpp"];
 
   const languages = rawLanguages.length > 0 ? rawLanguages : ["javascript", "python", "cpp"];
-  const initialLanguage = languages[0] ?? "javascript";
+  const normalizedSelectedLanguage = typeof language === "string" ? language.trim().toLowerCase() : "";
+  const selectedLanguage =
+    normalizedSelectedLanguage && languages.includes(normalizedSelectedLanguage)
+      ? normalizedSelectedLanguage
+      : null;
+  const initialLanguage = selectedLanguage ?? languages[0] ?? "javascript";
 
   const rawTestcases = Array.isArray(question.testcases)
     ? (question.testcases as Array<{ id?: string; input?: string; output?: string; stdin?: string; expected_output?: string }>)

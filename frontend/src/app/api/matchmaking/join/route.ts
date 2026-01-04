@@ -6,12 +6,29 @@ import { PVP_QUESTION_SLUGS } from "@/lib/pvp-questions";
 type JoinRequest = {
   mode?: "ranked" | "unranked";
   timeLimitSeconds?: number;
+  language?: string | null;
+  matchType?: "1v1" | "2v2" | "ffa";
 };
 
 function sanitizeTimeLimitSeconds(value: unknown) {
   const parsed = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(parsed) || parsed <= 0) return 8 * 60;
-  return Math.max(60, Math.min(30 * 60, Math.floor(parsed)));
+  return Math.max(60, Math.min(60 * 60, Math.floor(parsed)));
+}
+
+function sanitizeLanguage(value: unknown) {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return null;
+  // Keep in sync with the submit API languageMap.
+  if (["node", "javascript", "python", "cpp", "java", "c"].includes(normalized)) {
+    return normalized === "javascript" ? "node" : normalized;
+  }
+  return null;
+}
+
+function sanitizeMatchType(value: unknown) {
+  return value === "2v2" || value === "ffa" ? value : "1v1";
 }
 
 export async function POST(request: Request) {
@@ -25,6 +42,8 @@ export async function POST(request: Request) {
 
   const mode = payload.mode === "ranked" || payload.mode === "unranked" ? payload.mode : "ranked";
   const timeLimitSeconds = sanitizeTimeLimitSeconds(payload.timeLimitSeconds);
+  const language = sanitizeLanguage(payload.language);
+  const matchType = sanitizeMatchType(payload.matchType);
 
   const supabaseAuth = createSupabaseServerClient();
   const { data: authData, error: authError } = await supabaseAuth.auth.getUser();
@@ -96,6 +115,9 @@ export async function POST(request: Request) {
       metadata: {
         question_id: chosen.id,
         time_limit: timeLimitSeconds,
+        language,
+        match_type: matchType,
+        trophy_multiplier: timeLimitSeconds >= 60 * 60 ? 1.5 : 1,
         started_at: startedAt,
       },
     })

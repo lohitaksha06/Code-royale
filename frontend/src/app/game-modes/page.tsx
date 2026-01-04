@@ -47,6 +47,23 @@ type ModeConfigSelection = {
   players: string;
 };
 
+function resolveLanguageCode(selection: string) {
+  const normalized = selection.toLowerCase();
+  if (normalized.includes("javascript") || normalized.includes("node")) return "node";
+  if (normalized.includes("python")) return "python";
+  if (normalized.includes("c++") || normalized.includes("cpp")) return "cpp";
+  if (normalized.includes("java")) return "java";
+  if (normalized === "c" || normalized.includes(" c")) return "c";
+  return null;
+}
+
+function resolveMatchType(selection: string) {
+  const normalized = selection.toLowerCase();
+  if (normalized.includes("2v2")) return "2v2";
+  if (normalized.includes("free") || normalized.includes("ffa") || normalized.includes("1v1v1v1")) return "ffa";
+  return "1v1";
+}
+
 const RANKED_MODES: ModeDefinition[] = [
   {
     id: "ranked",
@@ -175,7 +192,36 @@ const DEFAULT_CONFIG_PRESET: ModeConfigPreset = {
   playerOptions: ["Auto match", "Invite friends"],
 };
 
+const PVP_TIMER_OPTIONS = [
+  "5 minutes (Blitz)",
+  "10 minutes",
+  "30 minutes",
+  "60 minutes (Marathon)",
+];
+
+const PVP_LANGUAGE_OPTIONS = [
+  "JavaScript (Node)",
+  "Python",
+  "C++",
+  "Java",
+  "C",
+];
+
+const PVP_MATCH_TYPE_OPTIONS = ["1v1", "2v2", "Free-for-all (1v1v1v1)"];
+
 const MODE_CONFIG_PRESETS: Record<string, ModeConfigPreset> = {
+  ranked: {
+    timers: PVP_TIMER_OPTIONS,
+    languages: PVP_LANGUAGE_OPTIONS,
+    playerOptions: PVP_MATCH_TYPE_OPTIONS,
+    note: "Pick a language + timer before entering matchmaking.",
+  },
+  unranked: {
+    timers: PVP_TIMER_OPTIONS,
+    languages: PVP_LANGUAGE_OPTIONS,
+    playerOptions: PVP_MATCH_TYPE_OPTIONS,
+    note: "Same battle flow without ladder pressure.",
+  },
   "rapid-fire": {
     timers: ["3 minutes", "5 minutes", "7 minutes"],
     languages: ["Auto assign", "JavaScript", "Python", "Rust"],
@@ -234,15 +280,26 @@ export default function GameModesPage() {
     const raw = selection?.timer ?? "";
     const minutesMatch = raw.match(/(\d+)\s*minute/i);
     if (minutesMatch?.[1]) return Number(minutesMatch[1]) * 60;
+    const hoursMatch = raw.match(/(\d+)\s*hour/i);
+    if (hoursMatch?.[1]) return Number(hoursMatch[1]) * 60 * 60;
     return 8 * 60;
   };
 
   const startMatchmaking = async (modeId: string, selection: ModeConfigSelection | null) => {
     setErrorMessage(null);
     setMatchId(null);
+
+    const matchType = resolveMatchType(selection?.players ?? "1v1");
+    if (matchType !== "1v1") {
+      setErrorMessage("2v2 and Free-for-all matchmaking are coming soon. Use 1v1 for now.");
+      setState("error");
+      return;
+    }
+
     setState("searching");
 
     const timeLimitSeconds = parseTimerSeconds(selection);
+    const language = resolveLanguageCode(selection?.language ?? "");
 
     let joinResponse: Response;
     try {
@@ -252,6 +309,8 @@ export default function GameModesPage() {
         body: JSON.stringify({
           mode: modeId === "unranked" ? "unranked" : "ranked",
           timeLimitSeconds,
+          language,
+          matchType,
         }),
       });
     } catch (error) {
@@ -316,7 +375,7 @@ export default function GameModesPage() {
     setSelectedMode(mode);
     setConfigSelection(null);
     setMatchId(null);
-    void startMatchmaking(mode.id, null);
+    setState("configuring");
   };
 
   const handleNonRankedClick = (mode: ModeDefinition) => {
