@@ -105,6 +105,17 @@ const RANKED_MODES: ModeDefinition[] = [
     category: "ranked",
   },
   {
+    id: "friends-2v2",
+    title: "2v2 With Friends",
+    subtitle: "Bring a teammate",
+    details: ["Invite one teammate", "Private 2v2 lobby", "Team rating & rewards (soon)"],
+    badge: "Locked feature",
+    enabled: false,
+    accent: "",
+    impact: "Low Trophy Impact",
+    category: "ranked",
+  },
+  {
     id: "battle-royale",
     title: "4 Player Battle",
     subtitle: "Free-for-all chaos",

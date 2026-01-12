@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -33,13 +36,53 @@ const battleModes = [
   },
 ];
 
-const stats = [
-  { label: "Active Players", value: "12.5K" },
-  { label: "Problems Solved", value: "1.2M" },
-  { label: "Matches Today", value: "3.4K" },
+type TelemetrySummary = {
+  activePlayers: number;
+  currentVisits: number;
+  matchesToday: number;
+};
+
+const statDefinitions: Array<{ label: string; key: keyof TelemetrySummary }> = [
+  { label: "Active Players", key: "activePlayers" },
+  { label: "Current Visits", key: "currentVisits" },
+  { label: "Matches Today", key: "matchesToday" },
 ];
 
 export default function HomePage() {
+  const [telemetry, setTelemetry] = useState<TelemetrySummary>({
+    activePlayers: 0,
+    currentVisits: 0,
+    matchesToday: 0,
+  });
+
+  useEffect(() => {
+    let alive = true;
+
+    const fetchTelemetry = async () => {
+      try {
+        const res = await fetch("/api/telemetry/summary", { cache: "no-store" });
+        if (!res.ok) return;
+        const json = (await res.json()) as Partial<TelemetrySummary>;
+        if (!alive) return;
+        setTelemetry((prev) => ({
+          activePlayers: typeof json.activePlayers === "number" ? json.activePlayers : prev.activePlayers,
+          currentVisits: typeof json.currentVisits === "number" ? json.currentVisits : prev.currentVisits,
+          matchesToday: typeof json.matchesToday === "number" ? json.matchesToday : prev.matchesToday,
+        }));
+      } catch {
+        // ignore
+      }
+    };
+
+    void fetchTelemetry();
+    const interval = window.setInterval(fetchTelemetry, 10_000);
+
+    return () => {
+      alive = false;
+      window.clearInterval(interval);
+    };
+  }, []);
+
   return (
     <AppShell>
       <div className="flex flex-col gap-8 p-6">
@@ -77,12 +120,12 @@ export default function HomePage() {
 
         {/* Stats Row */}
         <section className="grid gap-4 sm:grid-cols-3">
-          {stats.map((stat) => (
+          {statDefinitions.map((stat) => (
             <div
               key={stat.label}
               className="rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5"
             >
-              <div className="text-2xl font-bold text-[rgb(var(--cr-accent-rgb))]">{stat.value}</div>
+              <div className="text-2xl font-bold text-[rgb(var(--cr-accent-rgb))]">{telemetry[stat.key]}</div>
               <div className="mt-1 text-sm text-[var(--cr-fg-muted)]">{stat.label}</div>
             </div>
           ))}

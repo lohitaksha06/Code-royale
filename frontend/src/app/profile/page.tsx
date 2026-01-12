@@ -14,6 +14,10 @@ type UserRow = {
   wins: number | null;
   losses: number | null;
   team_name?: string | null;
+  club_id?: string | null;
+  club_name?: string | null;
+  club_logo?: string | null;
+  club_trophies?: number | null;
 };
 
 function getRankFromRating(rating: number) {
@@ -141,6 +145,22 @@ export default function ProfilePage() {
                     <p className="mt-1 text-sm text-[var(--cr-fg-muted)]">
                       Team: {profile.team_name}
                     </p>
+                  )}
+                  {/* Club Badge */}
+                  {profile?.club_name && (
+                    <Link
+                      href="/clubs"
+                      className="mt-3 inline-flex items-center gap-2 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-3 py-1.5 text-sm transition-colors hover:border-[rgba(var(--cr-accent-rgb),0.3)]"
+                    >
+                      <span className="text-lg">{profile.club_logo || "🏆"}</span>
+                      <span className="font-medium text-[var(--cr-fg)]">{profile.club_name}</span>
+                      <span className="flex items-center gap-1 text-xs text-amber-400">
+                        <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M19 4h-1V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v1H5a1 1 0 0 0-1 1v2a4 4 0 0 0 3 3.87A6 6 0 0 0 11 14.9V17H8a1 1 0 0 0 0 2h8a1 1 0 1 0 0-2h-3v-2.1a6 6 0 0 0 4-3.99 4 4 0 0 0 3-3.87V5a1 1 0 0 0-1-1Z"/>
+                        </svg>
+                        {(profile.club_trophies ?? 0).toLocaleString()}
+                      </span>
+                    </Link>
                   )}
                   {isSelf && (
                     <Link
