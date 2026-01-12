@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PracticeScaffold } from "../practice/practice-scaffold";
+import { AppShell } from "../../components/app-shell";
 import { supabase } from "../../lib/supabase-browser";
 
 const trophyIcon = (
@@ -270,6 +270,11 @@ export default function GameModesPage() {
   const [friends, setFriends] = useState<FriendRow[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<FriendRow | null>(null);
 
+  const [inviteCreating, setInviteCreating] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteMatchId, setInviteMatchId] = useState<string | null>(null);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+
   useEffect(() => {
     let mounted = true;
 
@@ -369,6 +374,89 @@ export default function GameModesPage() {
     mapped.sort((a, b) => a.username.localeCompare(b.username));
     setFriends(mapped);
     setFriendsLoading(false);
+  };
+
+  const createFriendInviteMatch = async (friend: FriendRow) => {
+    setInviteCreating(true);
+    setInviteError(null);
+    setInviteMatchId(null);
+
+    let res: Response;
+    try {
+      res = await fetch("/api/friend-match/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          friendUserId: friend.id,
+          timeLimitSeconds: 10 * 60,
+          language: null,
+        }),
+      });
+    } catch (error) {
+      console.error(error);
+      setInviteError("Unable to create invite right now.");
+      setInviteCreating(false);
+      return;
+    }
+
+    if (!res.ok) {
+      const contentType = res.headers.get("content-type") ?? "";
+      let details = "";
+      if (contentType.includes("application/json")) {
+        const json = (await res.json().catch(() => null)) as null | { error?: string };
+        details = json?.error ?? "";
+      }
+      if (!details) {
+        details = await res.text().catch(() => "");
+      }
+      setInviteError(details?.trim() ? details : "Failed to create invite.");
+      setInviteCreating(false);
+      return;
+    }
+
+    const data = (await res.json().catch(() => ({}))) as { matchId?: string };
+    if (!data.matchId) {
+      setInviteError("Failed to create invite.");
+      setInviteCreating(false);
+      return;
+    }
+
+    setInviteMatchId(data.matchId);
+    setInviteCreating(false);
+    setInviteModalOpen(true);
+  };
+
+  const startInviteMatch = async (id: string) => {
+    setInviteError(null);
+
+    let res: Response;
+    try {
+      res = await fetch("/api/friend-match/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matchId: id }),
+      });
+    } catch (error) {
+      console.error(error);
+      setInviteError("Unable to start match right now.");
+      return;
+    }
+
+    if (!res.ok) {
+      const contentType = res.headers.get("content-type") ?? "";
+      let details = "";
+      if (contentType.includes("application/json")) {
+        const json = (await res.json().catch(() => null)) as null | { error?: string };
+        details = json?.error ?? "";
+      }
+      if (!details) {
+        details = await res.text().catch(() => "");
+      }
+      setInviteError(details?.trim() ? details : "Failed to start match.");
+      return;
+    }
+
+    router.push(`/match/${id}`);
   };
 
   const parseTimerSeconds = (selection: ModeConfigSelection | null) => {
@@ -530,28 +618,28 @@ export default function GameModesPage() {
   const activeMode = selectedMode ?? RANKED_MODES[0];
 
   return (
-    <PracticeScaffold>
+    <AppShell>
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-6 pt-8 sm:px-10 lg:px-16">
-        <header className="flex flex-col justify-between gap-6 rounded-3xl border border-sky-500/20 bg-gradient-to-br from-[#061532] via-[#051029] to-[#020710] p-8 shadow-[0_0_60px_rgba(14,165,233,0.28)] sm:flex-row sm:items-center sm:gap-8">
+        <header className="flex flex-col justify-between gap-6 rounded-2xl border border-cr-border bg-cr-bg-secondary p-8 sm:flex-row sm:items-center sm:gap-8">
           <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-400/80">Command Center</p>
-            <h1 className="text-4xl font-semibold leading-tight text-sky-50 sm:text-5xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cr-accent">Command Center</p>
+            <h1 className="text-3xl font-bold text-cr-fg sm:text-4xl">
               Choose your battle mode
             </h1>
-            <p className="max-w-xl text-sm text-sky-100/70">
+            <p className="max-w-xl text-sm text-cr-fg-muted">
               Squad up, duel a rival, or warm up with friends. Ranked battles award trophies, while event modes let you experiment without wrecking your ladder standing.
             </p>
           </div>
-          <div className="flex items-center gap-4 rounded-2xl border border-amber-400/40 bg-amber-400/10 px-6 py-4 text-amber-200 shadow-[0_0_30px_rgba(251,191,36,0.3)]">
+          <div className="flex items-center gap-4 rounded-xl border border-amber-400/40 bg-amber-400/10 px-6 py-4 text-amber-200">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-400/20">
               {trophyIcon}
             </div>
             <div>
               <div className="flex items-baseline gap-2 text-3xl font-semibold tracking-tight text-amber-100">
                 <span>1,240</span>
-                <span className="text-sm font-medium uppercase tracking-[0.35em] text-amber-200/70">Trophies</span>
+                <span className="text-sm font-medium uppercase tracking-[0.2em] text-amber-200/70">Trophies</span>
               </div>
-              <p className="text-xs uppercase tracking-[0.35em] text-amber-200/80">Rank · Gold League</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-amber-200/80">Rank · Gold League</p>
             </div>
           </div>
         </header>
@@ -650,9 +738,20 @@ export default function GameModesPage() {
         onSelect={(friend) => {
           setSelectedFriend(friend);
           setFriendPickerOpen(false);
+          void createFriendInviteMatch(friend);
         }}
       />
-    </PracticeScaffold>
+
+      <FriendInviteModal
+        open={inviteModalOpen}
+        creating={inviteCreating}
+        error={inviteError}
+        friend={selectedFriend}
+        matchId={inviteMatchId}
+        onClose={() => setInviteModalOpen(false)}
+        onStart={(id) => void startInviteMatch(id)}
+      />
+    </AppShell>
   );
 }
 
@@ -761,6 +860,103 @@ function FriendPickerModal({ open, loading, error, onlineFriends, offlineFriends
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type FriendInviteModalProps = {
+  open: boolean;
+  creating: boolean;
+  error: string | null;
+  friend: FriendRow | null;
+  matchId: string | null;
+  onClose: () => void;
+  onStart: (matchId: string) => void;
+};
+
+function FriendInviteModal({ open, creating, error, friend, matchId, onClose, onStart }: FriendInviteModalProps) {
+  if (!open) return null;
+
+  const inviteLink =
+    typeof window !== "undefined" && matchId ? `${window.location.origin}/match/${matchId}` : matchId ? `/match/${matchId}` : "";
+
+  const canCopy = Boolean(matchId) && typeof navigator !== "undefined" && Boolean(navigator.clipboard);
+
+  const handleCopy = async () => {
+    if (!inviteLink || !canCopy) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+    } catch {
+      // ignore
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-5">
+      <button
+        type="button"
+        aria-label="Close invite modal"
+        className="absolute inset-0 bg-black/60"
+        onClick={onClose}
+      />
+      <div className="relative w-full max-w-lg rounded-3xl border border-violet-400/30 bg-[#050b18] p-7 shadow-[0_0_60px_rgba(139,92,246,0.25)]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-violet-300/80">Invite ready</p>
+            <h2 className="mt-2 text-2xl font-semibold text-sky-50">Send this link to your friend</h2>
+            <p className="mt-2 text-sm text-sky-100/70">
+              {friend ? (
+                <>
+                  Inviting <span className="font-semibold text-sky-50">{friend.username}</span>
+                </>
+              ) : (
+                "Inviting friend"
+              )}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-violet-400/30 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.35em] text-sky-100/80 transition hover:border-violet-200 hover:bg-violet-500/15"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="mt-6 space-y-4">
+          {creating && <p className="text-sm text-sky-100/70">Creating invite…</p>}
+          {!creating && error && (
+            <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-100">{error}</div>
+          )}
+
+          {!creating && matchId && (
+            <div className="rounded-2xl border border-slate-600/30 bg-slate-950/50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-300/75">Invite link</p>
+              <p className="mt-2 break-all text-sm text-sky-50">{inviteLink}</p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  disabled={!canCopy}
+                  className="rounded-full border border-sky-500/35 bg-sky-500/15 px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-50 transition hover:border-sky-200 hover:bg-sky-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Copy link
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onStart(matchId)}
+                  className="rounded-full border border-violet-400/70 bg-violet-500/20 px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-violet-50 shadow-[0_0_34px_rgba(139,92,246,0.35)] transition hover:border-violet-200 hover:bg-violet-500/30"
+                >
+                  Start match
+                </button>
+              </div>
+              <p className="mt-3 text-xs text-sky-100/60">
+                Your friend can open the link and will be able to join instantly.
+              </p>
             </div>
           )}
         </div>

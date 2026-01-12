@@ -1,28 +1,28 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { HomeNav } from "../home/home-nav";
-import { NeonButton } from "../../components/neon-button";
+import { AppShell } from "../../components/app-shell";
+import { setTheme as setGlobalTheme } from "../../components/theme-sync";
 import { supabase } from "../../lib/supabase-browser";
 
 const themeOptions = [
   {
     id: "neon-blue",
     name: "Neon Blue",
-    description: "Signature Code Royale glow. Futuristic blues with cyan highlights.",
-    swatch: "bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700",
+    description: "Signature Code Royale glow",
+    color: "bg-sky-500",
   },
   {
     id: "ember-red",
     name: "Ember Red",
-    description: "High-contrast red core with deep black falloff.",
-    swatch: "bg-gradient-to-br from-rose-500 via-red-600 to-slate-950",
+    description: "High-contrast red accent",
+    color: "bg-red-500",
   },
   {
     id: "hazard-orange",
     name: "Hazard Orange",
-    description: "Warm orange glow with a midnight-black finish.",
-    swatch: "bg-gradient-to-br from-orange-500 via-amber-600 to-slate-950",
+    description: "Warm orange glow",
+    color: "bg-orange-500",
   },
 ];
 
@@ -39,7 +39,7 @@ export default function SettingsPage() {
   const [tagline, setTagline] = useState("");
 
   const spectateLabel = useMemo(
-    () => (spectateEnabled ? "Friends can spectate" : "Spectate disabled"),
+    () => (spectateEnabled ? "Friends can spectate your matches" : "Spectate disabled"),
     [spectateEnabled],
   );
 
@@ -100,6 +100,11 @@ export default function SettingsPage() {
     };
   }, []);
 
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    setGlobalTheme(newTheme);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setError(null);
@@ -109,6 +114,7 @@ export default function SettingsPage() {
       localStorage.setItem("cr_settings_spectate_enabled", String(spectateEnabled));
       localStorage.setItem("cr_settings_theme", theme);
       localStorage.setItem("cr_settings_tagline", tagline);
+      setGlobalTheme(theme);
     } catch {
       // ignore localStorage errors
     }
@@ -133,188 +139,176 @@ export default function SettingsPage() {
       return;
     }
 
-    setSuccess("Saved. Your profile will show the updated name.");
+    setSuccess("Settings saved successfully.");
     setSaving(false);
   };
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col bg-[#030915] text-sky-100">
-      <HomeNav />
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-12 px-6 pb-20 pt-28 sm:px-10 lg:px-12">
-        <header className="rounded-3xl border border-sky-500/20 bg-gradient-to-br from-[#071629] via-[#041021] to-[#020610] p-8 shadow-[0_0_60px_rgba(56,189,248,0.2)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-400/80">Pilot Controls</p>
-          <h1 className="mt-4 text-4xl font-semibold text-sky-50 sm:text-5xl">Account & appearance</h1>
-          <p className="mt-3 max-w-2xl text-sm text-sky-100/70">
-            Tune your avatar, update credentials, and decide how friends interact with your arena sessions. Theme selections will power future color variants across the HUD.
+    <AppShell>
+      <div className="mx-auto max-w-3xl p-6">
+        <header className="mb-8">
+          <h1 className="text-2xl font-bold text-[var(--cr-fg)]">Settings</h1>
+          <p className="mt-1 text-sm text-[var(--cr-fg-muted)]">
+            Manage your account preferences and appearance.
           </p>
         </header>
 
-        <section className="grid gap-8 md:grid-cols-[1.1fr_0.9fr]">
-          <div className="flex flex-col gap-6 rounded-3xl border border-sky-500/20 bg-[#040b18]/80 p-8 shadow-[0_0_45px_rgba(56,189,248,0.14)]">
-            <h2 className="text-lg font-semibold text-sky-50">Identity loadout</h2>
-            <div className="flex flex-col gap-5">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-sky-500/30 bg-slate-950/80 text-sm font-semibold uppercase tracking-[0.35em] text-sky-200 shadow-[0_0_30px_rgba(56,189,248,0.25)]">
+        <div className="space-y-6">
+          {/* Profile Section */}
+          <section className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-6">
+            <h2 className="mb-4 text-lg font-semibold text-[var(--cr-fg)]">Profile</h2>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(var(--cr-accent-rgb),0.2)] text-lg font-bold text-[rgb(var(--cr-accent-rgb))]">
                   CR
                 </div>
-                <div className="flex flex-col gap-2 text-sm text-sky-100/70">
-                  <span className="text-xs uppercase tracking-[0.35em] text-sky-400/70">Profile photo</span>
-                  <label className="w-max cursor-pointer rounded-full border border-sky-500/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-100 transition hover:border-sky-300 hover:bg-sky-500/20">
+                <div>
+                  <label className="block text-sm text-[var(--cr-fg-muted)]">Profile photo</label>
+                  <button className="mt-1 rounded-md border border-[var(--cr-border)] bg-[var(--cr-bg)] px-3 py-1.5 text-sm text-[var(--cr-fg)] transition-colors hover:bg-[var(--cr-bg-tertiary)]">
                     Upload new
-                    <input type="file" className="sr-only" accept="image/*" />
-                  </label>
-                  <span className="text-[11px] text-sky-400/60">PNG or JPG · 2 MB max.</span>
+                  </button>
                 </div>
               </div>
 
-              <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">
-                Display name
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[var(--cr-fg)]">
+                  Display Name
+                </label>
                 <input
                   type="text"
-                  placeholder={loadingProfile ? "Loading…" : "NeonAce"}
+                  placeholder={loadingProfile ? "Loading…" : "Enter your name"}
                   value={displayName}
-                  onChange={(event) => setDisplayName(event.target.value)}
+                  onChange={(e) => setDisplayName(e.target.value)}
                   disabled={loadingProfile || saving}
-                  className="rounded-2xl border border-sky-500/25 bg-[#050d1a] px-4 py-3 text-sm text-sky-100 focus:border-sky-300 focus:outline-none"
+                  className="w-full rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2.5 text-sm text-[var(--cr-fg)] placeholder:text-[var(--cr-fg-muted)] focus:border-[rgba(var(--cr-accent-rgb),0.5)] focus:outline-none disabled:opacity-50"
                 />
-              </label>
+              </div>
 
-              <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">
-                Arena tagline
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[var(--cr-fg)]">
+                  Tagline
+                </label>
                 <textarea
-                  rows={4}
-                  placeholder="Drop a short description so rivals know what they’re up against."
+                  rows={3}
+                  placeholder="A short description about yourself"
                   value={tagline}
-                  onChange={(event) => setTagline(event.target.value)}
+                  onChange={(e) => setTagline(e.target.value)}
                   disabled={saving}
-                  className="resize-none rounded-2xl border border-sky-500/25 bg-[#050d1a] px-4 py-3 text-sm text-sky-100 focus:border-sky-300 focus:outline-none"
+                  className="w-full resize-none rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2.5 text-sm text-[var(--cr-fg)] placeholder:text-[var(--cr-fg-muted)] focus:border-[rgba(var(--cr-accent-rgb),0.5)] focus:outline-none disabled:opacity-50"
                 />
-              </label>
+              </div>
             </div>
-          </div>
+          </section>
 
-          <div className="flex flex-col gap-6 rounded-3xl border border-sky-500/20 bg-[#040b18]/80 p-8 shadow-[0_0_45px_rgba(56,189,248,0.14)]">
-            <h2 className="text-lg font-semibold text-sky-50">Security weave</h2>
-            <p className="text-sm text-sky-100/70">
-              Changing your password logs you out of other devices and reissues a fresh Firebase session token.
+          {/* Theme Section */}
+          <section className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-6">
+            <h2 className="mb-4 text-lg font-semibold text-[var(--cr-fg)]">Theme</h2>
+            <p className="mb-4 text-sm text-[var(--cr-fg-muted)]">
+              Choose your preferred color theme. Changes apply immediately.
             </p>
-            <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">
-              Current password
-              <input
-                type="password"
-                placeholder="••••••••"
-                className="rounded-2xl border border-sky-500/25 bg-[#050d1a] px-4 py-3 text-sm text-sky-100 focus:border-sky-300 focus:outline-none"
-              />
-            </label>
-            <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">
-              New password
-              <input
-                type="password"
-                placeholder="Enter new secret"
-                className="rounded-2xl border border-sky-500/25 bg-[#050d1a] px-4 py-3 text-sm text-sky-100 focus:border-sky-300 focus:outline-none"
-              />
-            </label>
-            <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">
-              Confirm password
-              <input
-                type="password"
-                placeholder="Repeat new secret"
-                className="rounded-2xl border border-sky-500/25 bg-[#050d1a] px-4 py-3 text-sm text-sky-100 focus:border-sky-300 focus:outline-none"
-              />
-            </label>
-            <NeonButton className="mt-2 w-full justify-center">
-              Update password
-            </NeonButton>
-          </div>
-        </section>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {themeOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => handleThemeChange(option.id)}
+                  disabled={saving}
+                  className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-all ${
+                    theme === option.id
+                      ? "border-[rgb(var(--cr-accent-rgb))] bg-[rgba(var(--cr-accent-rgb),0.1)]"
+                      : "border-[var(--cr-border)] hover:border-[var(--cr-fg-muted)]"
+                  }`}
+                >
+                  <span className={`h-8 w-8 rounded-full ${option.color}`} />
+                  <div>
+                    <span className="block text-sm font-medium text-[var(--cr-fg)]">
+                      {option.name}
+                    </span>
+                    <span className="text-xs text-[var(--cr-fg-muted)]">{option.description}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
 
-        <section className="grid gap-8 md:grid-cols-[1.1fr_0.9fr]">
-          <div className="flex flex-col gap-6 rounded-3xl border border-sky-500/20 bg-[#040b18]/80 p-8 shadow-[0_0_45px_rgba(56,189,248,0.14)]">
-            <h2 className="text-lg font-semibold text-sky-50">Match visibility</h2>
-            <p className="text-sm text-sky-100/70">
-              Control whether friends can drop into your active games. Toggle stays local until real-time permissions wire up.
-            </p>
-            <div>
+          {/* Privacy Section */}
+          <section className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-6">
+            <h2 className="mb-4 text-lg font-semibold text-[var(--cr-fg)]">Privacy</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[var(--cr-fg)]">Match Spectating</p>
+                <p className="text-xs text-[var(--cr-fg-muted)]">{spectateLabel}</p>
+              </div>
               <button
-                type="button"
-                onClick={() => setSpectateEnabled((previous) => !previous)}
+                onClick={() => setSpectateEnabled(!spectateEnabled)}
                 disabled={saving}
-                className={`relative inline-flex h-10 w-20 items-center rounded-full border transition ${
-                  spectateEnabled
-                    ? "border-emerald-400 bg-emerald-500/30"
-                    : "border-slate-600 bg-slate-800"
+                className={`relative h-6 w-11 rounded-full transition-colors ${
+                  spectateEnabled ? "bg-[rgb(var(--cr-accent-rgb))]" : "bg-[var(--cr-bg-tertiary)]"
                 }`}
-                aria-pressed={spectateEnabled}
               >
                 <span
-                  className={`absolute left-1 top-1 h-8 w-8 rounded-full bg-slate-950 transition-transform ${
-                    spectateEnabled ? "translate-x-10" : "translate-x-0"
+                  className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                    spectateEnabled ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
-              <p className="mt-3 text-xs uppercase tracking-[0.35em] text-sky-400/70">{spectateLabel}</p>
             </div>
-          </div>
+          </section>
 
-          <div className="flex flex-col gap-6 rounded-3xl border border-sky-500/20 bg-[#040b18]/80 p-8 shadow-[0_0_45px_rgba(56,189,248,0.14)]">
-            <h2 className="text-lg font-semibold text-sky-50">Theme matrix</h2>
-            <p className="text-sm text-sky-100/70">
-              Personalize HUD colors. More palettes unlock as the platform expands.
-            </p>
-            <div className="grid gap-4">
-              {themeOptions.map((option) => (
-                <label
-                  key={option.id}
-                  className={`flex cursor-pointer items-center justify-between gap-4 rounded-2xl border px-4 py-4 transition ${
-                    theme === option.id
-                      ? "border-sky-300 bg-sky-500/20 shadow-[0_0_30px_rgba(56,189,248,0.25)]"
-                      : "border-sky-500/20 bg-[#050d1a] hover:border-sky-300/60"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <span className={`h-12 w-12 rounded-full ${option.swatch} shadow-[0_0_24px_rgba(56,189,248,0.4)]`} />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-sky-100">{option.name}</span>
-                      <span className="text-xs text-sky-100/70">{option.description}</span>
-                    </div>
-                  </div>
-                  <input
-                    type="radio"
-                    name="theme"
-                    value={option.id}
-                    checked={theme === option.id}
-                    onChange={() => setTheme(option.id)}
-                    disabled={saving}
-                    className="h-4 w-4 accent-sky-400"
-                  />
+          {/* Security Section */}
+          <section className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-6">
+            <h2 className="mb-4 text-lg font-semibold text-[var(--cr-fg)]">Security</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[var(--cr-fg)]">
+                  Current Password
                 </label>
-              ))}
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  className="w-full rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2.5 text-sm text-[var(--cr-fg)] focus:border-[rgba(var(--cr-accent-rgb),0.5)] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[var(--cr-fg)]">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="Enter new password"
+                  className="w-full rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2.5 text-sm text-[var(--cr-fg)] focus:border-[rgba(var(--cr-accent-rgb),0.5)] focus:outline-none"
+                />
+              </div>
+              <button className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2 text-sm font-medium text-[var(--cr-fg)] transition-colors hover:bg-[var(--cr-bg-tertiary)]">
+                Update Password
+              </button>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {(error || success) && (
-          <div
-            className={`rounded-2xl border p-4 text-sm ${
-              error
-                ? "border-rose-500/30 bg-rose-500/10 text-rose-100"
-                : "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"
-            }`}
-          >
-            {error ?? success}
-          </div>
-        )}
+          {/* Messages */}
+          {(error || success) && (
+            <div
+              className={`rounded-lg border p-4 text-sm ${
+                error
+                  ? "border-red-500/30 bg-red-500/10 text-red-400"
+                  : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+              }`}
+            >
+              {error ?? success}
+            </div>
+          )}
 
-        <div className="flex flex-wrap justify-end gap-4">
-          <NeonButton
-            className="px-8 py-3 uppercase tracking-[0.35em]"
-            onClick={handleSave}
-            disabled={saving || loadingProfile}
-          >
-            Save changes
-          </NeonButton>
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={handleSave}
+              disabled={saving || loadingProfile}
+              className="rounded-lg bg-[rgb(var(--cr-accent-rgb))] px-6 py-2.5 text-sm font-semibold text-[var(--cr-bg)] transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }

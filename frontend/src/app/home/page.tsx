@@ -1,316 +1,208 @@
 import Image from "next/image";
+import Link from "next/link";
 
-import { GlowCard } from "../../components/glow-card";
-import { NeonLink } from "../../components/neon-button";
-import { PracticeScaffold } from "../practice/practice-scaffold";
+import { AppShell } from "../../components/app-shell";
 
 const battleModes = [
   {
     title: "Battle Against Bots",
-    description:
-      "Solo queue against adaptive AI rivals tuned for practice or calibration before you challenge humans.",
-    details: [
-      "Bots scale difficulty from casual to ranked intensity.",
-      "Analyze replay packets to refine your strategy.",
-    ],
+    description: "Solo queue against adaptive AI rivals tuned for practice.",
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" />
+      </svg>
+    ),
   },
   {
     title: "1v1 Duels",
-    description:
-      "Head-to-head clashes where speed and accuracy crown the champion. Choose your preferred timer before entering the arena.",
-    details: [
-      "Timer presets: 5 min, 10 min, 15 min.",
-      "Rapid Fire mode tallies correct solves across multiple problems.",
-    ],
+    description: "Head-to-head clashes where speed and accuracy crown the champion.",
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+      </svg>
+    ),
   },
   {
     title: "4-Player Brawls",
-    description:
-      "1v1v1v1 chaos built for squads or rivals. Coordinate, sabotage, or sprint toward glory.",
-    details: [
-      "Supports custom playlists of problems.",
-      "Spectator stream hooks coming soon.",
-    ],
+    description: "1v1v1v1 chaos built for squads or rivals.",
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+      </svg>
+    ),
   },
 ];
 
-const matchTypes = [
-  {
-    name: "Rapid Fire",
-    summary:
-      "Solve as many prompts as possible before the timer expires. Leaderboards rank streaks and accuracy.",
-  },
-  {
-    name: "Hardcore Sprint",
-    summary:
-      "Each player receives one hard challenge. First to pass all test cases claims the victory badge.",
-  },
-  {
-    name: "Timed Ladder",
-    summary:
-      "Queue for structured sessions where timers decrease each round, forcing faster iterations.",
-  },
-];
-
-const timers = ["5 minutes", "10 minutes", "15 minutes"];
-
-const featurePanels = [
-  {
-    id: "profile",
-    title: "Pilot Profile",
-    description:
-      "Monitor your rating, streaks, and unlockable cosmetics from one command center. Export share cards straight to social feeds.",
-    accent: "cyan" as const,
-    linkLabel: "View Profile",
-    href: "/auth/login",
-  },
-  {
-    id: "leaderboards",
-    title: "Leaderboards",
-    description:
-      "Browse divisions, scout rivals, and chase seasonal trophies with transparent scoring updates.",
-    accent: "blue" as const,
-    linkLabel: "View Rankings",
-    href: "/auth/login",
-  },
-  {
-    id: "practice",
-    title: "Practice Arena",
-    description:
-      "Warm up with curated drills that adapt to your weak spots and track daily improvement streaks.",
-    accent: "purple" as const,
-    linkLabel: "Start Warmup",
-    href: "/practice",
-  },
-  {
-    id: "notifications",
-    title: "Event Pulse",
-    description:
-      "Get alerts for tournament invites, balance updates, and featured matches you should not miss.",
-    accent: "cyan" as const,
-    linkLabel: "Update Preferences",
-    href: "/auth/login",
-  },
+const stats = [
+  { label: "Active Players", value: "12.5K" },
+  { label: "Problems Solved", value: "1.2M" },
+  { label: "Matches Today", value: "3.4K" },
 ];
 
 export default function HomePage() {
   return (
-    <PracticeScaffold>
-      <div className="flex w-full flex-col gap-20 pb-20">
-        <section className="w-full px-8 pb-16 pt-12 text-center sm:px-12 md:px-16">
-          <span className="text-xs font-semibold uppercase tracking-[0.45em] text-sky-400/80">
-            Enter the arena
-          </span>
-          <h1 className="mt-6 text-4xl font-semibold text-sky-50 sm:text-5xl md:text-6xl">
-            Real-time coding battles. Neon-lit glory.
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-sm text-sky-100/70 sm:text-base">
-            Challenge rivals in lightning-fast PvP, dominate seasonal tournaments, and broadcast your highlight reels. Code Royale powers every match with real-time judge feedback.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <NeonLink href="/game-modes" className="px-8 py-3">
-              Start Battle
-            </NeonLink>
-            <NeonLink
-              href="/auth/login"
-              className="border-sky-500/30 bg-transparent text-sky-200 hover:border-sky-400 hover:bg-sky-500/10"
-            >
-              Watch Live Matches
-            </NeonLink>
-          </div>
-        </section>
-
-        <section className="grid w-full gap-10 px-8 py-12 sm:px-12 md:grid-cols-[1.15fr_1fr] md:px-16">
-          <div className="flex flex-col justify-between gap-6">
-            <div className="space-y-4">
-              <span className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-400/70">
-                Live Bracket Preview
-              </span>
-              <h2 className="text-3xl font-semibold text-sky-50">
-                Neon clash from the caster booth
-              </h2>
-              <p className="text-sm text-sky-100/70">
-                Every match streams with split-screen analytics. Spectators follow keystrokes, judge verdicts, and streak multipliers second by second.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3 text-xs text-sky-300">
-              <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
-                60 FPS HUD
-              </span>
-              <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
-                Judge Timeline
-              </span>
-              <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
-                Real-time Code Feed
-              </span>
-            </div>
-          </div>
-          <div className="relative overflow-hidden rounded-[28px] bg-slate-900/80 shadow-[0_0_60px_rgba(56,189,248,0.25)]">
-            <Image
-              src="/images/bluebracket.jpg"
-              alt="Futuristic code battle interface"
-              width={960}
-              height={640}
-              className="h-full w-full object-cover object-center opacity-90"
-              priority
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-slate-950/30 via-sky-500/10 to-transparent" />
-          </div>
-        </section>
-
-        <section
-          id="game-modes"
-          className="w-full px-8 py-16 sm:px-12"
-        >
-          <div className="flex flex-col gap-6 text-center">
-            <span className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">
-              Select your arena
-            </span>
-            <h1 className="text-3xl font-semibold text-sky-50 md:text-5xl">
-              Choose how you want to battle today
+    <AppShell>
+      <div className="flex flex-col gap-8 p-6">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[var(--cr-bg-secondary)] to-[var(--cr-bg-tertiary)] p-8">
+          <div className="relative z-10 max-w-2xl">
+            <h1 className="text-3xl font-bold text-[var(--cr-fg)] md:text-4xl">
+              Welcome back, Coder
             </h1>
-            <p className="mx-auto max-w-3xl text-sm text-sky-100/70 md:text-base">
-              Queue instantly with bots, duel a rival, or invite up to four players for multi-way chaos. Modes share the same polished judge pipeline so you can focus on winning the code war.
+            <p className="mt-3 text-[var(--cr-fg-muted)]">
+              Ready for your next challenge? Jump into practice mode or queue up for a real-time battle.
             </p>
-          </div>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {timers.map((timer) => (
-              <div
-                key={timer}
-                className="rounded-3xl bg-slate-900/60 px-6 py-8 text-center shadow-[0_0_35px_rgba(56,189,248,0.1)]"
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href="/practice"
+                className="inline-flex items-center gap-2 rounded-lg bg-[rgb(var(--cr-accent-rgb))] px-5 py-2.5 text-sm font-semibold text-[var(--cr-bg)] transition-all hover:opacity-90"
               >
-                <p className="text-xs uppercase tracking-[0.3em] text-sky-400/60">
-                  Timer Preset
-                </p>
-                <p className="mt-4 text-2xl font-semibold text-sky-100">{timer}</p>
-                <p className="mt-2 text-sm text-sky-100/60">
-                  Configure before matchmaking to tailor the pressure curve.
-                </p>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Start Practice
+              </Link>
+              <Link
+                href="/game-modes"
+                className="inline-flex items-center gap-2 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-5 py-2.5 text-sm font-semibold text-[var(--cr-fg)] transition-all hover:bg-[var(--cr-bg-secondary)]"
+              >
+                Battle Mode
+              </Link>
+            </div>
+          </div>
+          {/* Decorative gradient */}
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-[rgba(var(--cr-accent-rgb),0.1)] to-transparent" />
+        </section>
+
+        {/* Stats Row */}
+        <section className="grid gap-4 sm:grid-cols-3">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5"
+            >
+              <div className="text-2xl font-bold text-[rgb(var(--cr-accent-rgb))]">{stat.value}</div>
+              <div className="mt-1 text-sm text-[var(--cr-fg-muted)]">{stat.label}</div>
+            </div>
+          ))}
+        </section>
+
+        {/* Battle Modes */}
+        <section>
+          <h2 className="mb-4 text-lg font-semibold text-[var(--cr-fg)]">Battle Modes</h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            {battleModes.map((mode) => (
+              <div
+                key={mode.title}
+                className="group rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5 transition-all hover:border-[rgba(var(--cr-accent-rgb),0.3)]"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[rgba(var(--cr-accent-rgb),0.1)] text-[rgb(var(--cr-accent-rgb))]">
+                  {mode.icon}
+                </div>
+                <h3 className="mt-4 text-base font-semibold text-[var(--cr-fg)]">{mode.title}</h3>
+                <p className="mt-2 text-sm text-[var(--cr-fg-muted)]">{mode.description}</p>
+                <Link
+                  href="/game-modes"
+                  className="mt-4 inline-flex items-center gap-1 text-sm text-[rgb(var(--cr-accent-rgb))] transition-colors hover:underline"
+                >
+                  Play now
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
               </div>
             ))}
           </div>
         </section>
 
-        <section id="tournaments" className="grid gap-8 px-8 pb-20 sm:px-12 md:grid-cols-3">
-          {battleModes.map((mode, index) => (
-            <GlowCard
-              key={mode.title}
-              title={mode.title}
-              description={mode.description}
-              accent={index === 2 ? "purple" : index === 1 ? "blue" : "cyan"}
-            >
-              <ul className="mt-4 space-y-3 text-sm text-sky-100/70">
-                {mode.details.map((detail) => (
-                  <li key={detail} className="flex items-start gap-3">
-                    <span className="mt-1 h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.5)]" />
-                    {detail}
-                  </li>
-                ))}
-              </ul>
-            </GlowCard>
-          ))}
-        </section>
-
-        <section
-          id="matchmaking"
-          className="grid gap-6 rounded-[32px] border border-sky-500/20 bg-slate-950/70 p-10 shadow-[0_0_55px_rgba(56,189,248,0.12)] backdrop-blur-xl md:grid-cols-2 md:gap-10 md:p-14"
-        >
-          <div className="flex flex-col gap-4">
-            <h2 className="text-3xl font-semibold text-sky-50">Match Types</h2>
-            <p className="text-sm text-sky-100/70">
-              Pick the competition format that matches your energy level. Each mode shares the same real-time scoreboard and judge sandbox, keeping the focus on pure skill.
-            </p>
-            <div className="space-y-4">
-              {matchTypes.map((type) => (
-                <div
-                  key={type.name}
-                  className="rounded-2xl border border-sky-500/20 bg-slate-900/70 p-5 text-sm text-sky-100/70"
+        {/* Recent Activity / Quick Actions */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Quick Practice */}
+          <section className="rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5">
+            <h2 className="mb-4 text-lg font-semibold text-[var(--cr-fg)]">Quick Practice</h2>
+            <div className="space-y-3">
+              {[
+                { label: "Easy", problems: "20 problems", color: "text-emerald-400" },
+                { label: "Medium", problems: "35 problems", color: "text-amber-400" },
+                { label: "Hard", problems: "15 problems", color: "text-red-400" },
+              ].map((tier) => (
+                <Link
+                  key={tier.label}
+                  href={`/practice?difficulty=${tier.label.toLowerCase()}`}
+                  className="flex items-center justify-between rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] p-4 transition-all hover:border-[rgba(var(--cr-accent-rgb),0.3)]"
                 >
-                  <h3 className="text-base font-semibold text-sky-100">{type.name}</h3>
-                  <p className="mt-2">{type.summary}</p>
-                </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-sm font-medium ${tier.color}`}>{tier.label}</span>
+                    <span className="text-xs text-[var(--cr-fg-muted)]">{tier.problems}</span>
+                  </div>
+                  <svg className="h-5 w-5 text-[var(--cr-fg-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </Link>
               ))}
             </div>
-          </div>
-          <div className="flex flex-col justify-between gap-6 rounded-3xl border border-sky-500/20 bg-slate-900/70 p-8 shadow-[0_0_50px_rgba(56,189,248,0.1)]">
-            <div className="space-y-3 text-sm text-sky-100/70">
-              <p>
-                <strong className="text-sky-200">Quick Launch</strong> connects you to the recommended queue based on your recent history. Customize timers and mode on the next screen.
-              </p>
-              <p>
-                <strong className="text-sky-200">Custom Lobby</strong> lets you invite friends or bots, tweak question pools, and set victory conditions like fastest solve or most points.
-              </p>
-            </div>
-            <div className="grid gap-3">
-              <NeonLink href="/auth/login">Quick Launch</NeonLink>
-              <NeonLink
-                href="/auth/signup"
-                className="border-sky-500/30 bg-transparent text-sky-200 hover:border-sky-400 hover:bg-sky-500/10"
-              >
-                Create Custom Lobby
-              </NeonLink>
-            </div>
-          </div>
-        </section>
+          </section>
 
-        <section className="grid gap-8 md:grid-cols-2">
-          {featurePanels.map((panel) => (
-            <div key={panel.id} id={panel.id} className="h-full">
-              <GlowCard
-                title={panel.title}
-                description={panel.description}
-                accent={panel.accent}
-              >
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <NeonLink
-                    href={panel.href}
-                    className="text-xs uppercase tracking-[0.35em]"
-                  >
-                    {panel.linkLabel}
-                  </NeonLink>
+          {/* Your Progress */}
+          <section className="rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5">
+            <h2 className="mb-4 text-lg font-semibold text-[var(--cr-fg)]">Your Progress</h2>
+            <div className="space-y-4">
+              <div>
+                <div className="mb-2 flex items-center justify-between text-sm">
+                  <span className="text-[var(--cr-fg-muted)]">Problems Solved</span>
+                  <span className="text-[var(--cr-fg)]">42 / 70</span>
                 </div>
-              </GlowCard>
-            </div>
-          ))}
-        </section>
-
-        <section className="overflow-hidden rounded-[36px] border border-sky-500/20 bg-slate-950/85 shadow-[0_0_55px_rgba(56,189,248,0.18)]">
-          <div className="grid gap-0 md:grid-cols-[1.35fr_1fr]">
-            <div className="relative order-2 h-72 w-full md:order-1 md:h-full">
-              <Image
-                src="/images/bluecode.jpg"
-                alt="Close-up code editor with neon syntax"
-                fill
-                className="object-cover object-center opacity-90"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-slate-950/70 via-slate-950/30 to-transparent" />
-            </div>
-            <div className="order-1 flex flex-col justify-center gap-4 p-10 md:order-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.4em] text-sky-400/70">
-                Analyst Desk Feed
-              </span>
-              <h2 className="text-3xl font-semibold text-sky-50">
-                Decode every micro-adjustment live
-              </h2>
-              <p className="text-sm text-sky-100/70">
-                Pull up telemetry overlays while you prep for your queue. Observe keystroke cadence, fallback snippets, and time-to-pass metrics to reverse engineer elite strategies.
-              </p>
-              <div className="flex flex-wrap gap-3 text-xs text-sky-300">
-                <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
-                  Strategy Vault
-                </span>
-                <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
-                  Ghost Replays
-                </span>
-                <span className="rounded-full border border-sky-500/30 px-3 py-1 uppercase tracking-[0.35em]">
-                  Overlay API
-                </span>
+                <div className="h-2 rounded-full bg-[var(--cr-bg-tertiary)]">
+                  <div className="h-full w-[60%] rounded-full bg-[rgb(var(--cr-accent-rgb))]" />
+                </div>
               </div>
+              <div>
+                <div className="mb-2 flex items-center justify-between text-sm">
+                  <span className="text-[var(--cr-fg-muted)]">Current Streak</span>
+                  <span className="text-[var(--cr-fg)]">5 days 🔥</span>
+                </div>
+                <div className="h-2 rounded-full bg-[var(--cr-bg-tertiary)]">
+                  <div className="h-full w-[71%] rounded-full bg-amber-500" />
+                </div>
+              </div>
+              <div className="pt-2">
+                <Link
+                  href="/profile"
+                  className="text-sm text-[rgb(var(--cr-accent-rgb))] hover:underline"
+                >
+                  View full profile →
+                </Link>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* Featured Image */}
+        <section className="relative overflow-hidden rounded-xl">
+          <div className="relative h-48 w-full md:h-64">
+            <Image
+              src="/images/bluebracket.jpg"
+              alt="Code battle interface"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--cr-bg)]/80 via-transparent to-transparent" />
+            <div className="absolute bottom-0 left-0 p-6">
+              <p className="text-xs font-medium uppercase tracking-wider text-[rgb(var(--cr-accent-rgb))]">
+                Live Tournaments
+              </p>
+              <h3 className="mt-1 text-xl font-bold text-[var(--cr-fg)]">
+                Weekly Code Championship
+              </h3>
+              <p className="mt-1 text-sm text-[var(--cr-fg-muted)]">
+                Join 500+ players competing for the top spot
+              </p>
             </div>
           </div>
         </section>
       </div>
-    </PracticeScaffold>
+    </AppShell>
   );
 }
-

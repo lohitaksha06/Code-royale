@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase";
-import { PracticeArenaShell } from "./practice-arena-shell";
-import { PracticeScaffold } from "../practice-scaffold";
+import { PracticeArenaLeetcode } from "@/components/practice-arena-leetcode";
 
 type PageProps = {
   params: { slug: string };
@@ -62,24 +61,22 @@ export default async function PracticeSessionPage({ params, searchParams }: Page
   const meta = question.meta && typeof question.meta === "object" ? question.meta : null;
 
   return (
-    <PracticeScaffold>
-      <PracticeArenaShell
-        question={{
-          id: question.id,
-          title: question.title,
-          description: question.description,
-          difficulty: question.difficulty,
-          languages,
-          meta: meta as {
-            timeComplexity?: string | null;
-            spaceComplexity?: string | null;
-            topics?: string[] | null;
-          } | null,
-        }}
-        testcases={testcases}
-        initialTimer={initialTimer}
-        initialLanguage={initialLanguage}
-      />
-    </PracticeScaffold>
+    <PracticeArenaLeetcode
+      question={{
+        id: question.id,
+        title: question.title,
+        description: question.description,
+        difficulty: question.difficulty,
+        languages,
+        meta: meta as {
+          timeComplexity?: string | null;
+          spaceComplexity?: string | null;
+          topics?: string[] | null;
+        } | null,
+      }}
+      testcases={testcases}
+      initialTimer={initialTimer}
+      initialLanguage={initialLanguage}
+    />
   );
 }

@@ -1,205 +1,219 @@
-import { GlowCard } from "../components/glow-card";
-import { NeonLink } from "../components/neon-button";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col gap-16">
-      <section className="relative grid gap-10 rounded-[40px] border border-slate-800/70 bg-slate-900/40 p-10 shadow-[0_10px_60px_rgba(15,118,230,0.15)] backdrop-blur-xl sm:grid-cols-[1.2fr_1fr] sm:gap-14 sm:p-14">
-        <div className="flex flex-col gap-8">
-          <span className="inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/80">
-            <span className="h-1.5 w-12 rounded-full bg-sky-500/70" />
-            Real-Time Coding Arena
-          </span>
-          <h1 className="text-4xl font-semibold leading-tight text-sky-50 md:text-6xl">
-            Battle-ready coding with neon intensity.
-          </h1>
-          <p className="max-w-xl text-base leading-relaxed text-sky-100/70 md:text-lg">
-            Duel friends, climb the Royale ladder, and sharpen your reflexes in a
-            futuristic arena crafted for developers. Every keystroke powers the
-            scoreboard.
-          </p>
-          <div className="flex flex-wrap items-center gap-4">
-            <NeonLink href="/auth/signup">Join the Beta</NeonLink>
-            <NeonLink href="/game-modes" className="border-sky-400/40 bg-transparent text-sky-200 hover:border-sky-300 hover:bg-sky-400/10">
-              Explore Game Modes
-            </NeonLink>
-            <NeonLink
-              href="#get-started"
-              className="border-sky-400/40 bg-transparent text-sky-200 hover:border-sky-300 hover:bg-sky-400/10"
+    <div className="min-h-screen bg-cr-bg">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-cr-border bg-cr-bg/80 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-cr-accent to-cr-accent/60">
+              <span className="text-xl font-bold text-white">CR</span>
+            </div>
+            <span className="text-xl font-bold text-cr-fg">Code Royale</span>
+          </Link>
+          <div className="flex items-center gap-6">
+            <Link href="/auth/login" className="text-sm font-medium text-cr-fg-muted hover:text-cr-fg transition-colors">
+              Sign In
+            </Link>
+            <Link 
+              href="/auth/signup" 
+              className="rounded-lg bg-cr-accent px-4 py-2 text-sm font-medium text-white hover:bg-cr-accent/90 transition-colors"
             >
-              Explore Setup Steps
-            </NeonLink>
+              Get Started
+            </Link>
           </div>
-          <dl className="grid gap-6 sm:grid-cols-3">
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_rgba(var(--cr-accent-rgb),0.15),_transparent_50%)]" />
+        <div className="relative mx-auto max-w-7xl px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cr-border bg-cr-bg-secondary px-4 py-2 text-sm">
+              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-cr-fg-muted">Beta Now Live</span>
+            </div>
+            <h1 className="text-5xl font-bold tracking-tight text-cr-fg md:text-6xl lg:text-7xl">
+              Battle-ready coding
+              <span className="block text-cr-accent">with neon intensity</span>
+            </h1>
+            <p className="mt-6 text-lg text-cr-fg-muted md:text-xl">
+              Duel friends, climb the Royale ladder, and sharpen your reflexes in a
+              futuristic arena crafted for developers.
+            </p>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+              <Link 
+                href="/auth/signup"
+                className="rounded-lg bg-cr-accent px-8 py-3 text-base font-semibold text-white shadow-lg shadow-cr-accent/25 hover:bg-cr-accent/90 transition-all hover:shadow-xl hover:shadow-cr-accent/30"
+              >
+                Join the Arena
+              </Link>
+              <Link 
+                href="/game-modes"
+                className="rounded-lg border border-cr-border bg-cr-bg-secondary px-8 py-3 text-base font-semibold text-cr-fg hover:bg-cr-bg-tertiary transition-colors"
+              >
+                Explore Modes
+              </Link>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="mt-20 grid gap-6 sm:grid-cols-3">
             {[
-              {
-                label: "Concurrent Battles",
-                helper: "Connect Firebase to stream live counts.",
-              },
-              {
-                label: "Verified Coders",
-                helper: "Displays once Auth sync is enabled.",
-              },
-              {
-                label: "Average Match",
-                helper: "Timer appears after first duel.",
-              },
+              { value: "1v1", label: "Real-time Battles" },
+              { value: "3+", label: "Game Modes" },
+              { value: "∞", label: "Practice Problems" },
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-2xl border border-sky-500/20 bg-slate-900/60 p-4 text-center shadow-[0_0_30px_rgba(56,189,248,0.08)]"
+                className="rounded-xl border border-cr-border bg-cr-bg-secondary p-6 text-center"
               >
-                <dt className="text-xs uppercase tracking-[0.3em] text-sky-500/60">
-                  {stat.label}
-                </dt>
-                <dd className="mt-3 text-lg font-semibold text-sky-100/80">
-                  Awaiting data
-                </dd>
-                <dd className="mt-2 text-xs text-sky-400/60">{stat.helper}</dd>
+                <div className="text-3xl font-bold text-cr-accent">{stat.value}</div>
+                <div className="mt-2 text-sm text-cr-fg-muted">{stat.label}</div>
               </div>
             ))}
-          </dl>
-        </div>
-        <div className="relative flex flex-col justify-end gap-6 rounded-3xl border border-sky-500/20 bg-gradient-to-br from-slate-900/60 to-slate-900/10 p-8 shadow-[0_0_45px_rgba(56,189,248,0.16)]">
-          <div className="absolute inset-x-6 top-6 h-32 rounded-3xl bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.35),_transparent_70%)] blur-3xl" />
-          <div className="relative grid gap-4 text-sm">
-            <h2 className="text-lg font-semibold text-sky-100">Match Uplink</h2>
-            <div className="space-y-3 rounded-2xl border border-sky-500/20 bg-slate-950/80 p-4">
-              <p className="text-sm text-sky-100/65">
-                Live queues will populate here automatically once Socket.IO is wired
-                to the Firebase queue collection.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-sky-500/20 bg-slate-950/80 p-4">
-              <p className="text-xs uppercase tracking-[0.35em] text-sky-400/70">
-                Next Duel
-              </p>
-              <p className="mt-3 text-base font-semibold text-sky-100">
-                Waiting for your first matchmaking event.
-              </p>
-              <p className="mt-2 text-sm text-sky-100/60">
-                Once the backend pushes an active duel, details drop here in real
-                time.
-              </p>
-            </div>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-8 md:grid-cols-3">
-        <GlowCard
-          title="Lightning Modes"
-          description="Hop into Bullet, League, or Bot scrims. Every mode recalibrates pace, difficulty, and scoring curves."
-          accent="cyan"
-        >
-          <ul className="grid gap-3 text-sm text-sky-100/70">
-            <li className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.5)]" />
-              60s bullet rounds with adaptive prompts.
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.5)]" />
-              League ladders with ELO-calibrated rivals.
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-violet-500 shadow-[0_0_12px_rgba(139,92,246,0.5)]" />
-              Smart bots tuned for practice or chaos.
-            </li>
-          </ul>
-        </GlowCard>
-
-        <GlowCard
-          title="Telemetry Dashboard"
-          description="KPIs sync directly from Firestore once you connect live data.
-          Placeholder widgets below demonstrate layout states."
-          accent="blue"
-        >
-          <div className="grid gap-3 text-sm text-sky-100/70">
-            {["Streaks", "Solve velocity"].map((metric) => (
-              <div
-                key={metric}
-                className="rounded-xl border border-sky-500/20 bg-slate-950/80 p-3"
-              >
-                <p className="text-xs uppercase tracking-[0.3em] text-sky-400/70">
-                  {metric}
-                </p>
-                <p className="mt-2 text-sm text-sky-100/60">
-                  Data appears after Firebase integration.
-                </p>
-              </div>
-            ))}
-          </div>
-        </GlowCard>
-
-        <GlowCard
-          title="Secure Sandbox"
-          description="Instant verdicts stream from a hardened Firebase + Socket uplink. Compile, execute, respond in milliseconds."
-          accent="purple"
-        >
-          <div className="space-y-3 text-sm text-sky-100/70">
-            <p>Optimized for TypeScript, Python, and C++ out of the box.</p>
-            <p>Custom judges &amp; rate limiting ensure fair duels.</p>
-            <p>Replay packets let you audit every keystroke.</p>
-          </div>
-        </GlowCard>
-      </section>
-
-      <section className="grid gap-10 rounded-[36px] border border-slate-800/80 bg-slate-900/40 p-10 shadow-[0_0_55px_rgba(56,189,248,0.12)] backdrop-blur-xl md:grid-cols-[1.1fr_0.9fr] md:gap-14 md:p-14">
-        <div className="flex flex-col gap-6">
-          <h2 className="text-3xl font-semibold text-sky-50 md:text-4xl">
-            Built for coders who crave adrenaline.
-          </h2>
-          <p className="text-base text-sky-100/70">
-            Code Royale fuses esports presentation with rigorous assessments. Queue with teammates, scout rivals via the dashboard, and climb neon-lit leagues.
-          </p>
-          <div className="grid gap-4 text-sm text-sky-100/75 md:grid-cols-2">
-            {["Real-time sockets", "Firebase telemetry", "Monaco editor", "Framer motion"].map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-3 rounded-xl border border-sky-500/20 bg-slate-950/60 p-4"
-              >
-                <span className="h-2.5 w-2.5 rounded-full bg-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.5)]" />
-                {item}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="relative flex flex-col gap-5 rounded-3xl border border-sky-500/20 bg-slate-950/70 p-6 shadow-[0_0_50px_rgba(56,189,248,0.12)]">
-          <p className="text-xs uppercase tracking-[0.35em] text-sky-400/60">
-            Pipeline Preview
-          </p>
-          <div className="space-y-3 text-sm text-sky-100/70">
-            <p>
-              <strong className="text-sky-200">pnpm dev</strong> spins up the arena with real-time socket feeds.
+      {/* Features Section */}
+      <section className="py-20 bg-cr-bg-secondary">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-cr-fg md:text-4xl">
+              Everything you need to compete
+            </h2>
+            <p className="mt-4 text-cr-fg-muted">
+              From quick practice sessions to intense ranked battles
             </p>
-            <p>Firebase Auth verifies players before they enter the tunnel.</p>
-            <p>Leaderboard sync pulses every 5 seconds with incremental updates.</p>
-            <p>Match replays stream through an encrypted edge cache.</p>
+          </div>
+
+          <div className="mt-16 grid gap-8 md:grid-cols-3">
+            {[
+              {
+                icon: "⚡",
+                title: "Lightning Modes",
+                description: "60-second bullet rounds, league ladders with ELO-calibrated rivals, and smart bots for practice.",
+              },
+              {
+                icon: "📊",
+                title: "Live Telemetry",
+                description: "Track your streaks, solve velocity, and performance metrics in real-time.",
+              },
+              {
+                icon: "🔒",
+                title: "Secure Sandbox",
+                description: "Instant verdicts in a hardened environment. TypeScript, Python, and C++ supported.",
+              },
+            ].map((feature) => (
+              <div
+                key={feature.title}
+                className="group rounded-xl border border-cr-border bg-cr-bg p-8 transition-all hover:border-cr-accent/50"
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-cr-accent/10 text-2xl">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold text-cr-fg">{feature.title}</h3>
+                <p className="mt-3 text-cr-fg-muted">{feature.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section id="get-started" className="relative overflow-hidden rounded-[32px] border border-sky-500/20 bg-slate-950/70 p-10 text-center shadow-[0_0_45px_rgba(56,189,248,0.14)]">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,_rgba(56,189,248,0.2),_transparent_65%)]" />
-        <h2 className="text-3xl font-semibold text-sky-50 md:text-4xl">
-          Ready to activate your arena?
-        </h2>
-        <p className="mt-4 text-sm text-sky-100/70 md:text-base">
-          Connect your Firebase project, enable Socket.IO matchmaking, and bring your
-          first duel online. The interface adapts instantly once live data flows in.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-4">
-          <NeonLink href="/auth/signup" className="px-8 py-3">
-            Get Started
-          </NeonLink>
-          <NeonLink
-            href="/auth/login"
-            className="border-sky-500/30 bg-transparent text-sky-200 hover:border-sky-400 hover:bg-sky-500/10"
-          >
-            I already have access
-          </NeonLink>
+      {/* Game Modes Preview */}
+      <section className="py-20">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            <div>
+              <h2 className="text-3xl font-bold text-cr-fg md:text-4xl">
+                Built for coders who crave adrenaline
+              </h2>
+              <p className="mt-4 text-cr-fg-muted">
+                Code Royale fuses esports presentation with rigorous assessments.
+                Queue with teammates, scout rivals, and climb neon-lit leagues.
+              </p>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                {["Real-time sockets", "Monaco editor", "Live leaderboards", "Match replays"].map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 rounded-lg border border-cr-border bg-cr-bg-secondary p-4"
+                  >
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cr-accent/20 text-cr-accent text-sm">✓</span>
+                    <span className="text-cr-fg">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cr-accent/20 to-transparent blur-2xl" />
+              <div className="relative rounded-2xl border border-cr-border bg-cr-bg-secondary p-8">
+                <div className="mb-4 flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-red-500" />
+                  <div className="h-3 w-3 rounded-full bg-yellow-500" />
+                  <div className="h-3 w-3 rounded-full bg-green-500" />
+                </div>
+                <div className="space-y-3 font-mono text-sm">
+                  <div className="text-cr-fg-muted">$ code-royale start</div>
+                  <div className="text-green-400">✓ Connecting to arena...</div>
+                  <div className="text-green-400">✓ Opponent found: @rival_coder</div>
+                  <div className="text-cr-accent">⚔ Battle starting in 3...</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-cr-bg-secondary">
+        <div className="mx-auto max-w-3xl px-6 text-center">
+          <h2 className="text-3xl font-bold text-cr-fg md:text-4xl">
+            Ready to enter the arena?
+          </h2>
+          <p className="mt-4 text-cr-fg-muted">
+            Join thousands of developers sharpening their skills through competitive coding.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+            <Link 
+              href="/auth/signup"
+              className="rounded-lg bg-cr-accent px-8 py-3 text-base font-semibold text-white shadow-lg shadow-cr-accent/25 hover:bg-cr-accent/90 transition-all"
+            >
+              Create Account
+            </Link>
+            <Link 
+              href="/auth/login"
+              className="rounded-lg border border-cr-border px-8 py-3 text-base font-semibold text-cr-fg hover:bg-cr-bg transition-colors"
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-cr-border bg-cr-bg py-12">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cr-accent">
+                <span className="text-sm font-bold text-white">CR</span>
+              </div>
+              <span className="font-semibold text-cr-fg">Code Royale</span>
+            </div>
+            <div className="flex items-center gap-6 text-sm text-cr-fg-muted">
+              <Link href="/game-modes" className="hover:text-cr-fg transition-colors">Game Modes</Link>
+              <Link href="/practice" className="hover:text-cr-fg transition-colors">Practice</Link>
+              <Link href="/auth/login" className="hover:text-cr-fg transition-colors">Sign In</Link>
+            </div>
+            <div className="text-sm text-cr-fg-muted">
+              © 2024 Code Royale
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

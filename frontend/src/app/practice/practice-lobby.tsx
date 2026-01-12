@@ -12,17 +12,17 @@ type QuestionMeta = {
   difficulty: Difficulty;
 };
 
-const difficultyOptions: Array<{ label: string; value: Difficulty }> = [
-  { label: "Easy", value: "easy" },
-  { label: "Medium", value: "medium" },
-  { label: "Hard", value: "hard" },
-  
+const difficultyOptions: Array<{ label: string; value: Difficulty; color: string }> = [
+  { label: "Easy", value: "easy", color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10" },
+  { label: "Medium", value: "medium", color: "text-amber-400 border-amber-500/30 bg-amber-500/10" },
+  { label: "Hard", value: "hard", color: "text-red-400 border-red-500/30 bg-red-500/10" },
 ];
 
 const timerOptions = [
   { label: "1 minute", value: 60 },
   { label: "5 minutes", value: 5 * 60 },
   { label: "15 minutes", value: 15 * 60 },
+  { label: "30 minutes", value: 30 * 60 },
 ];
 
 const languageOptions = [
@@ -104,106 +104,122 @@ export function PracticeLobby() {
   };
 
   return (
-    <section className="w-full px-6 pb-20 pt-10 sm:px-8 lg:px-10">
-      <div className="grid gap-12 lg:grid-cols-[1.15fr_0.9fr]">
-        <div className="space-y-10">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-400/60">Pick difficulty</p>
-            <div className="mt-3 grid grid-cols-3 gap-3">
-              {difficultyOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setDifficulty(option.value)}
-                  className={`rounded-2xl border px-4 py-4 text-sm font-semibold transition ${
-                    difficulty === option.value
-                      ? "border-sky-400 bg-sky-500/20 text-sky-100 shadow-[0_0_30px_rgba(56,189,248,0.28)]"
-                      : "border-slate-600/40 bg-slate-900/70 text-sky-100/70 hover:border-sky-400/40 hover:text-sky-100"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-400/60">Timer</label>
-              <select
-                value={timer}
-                onChange={(event) => setTimer(Number(event.target.value))}
-                className="mt-3 w-full rounded-2xl border border-slate-600/40 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-sky-100/80 focus:border-sky-400/60 focus:outline-none"
+    <div className="grid gap-6 lg:grid-cols-3">
+      {/* Settings Panel */}
+      <div className="lg:col-span-2 space-y-6">
+        {/* Difficulty Selection */}
+        <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5">
+          <h3 className="mb-4 text-sm font-medium text-[var(--cr-fg)]">Difficulty</h3>
+          <div className="flex gap-3">
+            {difficultyOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setDifficulty(option.value)}
+                className={`flex-1 rounded-lg border px-4 py-3 text-sm font-medium transition-all ${
+                  difficulty === option.value
+                    ? `${option.color} shadow-sm`
+                    : "border-[var(--cr-border)] text-[var(--cr-fg-muted)] hover:border-[var(--cr-fg-muted)] hover:text-[var(--cr-fg)]"
+                }`}
               >
-                {timerOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-400/60">Language</label>
-              <select
-                value={language}
-                onChange={(event) => setLanguage(event.target.value)}
-                className="mt-3 w-full rounded-2xl border border-slate-600/40 bg-slate-900/70 px-4 py-3 text-sm font-semibold text-sky-100/80 focus:border-sky-400/60 focus:outline-none"
-              >
-                {languageOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+                {option.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="rounded-[28px] border border-slate-600/40 bg-slate-900/65 p-6 shadow-[0_0_36px_rgba(56,189,248,0.18)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-400/60">Next challenge preview</p>
-            <div className="mt-4 space-y-3 text-sm text-sky-100/75">
-              {loading && <p>Fetching curated problems...</p>}
-              {!loading && questions.length > 0 && (
-                <>
-                  <p>
-                    We have <span className="text-sky-200">{questions.length}</span> {activeDifficultyLabel.toLowerCase()} problems ready. We will pick one at random the moment you start practice.
-                  </p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-sky-400/60">Sample pool</p>
-                  <ul className="space-y-2 text-sm text-sky-100/70">
-                    {questions.slice(0, 3).map((question) => (
-                      <li key={question.id} className="flex items-center gap-2">
-                        <span className="inline-flex h-2 w-2 rounded-full bg-sky-400/80" />
+        {/* Timer and Language */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5">
+            <label className="mb-3 block text-sm font-medium text-[var(--cr-fg)]">Timer</label>
+            <select
+              value={timer}
+              onChange={(event) => setTimer(Number(event.target.value))}
+              className="w-full rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2.5 text-sm text-[var(--cr-fg)] focus:border-[rgba(var(--cr-accent-rgb),0.5)] focus:outline-none focus:ring-1 focus:ring-[rgba(var(--cr-accent-rgb),0.5)]"
+            >
+              {timerOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5">
+            <label className="mb-3 block text-sm font-medium text-[var(--cr-fg)]">Language</label>
+            <select
+              value={language}
+              onChange={(event) => setLanguage(event.target.value)}
+              className="w-full rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2.5 text-sm text-[var(--cr-fg)] focus:border-[rgba(var(--cr-accent-rgb),0.5)] focus:outline-none focus:ring-1 focus:ring-[rgba(var(--cr-accent-rgb),0.5)]"
+            >
+              {languageOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Preview Panel */}
+      <div className="space-y-6">
+        <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5">
+          <h3 className="mb-4 text-sm font-medium text-[var(--cr-fg)]">Problem Preview</h3>
+          <div className="space-y-4 text-sm">
+            {loading && (
+              <div className="flex items-center gap-2 text-[var(--cr-fg-muted)]">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Loading problems...
+              </div>
+            )}
+            {!loading && questions.length > 0 && (
+              <>
+                <p className="text-[var(--cr-fg-muted)]">
+                  <span className="text-[rgb(var(--cr-accent-rgb))]">{questions.length}</span> {activeDifficultyLabel.toLowerCase()} problems available
+                </p>
+                <div className="space-y-2">
+                  <p className="text-xs text-[var(--cr-fg-muted)]">Sample problems:</p>
+                  <ul className="space-y-1.5">
+                    {questions.slice(0, 4).map((question) => (
+                      <li key={question.id} className="flex items-center gap-2 text-[var(--cr-fg)]">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[rgb(var(--cr-accent-rgb))]" />
                         <span className="truncate">{question.title}</span>
                       </li>
                     ))}
-                    {questions.length > 3 && (
-                      <li className="text-xs text-sky-300/70">+ {questions.length - 3} more challenges in rotation</li>
+                    {questions.length > 4 && (
+                      <li className="text-xs text-[var(--cr-fg-muted)]">
+                        + {questions.length - 4} more
+                      </li>
                     )}
                   </ul>
-                </>
-              )}
-              {!loading && questions.length === 0 && (
-                <p className="text-sky-200/70">We are still calibrating this tier. Check back soon for fresh problems.</p>
-              )}
-            </div>
+                </div>
+              </>
+            )}
+            {!loading && questions.length === 0 && !error && (
+              <p className="text-[var(--cr-fg-muted)]">No problems available for this difficulty yet.</p>
+            )}
           </div>
-
-          {error && (
-            <div className="rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div>
-          )}
-
-          <button
-            type="button"
-            onClick={handleStart}
-            className="mt-2 rounded-full border border-sky-500/40 bg-sky-500/20 px-8 py-4 text-sm font-semibold uppercase tracking-[0.3em] text-sky-50 shadow-[0_0_40px_rgba(56,189,248,0.32)] transition hover:border-sky-300 hover:bg-sky-500/35 disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={loading || questions.length === 0}
-          >
-            Start Practice
-          </button>
         </div>
+
+        {error && (
+          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={handleStart}
+          disabled={loading || questions.length === 0}
+          className="w-full rounded-lg bg-[rgb(var(--cr-accent-rgb))] px-6 py-3 text-sm font-semibold text-[var(--cr-bg)] transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Start Practice
+        </button>
       </div>
-    </section>
+    </div>
   );
 }

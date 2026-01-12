@@ -1,21 +1,18 @@
+import { AppShell } from "@/components/app-shell";
 import { PracticeLobby } from "./practice-lobby";
-import { PracticeScaffold } from "./practice-scaffold";
 
 export default function PracticePage() {
   return (
-    <PracticeScaffold>
-      <header className="w-full space-y-3 px-6 sm:px-8 lg:px-10">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-400/70">
-          Solo training grounds
-        </p>
-        <h1 className="text-4xl font-semibold text-sky-50 md:text-5xl">
-          Practice Arena
-        </h1>
-        <p className="text-sm text-sky-100/70 md:text-base">
-          Sharpen your fundamentals before stepping into PvP. Choose a difficulty tier, lock in a timer, and let us deliver a randomized challenge tuned to your goals.
-        </p>
-      </header>
-      <PracticeLobby />
-    </PracticeScaffold>
+    <AppShell>
+      <div className="p-6">
+        <header className="mb-8">
+          <h1 className="text-2xl font-bold text-[var(--cr-fg)]">Practice Arena</h1>
+          <p className="mt-1 text-sm text-[var(--cr-fg-muted)]">
+            Sharpen your skills before stepping into PvP. Choose a difficulty and start coding.
+          </p>
+        </header>
+        <PracticeLobby />
+      </div>
+    </AppShell>
   );
 }

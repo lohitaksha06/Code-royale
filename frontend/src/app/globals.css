@@ -1,29 +1,53 @@
 @import "tailwindcss";
 
-:root {
-  --background: #030712;
-  --foreground: #e2f3ff;
-
-  /* Theme primitives (RGB vars allow alpha via rgba(var(--*), a)) */
-  --cr-bg: #030712;
-  --cr-fg: #e2f3ff;
-  --cr-accent-rgb: 56, 189, 248; /* neon blue */
-  --cr-accent-2-rgb: 14, 165, 233;
+/* Tailwind v4 custom theme */
+@theme {
+  --color-cr-bg: var(--cr-bg);
+  --color-cr-bg-secondary: var(--cr-bg-secondary);
+  --color-cr-bg-tertiary: var(--cr-bg-tertiary);
+  --color-cr-fg: var(--cr-fg);
+  --color-cr-fg-muted: var(--cr-fg-muted);
+  --color-cr-border: var(--cr-border);
+  --color-cr-accent: var(--cr-accent-hex);
 }
 
-html[data-theme="neon-blue"] {
+:root {
+  --background: #0a0a0f;
+  --foreground: #e2e8f0;
+
+  /* Theme primitives (RGB vars allow alpha via rgba(var(--*), a)) */
+  --cr-bg: #0a0a0f;
+  --cr-bg-secondary: #12121a;
+  --cr-bg-tertiary: #1a1a24;
+  --cr-fg: #e2e8f0;
+  --cr-fg-muted: #94a3b8;
+  --cr-border: #2a2a3a;
+  --cr-accent-rgb: 56, 189, 248; /* neon blue */
+  --cr-accent-2-rgb: 14, 165, 233;
+  --cr-accent-hex: #38bdf8;
+}
+
+html[data-theme="neon-blue"],
+:root {
   --cr-accent-rgb: 56, 189, 248;
   --cr-accent-2-rgb: 14, 165, 233;
+  --cr-accent-hex: #38bdf8;
 }
 
 html[data-theme="ember-red"] {
-  --cr-accent-rgb: 244, 63, 94; /* rose-500 */
-  --cr-accent-2-rgb: 220, 38, 38; /* red-600 */
+  --cr-accent-rgb: 248, 113, 113; /* red-400 */
+  --cr-accent-2-rgb: 239, 68, 68; /* red-500 */
+  --cr-accent-hex: #f87171;
 }
 
 html[data-theme="hazard-orange"] {
-  --cr-accent-rgb: 249, 115, 22; /* orange-500 */
-  --cr-accent-2-rgb: 217, 119, 6; /* amber-600 */
+  --cr-accent-rgb: 251, 146, 60; /* orange-400 */
+  --cr-accent-2-rgb: 249, 115, 22; /* orange-500 */
+  --cr-accent-hex: #fb923c;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
@@ -37,8 +61,17 @@ body {
 
 /* Optional subtle pulse you can apply via className if wanted */
 @keyframes neonPulse {
-  0%, 100% { box-shadow: 0 0 28px rgba(var(--cr-accent-rgb), 0.35); }
-  50% { box-shadow: 0 0 44px rgba(var(--cr-accent-rgb), 0.55); }
+  0%, 100% { box-shadow: 0 0 20px rgba(var(--cr-accent-rgb), 0.25); }
+  50% { box-shadow: 0 0 35px rgba(var(--cr-accent-rgb), 0.4); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
 a {
@@ -46,15 +79,53 @@ a {
   text-decoration: none;
 }
 
+/* Clean scrollbar */
 ::-webkit-scrollbar {
-  width: 0.6rem;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--cr-bg-secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(var(--cr-accent-rgb), 0.72), rgba(var(--cr-accent-2-rgb), 0.82));
+  background: rgba(var(--cr-accent-rgb), 0.4);
   border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--cr-accent-rgb), 0.6);
+}
+
+/* Split pane resizer */
+.split-pane-resizer {
+  width: 4px;
+  background: var(--cr-border);
+  cursor: col-resize;
+  transition: background 0.2s;
+}
+
+.split-pane-resizer:hover {
+  background: rgba(var(--cr-accent-rgb), 0.5);
+}
+
+/* Code editor styles */
+.code-editor {
+  font-family: var(--font-geist-mono), 'Fira Code', 'Monaco', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+/* Focus ring */
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--cr-accent-rgb), 0.4);
+}
+
+/* Selection */
+::selection {
+  background: rgba(var(--cr-accent-rgb), 0.3);
+  color: var(--cr-fg);
 }
