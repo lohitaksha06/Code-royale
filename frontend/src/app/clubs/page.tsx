@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AppShell } from "../../components/app-shell";
 
 type ClubPrivacy = "public" | "private";
@@ -30,110 +31,7 @@ interface Club {
   topPlayers: ClubMember[];
 }
 
-const topClubs: Club[] = [
-  {
-    id: "1",
-    name: "Code Warriors",
-    logo: "⚔️",
-    emblem: "sword",
-    trophies: 15420,
-    members: 38,
-    maxMembers: 40,
-    privacy: "public",
-    rank: 1,
-    description: "Elite coders pushing the limits. Join us for daily battles!",
-    topPlayers: [
-      { id: "p1", username: "NeonCoder",  avatar: "NC", trophies: 4200, role: "host" },
-      { id: "p2", username: "ByteStorm",  avatar: "BS", trophies: 3800, role: "elder" },
-      { id: "p3", username: "AlgoKnight", avatar: "AK", trophies: 3100, role: "member" },
-    ],
-  },
-  {
-    id: "2",
-    name: "Binary Beasts",
-    logo: "🐉",
-    emblem: "dragon",
-    trophies: 12850,
-    members: 35,
-    maxMembers: 40,
-    privacy: "public",
-    rank: 2,
-    description: "Beasts in binary, dragons in code.",
-    topPlayers: [
-      { id: "p4", username: "CodePhantom",  avatar: "CP", trophies: 3500, role: "host" },
-      { id: "p5", username: "BinaryWraith", avatar: "BW", trophies: 3200, role: "elder" },
-      { id: "p6", username: "SyntaxSage",   avatar: "SS", trophies: 2900, role: "member" },
-    ],
-  },
-  {
-    id: "3",
-    name: "Algorithm Aces",
-    logo: "🎯",
-    emblem: "target",
-    trophies: 11200,
-    members: 28,
-    maxMembers: 30,
-    privacy: "private",
-    rank: 3,
-    description: "Private club for algorithm enthusiasts. Apply to join!",
-    topPlayers: [
-      { id: "p7", username: "LoopLegend",   avatar: "LL", trophies: 3000, role: "host" },
-      { id: "p8", username: "StackSamurai", avatar: "SM", trophies: 2700, role: "elder" },
-      { id: "p9", username: "HeapHero",     avatar: "HH", trophies: 2400, role: "member" },
-    ],
-  },
-  {
-    id: "4",
-    name: "Syntax Slayers",
-    logo: "⚡",
-    emblem: "lightning",
-    trophies: 9800,
-    members: 20,
-    maxMembers: 20,
-    privacy: "public",
-    rank: 4,
-    description: "Slaying syntax errors since day one.",
-    topPlayers: [
-      { id: "p10", username: "RecursionKing", avatar: "RK", trophies: 2600, role: "host" },
-      { id: "p11", username: "VoidVoyager",   avatar: "VV", trophies: 2200, role: "elder" },
-      { id: "p12", username: "PixelProwler",  avatar: "PP", trophies: 1800, role: "member" },
-    ],
-  },
-  {
-    id: "5",
-    name: "Debug Dynasty",
-    logo: "🔥",
-    emblem: "fire",
-    trophies: 8500,
-    members: 19,
-    maxMembers: 30,
-    privacy: "private",
-    rank: 5,
-    description: "Where bugs come to die. Private club — request to join.",
-    topPlayers: [
-      { id: "p13", username: "NodeNinja",  avatar: "NN", trophies: 2100, role: "host" },
-      { id: "p14", username: "FuncFalcon", avatar: "FF", trophies: 1900, role: "elder" },
-      { id: "p15", username: "LambdaLion", avatar: "LD", trophies: 1500, role: "member" },
-    ],
-  },
-  {
-    id: "6",
-    name: "Runtime Rebels",
-    logo: "🚀",
-    emblem: "star",
-    trophies: 7200,
-    members: 15,
-    maxMembers: 30,
-    privacy: "public",
-    rank: 6,
-    description: "Breaking limits at runtime. Open to all challengers.",
-    topPlayers: [
-      { id: "p16", username: "TurboTyper", avatar: "TT", trophies: 1800, role: "host" },
-      { id: "p17", username: "BitBlaster", avatar: "BB", trophies: 1500, role: "member" },
-      { id: "p18", username: "DataDruid",  avatar: "DD", trophies: 1200, role: "member" },
-    ],
-  },
-];
+const topClubs: Club[] = [];
 
 const logoOptions = ["⚔️", "🐉", "🎯", "⚡", "🔥", "🏆", "💎", "🚀", "👑", "🦁", "🐺", "🦅"];
 const emblemOptions = [
@@ -147,10 +45,47 @@ const emblemOptions = [
   { id: "target",    name: "Target",    color: "from-rose-500 to-pink-500" },
 ];
 
+const STORAGE_MY_CLUB_ID = "cr_my_club_id";
+const STORAGE_MY_CUSTOM_CLUB = "cr_my_custom_club";
+
+function loadMyClubFromStorage(): Club | null {
+  if (typeof window === "undefined") return null;
+  const myClubId = window.localStorage.getItem(STORAGE_MY_CLUB_ID);
+  if (!myClubId) return null;
+
+  const customRaw = window.localStorage.getItem(STORAGE_MY_CUSTOM_CLUB);
+  if (customRaw) {
+    try {
+      const parsed = JSON.parse(customRaw) as Club;
+      if (parsed?.id === myClubId) return parsed;
+    } catch {
+      // ignore
+    }
+  }
+
+  return topClubs.find((c) => c.id === myClubId) ?? null;
+}
+
+function persistMyClub(club: Club, source: "custom" | "existing") {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(STORAGE_MY_CLUB_ID, club.id);
+  if (source === "custom") {
+    window.localStorage.setItem(STORAGE_MY_CUSTOM_CLUB, JSON.stringify(club));
+  } else {
+    window.localStorage.removeItem(STORAGE_MY_CUSTOM_CLUB);
+  }
+}
+
+function clearMyClub() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(STORAGE_MY_CLUB_ID);
+  window.localStorage.removeItem(STORAGE_MY_CUSTOM_CLUB);
+}
+
 /* ── Hover tooltip component ────────────────────────────── */
 function ClubHoverCard({ club }: { club: Club }) {
   return (
-    <div className="absolute left-full top-0 z-50 ml-2 w-72 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] p-4 shadow-xl shadow-black/40 animate-fade-in pointer-events-none">
+    <div className="absolute right-full top-0 z-50 mr-2 w-72 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] p-4 shadow-xl shadow-black/40 animate-fade-in pointer-events-none">
       {/* Club header */}
       <div className="flex items-center gap-3 mb-3">
         <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${
@@ -218,10 +153,12 @@ function ClubRow({
   club,
   myClub,
   onJoin,
+  onOpen,
 }: {
   club: Club;
   myClub: Club | null;
   onJoin: (club: Club) => void;
+  onOpen: (clubId: string) => void;
 }) {
   const [showHover, setShowHover] = useState(false);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -241,9 +178,14 @@ function ClubRow({
 
   return (
     <div
-      className="relative flex items-center gap-4 p-4 hover:bg-[var(--cr-bg-tertiary)] transition-colors"
+      className="relative flex cursor-pointer items-center gap-4 p-4 hover:bg-[var(--cr-bg-tertiary)] transition-colors"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={(e) => {
+        const target = e.target as HTMLElement | null;
+        if (target?.closest("button") || target?.closest("a")) return;
+        onOpen(club.id);
+      }}
     >
       {/* Hover card */}
       {showHover && !isMyClub && <ClubHoverCard club={club} />}
@@ -305,7 +247,10 @@ function ClubRow({
         </span>
       ) : (
         <button
-          onClick={() => onJoin(club)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onJoin(club);
+          }}
           className="rounded-lg bg-[rgb(var(--cr-accent-rgb))] px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 transition-opacity"
         >
           {club.privacy === "private" ? "Request" : "Join"}
@@ -319,6 +264,7 @@ function ClubRow({
    Main Clubs Page
    ────────────────────────────────────────────────────────── */
 export default function ClubsPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [showBrowse, setShowBrowse] = useState(false);
 
@@ -333,6 +279,11 @@ export default function ClubsPage() {
 
   // Mock user's club (null = not in a club)
   const [myClub, setMyClub] = useState<Club | null>(null);
+
+  useEffect(() => {
+    clearMyClub();
+    setMyClub(null);
+  }, []);
 
   const filteredClubs = topClubs.filter((club) =>
     club.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -360,6 +311,7 @@ export default function ClubsPage() {
     };
 
     setMyClub(newClub);
+    persistMyClub(newClub, "custom");
     setShowCreateModal(false);
     setCreating(false);
     setClubName("");
@@ -371,6 +323,7 @@ export default function ClubsPage() {
       alert(`Request sent to join ${club.name}! The club host will review your request.`);
     } else {
       setMyClub(club);
+      persistMyClub(club, "existing");
       setShowBrowse(false);
     }
   };
@@ -378,7 +331,13 @@ export default function ClubsPage() {
   const handleLeaveClub = () => {
     if (confirm("Are you sure you want to leave this club?")) {
       setMyClub(null);
+      clearMyClub();
+      setShowBrowse(false);
     }
+  };
+
+  const handleOpenClub = (clubId: string) => {
+    router.push(`/clubs/${clubId}`);
   };
 
   /* ── If user has a club, show "My Club" view by default ── */
@@ -625,6 +584,7 @@ export default function ClubsPage() {
                   club={club}
                   myClub={myClub}
                   onJoin={handleJoinClub}
+                  onOpen={handleOpenClub}
                 />
               ))
             )}
