@@ -47,6 +47,24 @@ const emblemOptions = [
 
 const STORAGE_MY_CLUB_ID = "cr_my_club_id";
 const STORAGE_MY_CUSTOM_CLUB = "cr_my_custom_club";
+const STORAGE_CLUB_LIST = "cr_club_list";
+
+function loadClubList(): Club[] {
+  if (typeof window === "undefined") return [];
+  const raw = window.localStorage.getItem(STORAGE_CLUB_LIST);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as Club[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveClubList(clubs: Club[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(STORAGE_CLUB_LIST, JSON.stringify(clubs));
+}
 
 function loadMyClubFromStorage(): Club | null {
   if (typeof window === "undefined") return null;
@@ -63,7 +81,8 @@ function loadMyClubFromStorage(): Club | null {
     }
   }
 
-  return topClubs.find((c) => c.id === myClubId) ?? null;
+  const storedList = loadClubList();
+  return storedList.find((c) => c.id === myClubId) ?? topClubs.find((c) => c.id === myClubId) ?? null;
 }
 
 function persistMyClub(club: Club, source: "custom" | "existing") {
@@ -190,19 +209,6 @@ function ClubRow({
       {/* Hover card */}
       {showHover && !isMyClub && <ClubHoverCard club={club} />}
 
-      {/* Rank */}
-      <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
-        club.rank === 1
-          ? "bg-amber-500/20 text-amber-400"
-          : club.rank === 2
-          ? "bg-slate-400/20 text-slate-300"
-          : club.rank === 3
-          ? "bg-orange-500/20 text-orange-400"
-          : "bg-[var(--cr-bg-tertiary)] text-[var(--cr-fg-muted)]"
-      }`}>
-        #{club.rank}
-      </div>
-
       {/* Club Logo */}
       <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${
         emblemOptions.find((e) => e.id === club.emblem)?.color ?? "from-blue-500 to-cyan-500"
@@ -279,13 +285,24 @@ export default function ClubsPage() {
 
   // Mock user's club (null = not in a club)
   const [myClub, setMyClub] = useState<Club | null>(null);
+  const [clubList, setClubList] = useState<Club[]>([]);
 
   useEffect(() => {
-    clearMyClub();
-    setMyClub(null);
+    const storedMyClub = loadMyClubFromStorage();
+    const storedList = loadClubList();
+    const baseList = storedList.length > 0 ? storedList : topClubs;
+    const nextList = storedMyClub && !baseList.some((c) => c.id === storedMyClub.id)
+      ? [storedMyClub, ...baseList]
+      : baseList;
+
+    setMyClub(storedMyClub);
+    setClubList(nextList);
+    if (nextList !== baseList) {
+      saveClubList(nextList);
+    }
   }, []);
 
-  const filteredClubs = topClubs.filter((club) =>
+  const filteredClubs = clubList.filter((club) =>
     club.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -310,6 +327,9 @@ export default function ClubsPage() {
       ],
     };
 
+    const nextList = [newClub, ...clubList];
+    setClubList(nextList);
+    saveClubList(nextList);
     setMyClub(newClub);
     persistMyClub(newClub, "custom");
     setShowCreateModal(false);
@@ -570,12 +590,14 @@ export default function ClubsPage() {
         {/* Club List */}
         <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)]">
           <div className="border-b border-[var(--cr-border)] px-4 py-3">
-            <h2 className="font-semibold text-[var(--cr-fg)]">Top Clubs by Trophies</h2>
+            <h2 className="font-semibold text-[var(--cr-fg)]">Clubs to Join</h2>
           </div>
           <div className="divide-y divide-[var(--cr-border)]">
             {filteredClubs.length === 0 ? (
               <div className="p-8 text-center text-sm text-[var(--cr-fg-muted)]">
-                No clubs found matching &quot;{searchQuery}&quot;
+                {searchQuery.trim()
+                  ? `No clubs found matching "${searchQuery}".`
+                  : "No clubs yet. Create one to get started."}
               </div>
             ) : (
               filteredClubs.map((club) => (

@@ -31,6 +31,7 @@ type Club = {
 
 const STORAGE_MY_CLUB_ID = "cr_my_club_id";
 const STORAGE_MY_CUSTOM_CLUB = "cr_my_custom_club";
+const STORAGE_CLUB_LIST = "cr_club_list";
 
 const emblemOptions = [
   { id: "sword",     color: "from-red-500 to-orange-500" },
@@ -44,6 +45,18 @@ const emblemOptions = [
 ];
 
 const topClubs: Club[] = [];
+
+function loadClubList(): Club[] {
+  if (typeof window === "undefined") return [];
+  const raw = window.localStorage.getItem(STORAGE_CLUB_LIST);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as Club[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 function loadCustomClub(): Club | null {
   if (typeof window === "undefined") return null;
@@ -81,17 +94,19 @@ export default function ClubDetailPage() {
   const clubId = typeof params.clubId === "string" ? params.clubId : "";
 
   const [myClubId, setMyClubIdState] = useState<string | null>(null);
+  const [clubList, setClubList] = useState<Club[]>([]);
 
   useEffect(() => {
-    clearMyClub();
-    setMyClubIdState(null);
+    setMyClubIdState(getMyClubId());
+    const stored = loadClubList();
+    setClubList(stored.length > 0 ? stored : topClubs);
   }, []);
 
   const club = useMemo(() => {
     const custom = loadCustomClub();
     if (custom && custom.id === clubId) return custom;
-    return topClubs.find((c) => c.id === clubId) ?? null;
-  }, [clubId]);
+    return clubList.find((c) => c.id === clubId) ?? topClubs.find((c) => c.id === clubId) ?? null;
+  }, [clubId, clubList]);
 
   if (!club) {
     return (
@@ -121,7 +136,7 @@ export default function ClubDetailPage() {
       alert(`Request sent to join ${club.name}! The club host will review your request.`);
       return;
     }
-    setMyClubId(club.id, club.id.startsWith("custom_") ? club : undefined);
+    setMyClubId(club.id);
     setMyClubIdState(club.id);
   };
 

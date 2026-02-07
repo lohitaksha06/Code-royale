@@ -56,6 +56,8 @@ const mockPlayers = [
   { id: "15", username: "LambdaLion",    avatar: "LD", trophies_1v1: 400,   trophies_2v2: 300,   wins_1v1: 12,  losses_1v1: 10,  wins_2v2: 5,   losses_2v2: 5 },
 ];
 
+const topClubs: { id: string; name: string; trophies: number }[] = [];
+
 /* ── Component ──────────────────────────────────────────── */
 export default function LeaderboardPage() {
   const [mode, setMode] = useState<Mode>("1v1");
@@ -370,6 +372,16 @@ export default function LeaderboardPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+
+        {/* Top Clubs (empty for now) */}
+        <div className="mt-8 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)]">
+          <div className="border-b border-[var(--cr-border)] px-4 py-3">
+            <h2 className="font-semibold text-[var(--cr-fg)]">Top Clubs</h2>
+          </div>
+          <div className="p-8 text-center text-sm text-[var(--cr-fg-muted)]">
+            {topClubs.length === 0 ? "No clubs yet." : ""}
           </div>
         </div>
       </div>
