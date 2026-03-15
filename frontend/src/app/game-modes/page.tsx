@@ -631,26 +631,26 @@ export default function GameModesPage() {
   return (
     <AppShell>
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-12 px-6 pt-8 sm:px-10 lg:px-16">
-        <header className="flex flex-col justify-between gap-6 rounded-2xl border border-cr-border bg-cr-bg-secondary p-8 sm:flex-row sm:items-center sm:gap-8">
-          <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cr-accent">Command Center</p>
-            <h1 className="text-3xl font-bold text-cr-fg sm:text-4xl">
+        <header className="flex flex-col justify-between gap-8 rounded-2xl border border-cr-border bg-cr-bg-secondary p-10 sm:flex-row sm:items-center sm:gap-10">
+          <div className="space-y-4">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cr-accent">Command Center</p>
+            <h1 className="text-4xl font-bold text-cr-fg sm:text-5xl">
               Choose your battle mode
             </h1>
-            <p className="max-w-xl text-sm text-cr-fg-muted">
+            <p className="max-w-xl text-base text-cr-fg-muted">
               Squad up, duel a rival, or warm up with friends. Ranked battles award trophies, while event modes let you experiment without wrecking your ladder standing.
             </p>
           </div>
-          <div className="flex items-center gap-4 rounded-xl border border-amber-400/40 bg-amber-400/10 px-6 py-4 text-amber-200">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-400/20">
+          <div className="flex items-center gap-5 rounded-xl border border-amber-400/40 bg-amber-400/10 px-8 py-5 text-amber-200">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-400/20">
               {trophyIcon}
             </div>
             <div>
-              <div className="flex items-baseline gap-2 text-3xl font-semibold tracking-tight text-amber-100">
+              <div className="flex items-baseline gap-2 text-4xl font-semibold tracking-tight text-amber-100">
                 <span>1,240</span>
-                <span className="text-sm font-medium uppercase tracking-[0.2em] text-amber-200/70">Trophies</span>
+                <span className="text-base font-medium uppercase tracking-[0.2em] text-amber-200/70">Trophies</span>
               </div>
-              <p className="text-xs uppercase tracking-[0.2em] text-amber-200/80">Rank · Gold League</p>
+              <p className="text-sm uppercase tracking-[0.2em] text-amber-200/80">Rank · Gold League</p>
             </div>
           </div>
         </header>
@@ -663,32 +663,32 @@ export default function GameModesPage() {
 
         {state === "idle" && (
           <div className="flex flex-col gap-16">
-            <section className="space-y-6">
-              <header className="space-y-2">
-                <h2 className="text-xl font-semibold uppercase tracking-[0.35em] text-sky-300/80">
+            <section className="space-y-8">
+              <header className="space-y-3">
+                <h2 className="text-2xl font-semibold uppercase tracking-[0.35em] text-sky-300/80">
                   Ranked & Core Modes
                 </h2>
-                <p className="text-sm text-sky-100/70">
+                <p className="text-base text-sky-100/70">
                   Climb the ladder, invite friends, or queue up for legacy formats. These affect your season standing.
                 </p>
               </header>
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
                 {rankedCards.map(({ mode, onClick }) => (
                   <ModeCard key={mode.id} mode={mode} onClick={onClick} />
                 ))}
               </div>
             </section>
 
-            <section className="space-y-6">
-              <header className="space-y-3">
-                <h2 className="text-xl font-semibold uppercase tracking-[0.35em] text-fuchsia-300/80">
+            <section className="space-y-8">
+              <header className="space-y-4">
+                <h2 className="text-2xl font-semibold uppercase tracking-[0.35em] text-fuchsia-300/80">
                   Non-Ranked Match Types
                 </h2>
-                <p className="max-w-2xl text-sm text-sky-100/75">
+                <p className="max-w-2xl text-base text-sky-100/75">
                   Skill-focused formats with reduced or zero trophy impact. Perfect for warming up, experimenting, or casual competition.
                 </p>
               </header>
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="grid gap-8 md:grid-cols-2">
                 {nonRankedCards.map(({ mode, onClick }) => (
                   <ModeCard key={mode.id} mode={mode} onClick={onClick} playful />
                 ))}
@@ -984,7 +984,7 @@ type ModeCardProps = {
 
 function ModeCard({ mode, onClick, playful = false }: ModeCardProps) {
   const { title, subtitle, badge, details, enabled, accent, impact } = mode;
-  const baseClasses = "group relative flex h-full flex-col justify-between gap-6 rounded-3xl border px-6 py-8 transition";
+  const baseClasses = "group relative flex h-full flex-col justify-between gap-8 rounded-3xl border px-8 py-10 transition";
   const enabledClasses = enabled
     ? `border-sky-500/25 bg-gradient-to-br ${accent} hover:-translate-y-1 hover:shadow-[0_0_45px_rgba(56,189,248,0.25)] hover:border-sky-300/60`
     : "border-slate-700/60 bg-slate-900/60 text-slate-400";
@@ -998,42 +998,42 @@ function ModeCard({ mode, onClick, playful = false }: ModeCardProps) {
     : "border-sky-400/60 bg-sky-500/15 text-sky-100 group-hover:border-sky-200 group-hover:bg-sky-500/30 group-hover:text-sky-50";
 
   const content = (
-    <div className="flex h-full flex-col gap-6">
-      <div className="space-y-3">
-        <h3 className="text-2xl font-semibold text-sky-50">{title}</h3>
-        <p className="text-sm text-sky-100/70">{subtitle}</p>
+    <div className="flex h-full flex-col gap-8">
+      <div className="space-y-4">
+        <h3 className="text-3xl font-semibold text-sky-50">{title}</h3>
+        <p className="text-base text-sky-100/70">{subtitle}</p>
       </div>
       {details && (
-        <ul className="space-y-2 text-xs text-sky-100/60">
+        <ul className="space-y-3 text-sm text-sky-100/60">
           {details.slice(0, 3).map((detail) => (
-            <li key={detail} className="flex items-start gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-sky-300/70" />
+            <li key={detail} className="flex items-start gap-3">
+              <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-sky-300/70" />
               <span>{detail}</span>
             </li>
           ))}
         </ul>
       )}
-      <div className="mt-auto flex flex-wrap items-center gap-3">
+      <div className="mt-auto flex flex-wrap items-center gap-4">
         <span
-          className={`inline-flex items-center gap-2 rounded-full border px-4 py-1 text-[11px] uppercase tracking-[0.35em] ${impactStyles}`}
+          className={`inline-flex items-center gap-2 rounded-full border px-5 py-2 text-[13px] uppercase tracking-[0.35em] ${impactStyles}`}
         >
           {impact}
         </span>
         {badge && (
-          <span className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 px-3 py-1 text-[10px] uppercase tracking-[0.35em] text-sky-200/80">
+          <span className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 px-4 py-2 text-[12px] uppercase tracking-[0.35em] text-sky-200/80">
             {badge}
           </span>
         )}
       </div>
       {enabled && (
         <span
-          className={`mt-4 inline-flex w-max items-center gap-2 rounded-full border px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] shadow-[0_0_24px_rgba(56,189,248,0.3)] transition ${playNowStyles}`}
+          className={`mt-6 inline-flex w-max items-center gap-2 rounded-full border px-6 py-3 text-sm font-semibold uppercase tracking-[0.35em] shadow-[0_0_24px_rgba(56,189,248,0.3)] transition ${playNowStyles}`}
         >
           Play Now
           <svg
             aria-hidden
             viewBox="0 0 24 24"
-            className="h-3.5 w-3.5"
+            className="h-4 w-4"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.8"
@@ -1043,8 +1043,8 @@ function ModeCard({ mode, onClick, playful = false }: ModeCardProps) {
         </span>
       )}
       {!enabled && (
-        <div className="absolute right-6 top-6 flex items-center gap-2 text-xs uppercase tracking-[0.35em] text-slate-300">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
+        <div className="absolute right-8 top-8 flex items-center gap-2 text-sm uppercase tracking-[0.35em] text-slate-300">
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
             <path d="M7 10V7a5 5 0 0 1 10 0v3h1.5a1.5 1.5 0 0 1 1.5 1.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-7.5A1.5 1.5 0 0 1 5.5 10H7Zm2-3a3 3 0 1 1 6 0v3H9Z" />
           </svg>
           Locked

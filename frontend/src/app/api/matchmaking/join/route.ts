@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { createSupabaseServiceClient } from "@/lib/supabase-service";
-import { PVP_QUESTION_SLUGS } from "@/lib/pvp-questions";
 
 type JoinRequest = {
   mode?: "ranked" | "unranked";
   timeLimitSeconds?: number;
   language?: string | null;
   matchType?: "1v1" | "2v2" | "ffa";
+  difficulty?: "easy" | "medium" | "hard" | "mixed";
 };
 
 function sanitizeTimeLimitSeconds(value: unknown) {
@@ -44,6 +44,18 @@ export async function POST(request: Request) {
   const timeLimitSeconds = sanitizeTimeLimitSeconds(payload.timeLimitSeconds);
   const language = sanitizeLanguage(payload.language);
   const matchType = sanitizeMatchType(payload.matchType);
+
+  // Determine question difficulty from explicit param or infer from time limit.
+  let difficulty: "easy" | "medium" | "hard" | null = null;
+  if (payload.difficulty === "easy" || payload.difficulty === "medium" || payload.difficulty === "hard") {
+    difficulty = payload.difficulty;
+  } else if (payload.difficulty !== "mixed") {
+    // Auto-select: short matches => easy, medium matches => medium, long => hard
+    if (timeLimitSeconds <= 2 * 60) difficulty = "easy";
+    else if (timeLimitSeconds <= 5 * 60) difficulty = "medium";
+    else difficulty = "hard";
+  }
+  // difficulty === null means "mixed" — pick from all difficulties
 
   const supabaseAuth = createSupabaseServerClient();
   const { data: authData, error: authError } = await supabaseAuth.auth.getUser();
@@ -93,11 +105,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: "queued" }, { status: 200 });
   }
 
-  // Pick a PvP question from the curated slug list.
-  const { data: availableQuestions, error: questionsError } = await supabase
+  // Pick a PvP question, optionally filtered by difficulty.
+  let questionQuery = supabase
     .from("practice_questions")
-    .select("id,slug")
-    .in("slug", PVP_QUESTION_SLUGS);
+    .select("id,slug,difficulty");
+  if (difficulty) {
+    questionQuery = questionQuery.eq("difficulty", difficulty);
+  }
+  const { data: availableQuestions, error: questionsError } = await questionQuery;
 
   if (questionsError || !availableQuestions || availableQuestions.length === 0) {
     console.error("No PvP questions available", questionsError);
@@ -114,6 +129,7 @@ export async function POST(request: Request) {
       mode,
       metadata: {
         question_id: chosen.id,
+        question_difficulty: chosen.difficulty,
         time_limit: timeLimitSeconds,
         language,
         match_type: matchType,

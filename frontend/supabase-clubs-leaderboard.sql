@@ -103,3 +103,61 @@ CREATE OR REPLACE FUNCTION get_club_member_count(p_club_id UUID)
 RETURNS INT AS $$
   SELECT COUNT(*)::INT FROM club_members WHERE club_id = p_club_id;
 $$ LANGUAGE SQL STABLE;
+
+-- ============================================================
+-- Practice Questions, Matches & Matchmaking tables
+-- ============================================================
+
+-- 8) Practice questions (seeded via pnpm seed:pvp)
+CREATE TABLE IF NOT EXISTS practice_questions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  difficulty TEXT NOT NULL CHECK (difficulty IN ('easy', 'medium', 'hard')),
+  languages TEXT[] NOT NULL DEFAULT '{}',
+  testcases JSONB NOT NULL DEFAULT '[]',
+  meta JSONB DEFAULT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_practice_questions_difficulty ON practice_questions(difficulty);
+CREATE INDEX IF NOT EXISTS idx_practice_questions_slug ON practice_questions(slug);
+
+-- 9) Matches
+CREATE TABLE IF NOT EXISTS matches (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  mode TEXT NOT NULL DEFAULT 'ranked' CHECK (mode IN ('ranked', 'unranked')),
+  metadata JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 10) Match players (junction)
+CREATE TABLE IF NOT EXISTS match_players (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  match_id UUID NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(match_id, user_id)
+);
+
+-- 11) Matchmaking queue
+CREATE TABLE IF NOT EXISTS matchmaking_queue (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  mode TEXT NOT NULL DEFAULT 'ranked' CHECK (mode IN ('ranked', 'unranked')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_matchmaking_queue_mode ON matchmaking_queue(mode, created_at);
+
+-- RLS for new tables
+ALTER TABLE practice_questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
+ALTER TABLE match_players ENABLE ROW LEVEL SECURITY;
+ALTER TABLE matchmaking_queue ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "practice_questions_select" ON practice_questions FOR SELECT USING (true);
+CREATE POLICY "matches_select" ON matches FOR SELECT USING (true);
+CREATE POLICY "match_players_select" ON match_players FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "matchmaking_queue_select" ON matchmaking_queue FOR SELECT USING (auth.uid() = user_id);
