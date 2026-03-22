@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   }
   // difficulty === null means "mixed" — pick from all difficulties
 
-  const supabaseAuth = createSupabaseServerClient();
+  const supabaseAuth = await createSupabaseServerClient();
   const { data: authData, error: authError } = await supabaseAuth.auth.getUser();
 
   if (authError || !authData.user?.id) {

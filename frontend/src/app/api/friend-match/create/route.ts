@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     else difficulty = "hard";
   }
 
-  const supabaseAuth = createSupabaseServerClient();
+  const supabaseAuth = await createSupabaseServerClient();
   const { data: authData, error: authError } = await supabaseAuth.auth.getUser();
 
   if (authError || !authData.user?.id) {

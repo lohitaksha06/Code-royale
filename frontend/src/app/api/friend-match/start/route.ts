@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "matchId is required" }, { status: 400 });
   }
 
-  const supabaseAuth = createSupabaseServerClient();
+  const supabaseAuth = await createSupabaseServerClient();
   const { data: authData, error: authError } = await supabaseAuth.auth.getUser();
 
   if (authError || !authData.user?.id) {

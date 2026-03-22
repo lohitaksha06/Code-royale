@@ -7,7 +7,7 @@ export async function GET(request: Request) {
 
   let supabase;
   try {
-    supabase = createSupabaseServerClient();
+    supabase = await createSupabaseServerClient();
   } catch (error) {
     console.error("Supabase server client error", error);
     return NextResponse.json({ error: "Server configuration error" }, { status: 500 });

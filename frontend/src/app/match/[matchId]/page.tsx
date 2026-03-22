@@ -24,7 +24,7 @@ function parseTimerFromMetadata(metadata: unknown) {
 
 export default async function MatchPage({ params }: PageProps) {
   const matchId = params.matchId;
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data: authData } = await supabase.auth.getUser();
   const userId = authData.user?.id;

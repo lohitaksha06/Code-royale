@@ -8,7 +8,7 @@ type PageProps = {
 };
 
 export default async function PracticeSessionPage({ params, searchParams }: PageProps) {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data: question, error } = await supabase
     .from("practice_questions")

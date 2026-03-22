@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -36,7 +36,7 @@ function initialsFromName(name: string) {
   return `${first}${second ?? "R"}`.toUpperCase();
 }
 
-export default function ProfilePage() {
+function ProfileContent() {
   const searchParams = useSearchParams();
   const targetUserIdParam = searchParams.get("userId");
 
@@ -243,5 +243,19 @@ export default function ProfilePage() {
         )}
       </div>
     </AppShell>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <AppShell>
+        <div className="mx-auto max-w-4xl px-4 py-8">
+          <div className="flex justify-center p-12 text-[var(--cr-fg-muted)]">Loading...</div>
+        </div>
+      </AppShell>
+    }>
+      <ProfileContent />
+    </Suspense>
   );
 }
