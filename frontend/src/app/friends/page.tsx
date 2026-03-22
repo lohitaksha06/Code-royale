@@ -260,7 +260,7 @@ export default function FriendsPage() {
 
             {results.length === 0 && !searching && trimmedQuery.length >= 2 && (
               <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-8 text-center text-sm text-[var(--cr-fg-muted)]">
-                No users found matching "{trimmedQuery}"
+                No users found matching &quot;{trimmedQuery}&quot;
               </div>
             )}
           </div>

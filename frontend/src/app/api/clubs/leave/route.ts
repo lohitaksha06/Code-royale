@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const supabase = createSupabaseServiceClient();
 
     // Get current membership
-    const { data: membership, error: memError } = await supabase
+    const { data: membership } = await supabase
       .from("club_members")
       .select("id, club_id, role")
       .eq("user_id", userId)
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     await supabase.from("club_members").delete().eq("id", membership.id);
 
     return NextResponse.json({ status: "left" });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

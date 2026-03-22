@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ clubs: enriched, myClub });
-  } catch (err) {
+  } catch (_err) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
