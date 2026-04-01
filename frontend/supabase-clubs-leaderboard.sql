@@ -161,3 +161,28 @@ CREATE POLICY "practice_questions_select" ON practice_questions FOR SELECT USING
 CREATE POLICY "matches_select" ON matches FOR SELECT USING (true);
 CREATE POLICY "match_players_select" ON match_players FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "matchmaking_queue_select" ON matchmaking_queue FOR SELECT USING (auth.uid() = user_id);
+
+-- 12) Practice submissions (for real profile/home progress)
+CREATE TABLE IF NOT EXISTS practice_submissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  question_id UUID NOT NULL REFERENCES practice_questions(id) ON DELETE CASCADE,
+  language TEXT NOT NULL,
+  passed BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_practice_submissions_user_created
+  ON practice_submissions(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_practice_submissions_user_question_passed
+  ON practice_submissions(user_id, question_id, passed);
+
+ALTER TABLE practice_submissions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "practice_submissions_select_own"
+  ON practice_submissions FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "practice_submissions_insert_own"
+  ON practice_submissions FOR INSERT
+  WITH CHECK (auth.uid() = user_id);

@@ -42,6 +42,12 @@ type TelemetrySummary = {
   matchesToday: number;
 };
 
+type ProgressSummary = {
+  solvedProblems: number;
+  totalProblems: number;
+  streakDays: number;
+};
+
 const statDefinitions: Array<{ label: string; key: keyof TelemetrySummary }> = [
   { label: "Active Players", key: "activePlayers" },
   { label: "Current Visits", key: "currentVisits" },
@@ -53,6 +59,11 @@ export default function HomePage() {
     activePlayers: 0,
     currentVisits: 0,
     matchesToday: 0,
+  });
+  const [progress, setProgress] = useState<ProgressSummary>({
+    solvedProblems: 0,
+    totalProblems: 0,
+    streakDays: 0,
   });
 
   useEffect(() => {
@@ -74,14 +85,38 @@ export default function HomePage() {
       }
     };
 
+    const fetchProgress = async () => {
+      try {
+        const res = await fetch("/api/profile/progress", { cache: "no-store" });
+        if (!res.ok) return;
+        const json = (await res.json()) as Partial<ProgressSummary>;
+        if (!alive) return;
+        setProgress((prev) => ({
+          solvedProblems: typeof json.solvedProblems === "number" ? json.solvedProblems : prev.solvedProblems,
+          totalProblems: typeof json.totalProblems === "number" ? json.totalProblems : prev.totalProblems,
+          streakDays: typeof json.streakDays === "number" ? json.streakDays : prev.streakDays,
+        }));
+      } catch {
+        // ignore
+      }
+    };
+
     void fetchTelemetry();
+    void fetchProgress();
     const interval = window.setInterval(fetchTelemetry, 10_000);
+    const progressInterval = window.setInterval(fetchProgress, 20_000);
 
     return () => {
       alive = false;
       window.clearInterval(interval);
+      window.clearInterval(progressInterval);
     };
   }, []);
+
+  const solvedDenominator = Math.max(progress.totalProblems, 1);
+  const solvedPercent = Math.min(100, Math.round((progress.solvedProblems / solvedDenominator) * 100));
+  const streakLabel = `${progress.streakDays} day${progress.streakDays === 1 ? "" : "s"}`;
+  const streakPercent = Math.min(100, progress.streakDays * 20);
 
   return (
     <AppShell>
@@ -194,19 +229,19 @@ export default function HomePage() {
               <div>
                 <div className="mb-2 flex items-center justify-between text-sm">
                   <span className="text-[var(--cr-fg-muted)]">Problems Solved</span>
-                  <span className="text-[var(--cr-fg)]">42 / 70</span>
+                  <span className="text-[var(--cr-fg)]">{progress.solvedProblems} / {progress.totalProblems}</span>
                 </div>
                 <div className="h-2 rounded-full bg-[var(--cr-bg-tertiary)]">
-                  <div className="h-full w-[60%] rounded-full bg-[rgb(var(--cr-accent-rgb))]" />
+                  <div className="h-full rounded-full bg-[rgb(var(--cr-accent-rgb))]" style={{ width: `${solvedPercent}%` }} />
                 </div>
               </div>
               <div>
                 <div className="mb-2 flex items-center justify-between text-sm">
                   <span className="text-[var(--cr-fg-muted)]">Current Streak</span>
-                  <span className="text-[var(--cr-fg)]">5 days 🔥</span>
+                  <span className="text-[var(--cr-fg)]">{streakLabel} 🔥</span>
                 </div>
                 <div className="h-2 rounded-full bg-[var(--cr-bg-tertiary)]">
-                  <div className="h-full w-[71%] rounded-full bg-amber-500" />
+                  <div className="h-full rounded-full bg-amber-500" style={{ width: `${streakPercent}%` }} />
                 </div>
               </div>
               <div className="pt-2">

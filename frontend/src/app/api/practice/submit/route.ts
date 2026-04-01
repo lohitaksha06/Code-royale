@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServiceClient } from "@/lib/supabase-service";
+import { createSupabaseServerClient } from "@/lib/supabase";
 
 const languageMap: Record<string, number> = {
   node: 63, // Node.js 16.13.0
@@ -187,6 +188,27 @@ export async function POST(request: Request) {
   }
 
   const allPassed = results.length > 0 && results.every((result) => result.passed);
+
+  if (allPassed) {
+    try {
+      const authSupabase = await createSupabaseServerClient();
+      const {
+        data: { user },
+      } = await authSupabase.auth.getUser();
+
+      if (user?.id) {
+        // Best-effort write for user progress; do not fail submission response on tracking issues.
+        await supabase.from("practice_submissions").insert({
+          user_id: user.id,
+          question_id: questionId,
+          language,
+          passed: true,
+        });
+      }
+    } catch {
+      // ignore tracking failures
+    }
+  }
 
   return NextResponse.json({
     passed: allPassed,
