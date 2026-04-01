@@ -95,7 +95,14 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cr-bg px-4 py-12">
+    <div className="relative min-h-screen flex items-center justify-center bg-cr-bg px-4 py-12">
+      <Link
+        href="/"
+        className="absolute left-6 top-6 inline-flex items-center rounded-md border border-cr-border bg-cr-bg-secondary px-4 py-2.5 text-base font-semibold text-cr-fg shadow-sm transition-colors hover:border-cr-accent hover:text-cr-accent"
+      >
+        ← Back
+      </Link>
+
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 flex justify-center">
