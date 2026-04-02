@@ -102,6 +102,36 @@ const bottomItems = [
   },
 ];
 
+const socialButtons = [
+  {
+    id: "youtube",
+    label: "YouTube",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M23.498 6.186a2.997 2.997 0 00-2.11-2.122C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.388.519A2.997 2.997 0 00.502 6.186 31.36 31.36 0 000 12a31.36 31.36 0 00.502 5.814 2.997 2.997 0 002.11 2.122c1.883.519 9.388.519 9.388.519s7.505 0 9.388-.519a2.997 2.997 0 002.11-2.122A31.36 31.36 0 0024 12a31.36 31.36 0 00-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+      </svg>
+    ),
+  },
+  {
+    id: "linkedin",
+    label: "LinkedIn",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M20.447 20.452H16.89v-5.569c0-1.328-.024-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.346V9h3.414v1.561h.049c.476-.9 1.637-1.85 3.368-1.85 3.601 0 4.267 2.369 4.267 5.455v6.286zM5.337 7.433a2.066 2.066 0 110-4.132 2.066 2.066 0 010 4.132zM7.119 20.452H3.555V9h3.564v11.452z" />
+      </svg>
+    ),
+  },
+  {
+    id: "twitter",
+    label: "Twitter",
+    icon: (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M18.244 2H21l-6.017 6.877L22 22h-5.561l-4.357-5.095L7.62 22H4.862l6.437-7.356L2 2h5.702l3.939 4.676L18.244 2zm-.968 18.347h1.531L6.87 3.566H5.227l12.049 16.781z" />
+      </svg>
+    ),
+  },
+];
+
 type AppShellProps = {
   children: ReactNode;
   showSidebar?: boolean;
@@ -277,6 +307,44 @@ export function AppShell({ children, showSidebar = true }: AppShellProps) {
 
         {/* Page content */}
         <div className="min-h-[calc(100vh-3.5rem)]">{children}</div>
+
+        {/* Footer actions */}
+        <footer className="border-t border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] px-6 py-10">
+          <div className="mx-auto grid w-full max-w-6xl gap-8 md:grid-cols-2">
+            <section>
+              <h3 className="mb-3 text-lg font-semibold text-[var(--cr-fg)]">Social</h3>
+              <div className="flex flex-wrap gap-3">
+                {socialButtons.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2 text-sm font-medium text-[var(--cr-fg)] transition-colors hover:border-[rgba(var(--cr-accent-rgb),0.5)] hover:text-[rgb(var(--cr-accent-rgb))]"
+                    aria-label={`${item.label} (coming soon)`}
+                    title="Link coming soon"
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h3 className="mb-3 text-lg font-semibold text-[var(--cr-fg)]">Contact</h3>
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2 text-sm font-medium text-[var(--cr-fg)] transition-colors hover:border-[rgba(var(--cr-accent-rgb),0.5)] hover:text-[rgb(var(--cr-accent-rgb))]"
+                aria-label="Contact email (coming soon)"
+                title="Link coming soon"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 7.5v9a2.25 2.25 0 01-2.25 2.25h-15A2.25 2.25 0 012.25 16.5v-9m19.5 0A2.25 2.25 0 0019.5 5.25h-15A2.25 2.25 0 002.25 7.5m19.5 0l-9.077 5.446a1.5 1.5 0 01-1.546 0L2.25 7.5" />
+                </svg>
+                <span>patarylohitaksha06@gmail.com</span>
+              </button>
+            </section>
+          </div>
+        </footer>
       </main>
     </div>
   );
