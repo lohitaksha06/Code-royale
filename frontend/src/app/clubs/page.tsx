@@ -282,6 +282,8 @@ export default function ClubsPage() {
   const [maxMembers, setMaxMembers] = useState<MaxMembers>(20);
   const [creating, setCreating] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
 
   // Mock user's club (null = not in a club)
   const [myClub, setMyClub] = useState<Club | null>(null);
@@ -358,6 +360,45 @@ export default function ClubsPage() {
 
   const handleOpenClub = (clubId: string) => {
     router.push(`/clubs/${clubId}`);
+  };
+
+  const getInviteLink = () => {
+    if (!myClub) return "";
+    if (typeof window === "undefined") return `/clubs/${myClub.id}?invite=1`;
+    return `${window.location.origin}/clubs/${myClub.id}?invite=1`;
+  };
+
+  const handleCopyInviteLink = async () => {
+    const inviteLink = getInviteLink();
+    if (!inviteLink) return;
+
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopyState("copied");
+    } catch {
+      setCopyState("failed");
+    }
+
+    window.setTimeout(() => setCopyState("idle"), 1800);
+  };
+
+  const handleCopyShareText = async () => {
+    if (!myClub) return;
+    const message = [
+      `Join my club \"${myClub.name}\" in Code Royale!`,
+      `Club rank: #${myClub.rank}`,
+      `Average games/week: 0`,
+      getInviteLink(),
+    ].join("\n");
+
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopyState("copied");
+    } catch {
+      setCopyState("failed");
+    }
+
+    window.setTimeout(() => setCopyState("idle"), 1800);
   };
 
   /* ── If user has a club, show "My Club" view by default ── */
@@ -444,7 +485,11 @@ export default function ClubsPage() {
                 </div>
               </div>
             </Link>
-            <button className="group rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5 text-left transition-all hover:border-[rgba(var(--cr-accent-rgb),0.3)]">
+            <button
+              type="button"
+              onClick={() => setShowInviteModal(true)}
+              className="group rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5 text-left transition-all hover:border-[rgba(var(--cr-accent-rgb),0.3)]"
+            >
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -458,6 +503,83 @@ export default function ClubsPage() {
               </div>
             </button>
           </div>
+
+          {showInviteModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+              <div className="w-full max-w-xl rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-6 shadow-2xl animate-fade-in">
+                <div className="mb-5 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-[var(--cr-fg)]">Invite Friends</h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowInviteModal(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--cr-fg-muted)] transition-colors hover:bg-[var(--cr-bg-tertiary)] hover:text-[var(--cr-fg)]"
+                    aria-label="Close invite popup"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <p className="text-sm text-[var(--cr-fg-muted)]">
+                  Share your club link with friends. They can open it and join your club directly.
+                </p>
+
+                <div className="mt-4 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] p-3">
+                  <div className="mb-2 text-xs uppercase tracking-wider text-[var(--cr-fg-muted)]">Invite link</div>
+                  <div className="break-all text-sm text-[var(--cr-fg)]">{getInviteLink()}</div>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] p-3">
+                    <div className="text-xs text-[var(--cr-fg-muted)]">Average games/week</div>
+                    <div className="mt-1 text-xl font-semibold text-[var(--cr-fg)]">0</div>
+                  </div>
+                  <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] p-3">
+                    <div className="text-xs text-[var(--cr-fg-muted)]">Open slots</div>
+                    <div className="mt-1 text-xl font-semibold text-[var(--cr-fg)]">
+                      {Math.max(myClub.maxMembers - myClub.members, 0)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyInviteLink}
+                    className="rounded-lg bg-[rgb(var(--cr-accent-rgb))] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                  >
+                    Copy this link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyShareText}
+                    className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2 text-sm font-medium text-[var(--cr-fg)] hover:border-[rgba(var(--cr-accent-rgb),0.5)]"
+                  >
+                    Share to YouTube
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyShareText}
+                    className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2 text-sm font-medium text-[var(--cr-fg)] hover:border-[rgba(var(--cr-accent-rgb),0.5)]"
+                  >
+                    Share to LinkedIn
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyShareText}
+                    className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2 text-sm font-medium text-[var(--cr-fg)] hover:border-[rgba(var(--cr-accent-rgb),0.5)]"
+                  >
+                    Share to Twitter
+                  </button>
+                </div>
+
+                <div className="mt-3 text-xs text-[var(--cr-fg-muted)]">
+                  {copyState === "copied" && "Copied to clipboard."}
+                  {copyState === "failed" && "Could not copy. Please copy manually."}
+                  {copyState === "idle" && "Share buttons currently copy the ready-to-share message."}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Club Members */}
           <div className="mt-6 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)]">

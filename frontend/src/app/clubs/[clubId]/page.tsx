@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "../../../components/app-shell";
 
 type ClubPrivacy = "public" | "private";
@@ -91,7 +91,9 @@ function clearMyClub() {
 export default function ClubDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const clubId = typeof params.clubId === "string" ? params.clubId : "";
+  const isInviteLink = searchParams.get("invite") === "1";
 
   const [myClubId, setMyClubIdState] = useState<string | null>(null);
   const [clubList, setClubList] = useState<Club[]>([]);
@@ -179,10 +181,18 @@ export default function ClubDetailPage() {
               onClick={handleJoin}
               className="rounded-lg bg-[rgb(var(--cr-accent-rgb))] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
             >
-              {club.privacy === "private" ? "Request to Join" : "Join Club"}
+              {club.privacy === "private"
+                ? (isInviteLink ? "Request via Invite" : "Request to Join")
+                : (isInviteLink ? "Join via Invite" : "Join Club")}
             </button>
           )}
         </div>
+
+        {isInviteLink && !isMyClub && !isInClub && !isFull && (
+          <div className="mb-4 rounded-lg border border-[rgba(var(--cr-accent-rgb),0.4)] bg-[rgba(var(--cr-accent-rgb),0.12)] px-4 py-3 text-sm text-[var(--cr-fg)]">
+            You opened an invite link for this club.
+          </div>
+        )}
 
         <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-6">
           <div className="flex flex-wrap items-start gap-6">
