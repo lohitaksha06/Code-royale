@@ -9,8 +9,10 @@ This project supports real 1v1 matchmaking via Supabase tables `matchmaking_queu
 Before using PvP matchmaking you must seed the curated PvP questions into `practice_questions`:
 
 1. Create `frontend/.env.local` from `frontend/.env.local.example`
-2. Fill in `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`
+2. Fill in `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`, and `SUPABASE_SERVICE_ROLE_KEY`
 3. Run `pnpm seed:pvp`
+
+For auth confirmation emails, set `NEXT_PUBLIC_SITE_URL` to your deployed domain (for example `https://code-royale.app`) so verification links do not point to localhost.
 
 First, run the development server:
 

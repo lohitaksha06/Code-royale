@@ -3,24 +3,26 @@ import { createSupabaseServerClient } from "@/lib/supabase";
 import { PracticeArenaLeetcode } from "@/components/practice-arena-leetcode";
 
 type PageProps = {
-  params: { slug: string };
-  searchParams?: { timer?: string; language?: string };
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ timer?: string; language?: string }>;
 };
 
 export default async function PracticeSessionPage({ params, searchParams }: PageProps) {
+  const { slug } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const supabase = await createSupabaseServerClient();
 
   const { data: question, error } = await supabase
     .from("practice_questions")
     .select("*")
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .single();
 
   if (error || !question) {
     notFound();
   }
 
-  const parsedTimer = Number(searchParams?.timer ?? 300);
+  const parsedTimer = Number(resolvedSearchParams?.timer ?? 300);
   const initialTimer = Number.isFinite(parsedTimer) && parsedTimer > 0 ? parsedTimer : 300;
 
   const rawLanguages = Array.isArray(question.languages)
@@ -29,7 +31,7 @@ export default async function PracticeSessionPage({ params, searchParams }: Page
 
   const languages = rawLanguages.length > 0 ? rawLanguages : ["javascript", "python", "cpp"];
 
-  const requestedLanguage = searchParams?.language;
+  const requestedLanguage = resolvedSearchParams?.language;
   const initialLanguage = requestedLanguage && languages.includes(requestedLanguage)
     ? requestedLanguage
     : languages[0] ?? "javascript";

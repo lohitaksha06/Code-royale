@@ -14,16 +14,24 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const getEmailRedirectTo = () => {
+    const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+    const siteOrigin = configuredSiteUrl
+      ? configuredSiteUrl.replace(/\/$/, "")
+      : typeof window !== "undefined"
+        ? window.location.origin
+        : undefined;
+
+    return siteOrigin ? `${siteOrigin}/auth/login` : undefined;
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setProcessing(true);
     setError(null);
     setSuccess(null);
 
-    const redirectTo =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/auth/login`
-        : undefined;
+    const redirectTo = getEmailRedirectTo();
 
     let authData: Awaited<ReturnType<typeof supabase.auth.signUp>>["data"];
     let authError: Awaited<ReturnType<typeof supabase.auth.signUp>>["error"];
