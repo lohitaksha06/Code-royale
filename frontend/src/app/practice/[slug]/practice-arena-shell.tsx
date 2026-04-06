@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type PracticeTestcase = {
@@ -88,6 +88,7 @@ const buildTemplate = (language: string, title: string) => {
 
 export function PracticeArenaShell({ question, testcases, initialTimer, initialLanguage, exitHref = "/practice" }: PracticeArenaShellProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const normalizedInitialLanguage = normalizeLanguage(initialLanguage);
   const availableLanguages = useMemo(
     () => question.languages.map((lang) => normalizeLanguage(lang)),
@@ -158,6 +159,11 @@ export function PracticeArenaShell({ question, testcases, initialTimer, initialL
 
   const activeResult = resultsMap.get(activeTestcaseIndex);
   const activeTestcase = safeTestcases[activeTestcaseIndex];
+
+  const matchId = useMemo(() => {
+    const found = pathname?.match(/^\/match\/([^/?#]+)/);
+    return found?.[1] ?? null;
+  }, [pathname]);
 
   const statusForIndex = (index: number) => {
     const resolved = resultsMap.get(index);
@@ -238,6 +244,14 @@ export function PracticeArenaShell({ question, testcases, initialTimer, initialL
       setResults(payload.results);
 
       if (payload.passed) {
+        if (intent === "submit" && matchId) {
+          void fetch("/api/match/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ matchId }),
+          });
+        }
+
         setFeedback(intent === "submit" ? "✅ Correct! All test cases passed." : "All test cases passed.");
         setFeedbackTone("success");
       } else {

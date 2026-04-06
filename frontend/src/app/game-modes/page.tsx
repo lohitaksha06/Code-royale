@@ -551,16 +551,16 @@ export default function GameModesPage() {
       return;
     }
 
-    // Poll briefly; if nobody joins around the same time, show “No match found”.
+    // Poll for up to 1 minute; if nobody joins, fail gracefully.
     const started = Date.now();
-    const timeoutMs = 12_000;
+    const timeoutMs = 60_000;
     const intervalMs = 1_500;
 
     const interval = setInterval(async () => {
       if (Date.now() - started > timeoutMs) {
         clearInterval(interval);
         setPollRef(null);
-        setErrorMessage("No match found. Come back later.");
+        setErrorMessage("Failed to find a match in 1 minute. Try again.");
         setState("error");
         return;
       }

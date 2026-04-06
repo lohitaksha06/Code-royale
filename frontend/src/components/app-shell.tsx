@@ -149,10 +149,12 @@ type PendingNotification = {
 export function AppShell({ children, showSidebar = true }: AppShellProps) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [viewerId, setViewerId] = useState<string | null>(null);
   const [incomingRequestCount, setIncomingRequestCount] = useState(0);
   const [pendingNotifications, setPendingNotifications] = useState<PendingNotification[]>([]);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isNotificationPinned, setIsNotificationPinned] = useState(false);
+  const [acceptingRequesterIds, setAcceptingRequesterIds] = useState<Set<string>>(new Set());
   const [onlineToasts, setOnlineToasts] = useState<Array<{ id: string; text: string }>>([]);
   const hasInitializedPresenceRef = useRef(false);
   const previousOnlineSetRef = useRef<Set<string>>(new Set());
@@ -211,10 +213,12 @@ export function AppShell({ children, showSidebar = true }: AppShellProps) {
       const { data, error } = await supabase.auth.getUser();
 
       if (!mounted || error || !data.user?.id) {
+        setViewerId(null);
         setIncomingRequestCount(0);
         return;
       }
 
+      setViewerId(data.user.id);
       await refreshIncomingRequests(data.user.id);
     };
 
@@ -243,6 +247,28 @@ export function AppShell({ children, showSidebar = true }: AppShellProps) {
     const days = Math.floor(hours / 24);
     if (days < 7) return `${days}d ago`;
     return date.toLocaleDateString();
+  };
+
+  const handleAcceptFromNotification = async (requesterId: string) => {
+    if (!viewerId) return;
+
+    setAcceptingRequesterIds((prev) => new Set(prev).add(requesterId));
+
+    const { error } = await supabase
+      .from("connections")
+      .update({ status: "accepted" })
+      .match({ user_id: requesterId, connection_id: viewerId, status: "pending" });
+
+    if (!error) {
+      setPendingNotifications((prev) => prev.filter((item) => item.requesterId !== requesterId));
+      setIncomingRequestCount((prev) => Math.max(0, prev - 1));
+    }
+
+    setAcceptingRequesterIds((prev) => {
+      const next = new Set(prev);
+      next.delete(requesterId);
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -465,22 +491,38 @@ export function AppShell({ children, showSidebar = true }: AppShellProps) {
                       </div>
                     ) : (
                       pendingNotifications.map((notification) => (
-                        <Link
+                        <div
                           key={notification.id}
-                          href={`/friends?tab=pending&focusUserId=${notification.requesterId}`}
-                          onClick={() => {
-                            setIsNotificationPinned(false);
-                            setIsNotificationOpen(false);
-                          }}
-                          className="mb-2 block rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg)] px-3 py-3 transition-colors hover:border-[rgba(var(--cr-accent-rgb),0.5)]"
+                          className="mb-2 rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg)] px-3 py-3"
                         >
-                          <p className="text-sm font-medium text-[var(--cr-fg)]">
-                            {notification.requesterName} sent you a friend request.
-                          </p>
-                          <p className="mt-1 text-xs text-[var(--cr-fg-muted)]">
-                            {formatNotificationTime(notification.createdAt)}
-                          </p>
-                        </Link>
+                          <Link
+                            href={`/friends?tab=pending&focusUserId=${notification.requesterId}`}
+                            onClick={() => {
+                              setIsNotificationPinned(false);
+                              setIsNotificationOpen(false);
+                            }}
+                            className="block rounded-lg transition-colors hover:text-[rgb(var(--cr-accent-rgb))]"
+                          >
+                            <p className="text-sm font-medium text-[var(--cr-fg)]">
+                              {notification.requesterName} sent you a friend request.
+                            </p>
+                            <p className="mt-1 text-xs text-[var(--cr-fg-muted)]">
+                              {formatNotificationTime(notification.createdAt)}
+                            </p>
+                          </Link>
+                          <div className="mt-3 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                void handleAcceptFromNotification(notification.requesterId);
+                              }}
+                              disabled={acceptingRequesterIds.has(notification.requesterId)}
+                              className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {acceptingRequesterIds.has(notification.requesterId) ? "Accepting..." : "Accept"}
+                            </button>
+                          </div>
+                        </div>
                       ))
                     )}
                   </div>
