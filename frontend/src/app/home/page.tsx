@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { AppShell } from "../../components/app-shell";
+import { useFriendPresence } from "../../lib/use-friend-presence";
 
 const battleModes = [
   {
@@ -54,7 +55,18 @@ const statDefinitions: Array<{ label: string; key: keyof TelemetrySummary }> = [
   { label: "Matches Today", key: "matchesToday" },
 ];
 
+function initialsFromName(name: string) {
+  const trimmed = name.trim();
+  if (!trimmed) return "CR";
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  const first = parts[0]?.[0] ?? "C";
+  const second = parts.length > 1 ? parts[1]?.[0] : parts[0]?.[1];
+  return `${first}${second ?? "R"}`.toUpperCase();
+}
+
 export default function HomePage() {
+  const { friends, loading: friendsLoading } = useFriendPresence();
+
   const [telemetry, setTelemetry] = useState<TelemetrySummary>({
     activePlayers: 0,
     currentVisits: 0,
@@ -117,6 +129,7 @@ export default function HomePage() {
   const solvedPercent = Math.min(100, Math.round((progress.solvedProblems / solvedDenominator) * 100));
   const streakLabel = `${progress.streakDays} day${progress.streakDays === 1 ? "" : "s"}`;
   const streakPercent = Math.min(100, progress.streakDays * 20);
+  const shownFriends = friends.slice(0, 14);
 
   return (
     <AppShell>
@@ -151,6 +164,50 @@ export default function HomePage() {
           </div>
           {/* Decorative gradient */}
           <div className="pointer-events-none absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-[rgba(var(--cr-accent-rgb),0.1)] to-transparent" />
+        </section>
+
+        <section className="rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold text-[var(--cr-fg)]">Connections ({friends.length})</h2>
+            <Link href="/friends" className="text-sm font-medium text-[var(--cr-fg)] hover:underline">
+              See all →
+            </Link>
+          </div>
+
+          {friendsLoading && (
+            <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className="min-w-[90px] text-center">
+                  <div className="mx-auto h-16 w-16 animate-pulse rounded-full bg-[var(--cr-bg-tertiary)]" />
+                  <div className="mx-auto mt-3 h-3 w-16 animate-pulse rounded bg-[var(--cr-bg-tertiary)]" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!friendsLoading && shownFriends.length === 0 && (
+            <div className="mt-4 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-3 text-sm text-[var(--cr-fg-muted)]">
+              No friends yet. Add players from the Friends tab to see them here.
+            </div>
+          )}
+
+          {!friendsLoading && shownFriends.length > 0 && (
+            <div className="mt-4 flex gap-5 overflow-x-auto pb-2">
+              {shownFriends.map((friend) => (
+                <Link key={friend.id} href={`/profile?userId=${friend.id}`} className="group min-w-[96px] text-center">
+                  <div className="relative mx-auto h-16 w-16 rounded-full bg-[var(--cr-bg-tertiary)] ring-1 ring-[var(--cr-border)] transition-all group-hover:ring-[rgba(var(--cr-accent-rgb),0.55)]">
+                    <span className="flex h-full w-full items-center justify-center text-xl font-bold text-[rgb(var(--cr-accent-rgb))]">
+                      {initialsFromName(friend.username)}
+                    </span>
+                    {friend.online && (
+                      <span className="absolute left-1/2 top-full mt-1 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-emerald-400 ring-2 ring-[var(--cr-bg-secondary)]" />
+                    )}
+                  </div>
+                  <p className="mt-4 truncate text-sm font-medium text-[var(--cr-fg)]">{friend.username}</p>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Stats Row */}

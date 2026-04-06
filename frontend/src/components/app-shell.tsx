@@ -3,7 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
+import { supabase } from "../lib/supabase-browser";
+import { useFriendPresence } from "../lib/use-friend-presence";
 
 const sidebarItems = [
   {
@@ -140,6 +142,84 @@ type AppShellProps = {
 export function AppShell({ children, showSidebar = true }: AppShellProps) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [incomingRequestCount, setIncomingRequestCount] = useState(0);
+  const [onlineToasts, setOnlineToasts] = useState<Array<{ id: string; text: string }>>([]);
+  const hasInitializedPresenceRef = useRef(false);
+  const previousOnlineSetRef = useRef<Set<string>>(new Set());
+
+  const { friends: presenceFriends, onlineFriendIds } = useFriendPresence();
+
+  useEffect(() => {
+    let mounted = true;
+
+    const refreshIncomingRequests = async (userId: string) => {
+      const { count, error } = await supabase
+        .from("connections")
+        .select("user_id", { head: true, count: "exact" })
+        .eq("connection_id", userId)
+        .eq("status", "pending");
+
+      if (!mounted || error) {
+        return;
+      }
+
+      setIncomingRequestCount(count ?? 0);
+    };
+
+    const bootstrap = async () => {
+      const { data, error } = await supabase.auth.getUser();
+
+      if (!mounted || error || !data.user?.id) {
+        setIncomingRequestCount(0);
+        return;
+      }
+
+      await refreshIncomingRequests(data.user.id);
+    };
+
+    void bootstrap();
+
+    const timer = window.setInterval(() => {
+      void bootstrap();
+    }, 8000);
+
+    return () => {
+      mounted = false;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  useEffect(() => {
+    const currentSet = new Set(onlineFriendIds);
+
+    if (!hasInitializedPresenceRef.current) {
+      hasInitializedPresenceRef.current = true;
+      previousOnlineSetRef.current = currentSet;
+      return;
+    }
+
+    const previousSet = previousOnlineSetRef.current;
+    const newlyOnlineIds = Array.from(currentSet).filter((id) => !previousSet.has(id));
+
+    if (newlyOnlineIds.length > 0) {
+      const usernameById = new Map(presenceFriends.map((friend) => [friend.id, friend.username]));
+
+      const nextToasts = newlyOnlineIds.map((id) => ({
+        id: `${id}-${Date.now()}`,
+        text: `${usernameById.get(id) ?? "Your friend"} is now online`,
+      }));
+
+      setOnlineToasts((prev) => [...prev, ...nextToasts]);
+
+      for (const toast of nextToasts) {
+        window.setTimeout(() => {
+          setOnlineToasts((prev) => prev.filter((item) => item.id !== toast.id));
+        }, 5000);
+      }
+    }
+
+    previousOnlineSetRef.current = currentSet;
+  }, [onlineFriendIds, presenceFriends]);
 
   const isActive = (href: string) => {
     if (href === "/home") return pathname === "/home";
@@ -286,14 +366,21 @@ export function AppShell({ children, showSidebar = true }: AppShellProps) {
             </div>
 
             {/* Notifications */}
-            <button
-              type="button"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--cr-fg-muted)] transition-colors hover:bg-[var(--cr-bg-secondary)] hover:text-[var(--cr-fg)]"
+            <Link
+              href="/friends?tab=pending"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] text-[var(--cr-fg-muted)] transition-colors hover:text-[var(--cr-fg)]"
+              aria-label="Open friend request notifications"
+              title="Friend requests"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
               </svg>
-            </button>
+              {incomingRequestCount > 0 && (
+                <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white">
+                  {incomingRequestCount > 99 ? "99+" : incomingRequestCount}
+                </span>
+              )}
+            </Link>
 
             {/* User avatar */}
             <Link
@@ -345,6 +432,19 @@ export function AppShell({ children, showSidebar = true }: AppShellProps) {
             </section>
           </div>
         </footer>
+
+        {onlineToasts.length > 0 && (
+          <div className="pointer-events-none fixed bottom-6 right-6 z-[70] flex w-full max-w-sm flex-col gap-2">
+            {onlineToasts.map((toast) => (
+              <div
+                key={toast.id}
+                className="rounded-xl border border-emerald-400/40 bg-emerald-500/15 px-4 py-3 text-sm font-medium text-emerald-100 shadow-[0_10px_30px_rgba(16,185,129,0.25)]"
+              >
+                {toast.text}
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

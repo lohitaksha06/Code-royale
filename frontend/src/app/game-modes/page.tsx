@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "../../components/app-shell";
 import { supabase } from "../../lib/supabase-browser";
+import { useFriendPresence } from "../../lib/use-friend-presence";
 
 const trophyIcon = (
   <svg
@@ -291,9 +292,6 @@ export default function GameModesPage() {
 
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [friendPickerOpen, setFriendPickerOpen] = useState(false);
-  const [friendsLoading, setFriendsLoading] = useState(false);
-  const [friendsError, setFriendsError] = useState<string | null>(null);
-  const [friends, setFriends] = useState<FriendRow[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<FriendRow | null>(null);
 
   const [inviteCreating, setInviteCreating] = useState(false);
@@ -301,6 +299,12 @@ export default function GameModesPage() {
   const [inviteMatchId, setInviteMatchId] = useState<string | null>(null);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [viewerRating, setViewerRating] = useState(0);
+
+  const {
+    loading: friendsLoading,
+    error: friendsError,
+    friends: presenceFriends,
+  } = useFriendPresence();
 
   useEffect(() => {
     let mounted = true;
@@ -365,8 +369,6 @@ export default function GameModesPage() {
   };
 
   const openFriendPicker = async () => {
-    setFriendsError(null);
-
     if (!viewerId) {
       setErrorMessage("You must be signed in to invite a friend.");
       setSelectedMode(RANKED_MODES.find((mode) => mode.id === "friend") ?? null);
@@ -375,56 +377,15 @@ export default function GameModesPage() {
     }
 
     setFriendPickerOpen(true);
-    setFriendsLoading(true);
-    setFriends([]);
-
-    const { data: connectionRows, error: connError } = await supabase
-      .from("connections")
-      .select("user_id,connection_id,status")
-      .or(`user_id.eq.${viewerId},connection_id.eq.${viewerId}`)
-      .eq("status", "accepted");
-
-    if (connError) {
-      setFriendsError("Unable to load friends.");
-      setFriendsLoading(false);
-      return;
-    }
-
-    const rows = (connectionRows ?? []) as Array<{ user_id: string; connection_id: string; status: string }>;
-    const otherIds = Array.from(
-      new Set(
-        rows
-          .map((row) => (row.user_id === viewerId ? row.connection_id : row.user_id))
-          .filter(Boolean),
-      ),
-    );
-
-    if (otherIds.length === 0) {
-      setFriends([]);
-      setFriendsLoading(false);
-      return;
-    }
-
-    const { data: userRows, error: usersError } = await supabase
-      .from("users")
-      .select("id,username")
-      .in("id", otherIds);
-
-    if (usersError) {
-      setFriendsError("Unable to load friend profiles.");
-      setFriendsLoading(false);
-      return;
-    }
-
-    const mapped = (userRows ?? []).map((row: { id: string; username: string | null }) => ({
-      id: row.id,
-      username: (row.username ?? "Unknown Pilot").trim() || "Unknown Pilot",
-    }));
-
-    mapped.sort((a, b) => a.username.localeCompare(b.username));
-    setFriends(mapped);
-    setFriendsLoading(false);
   };
+
+  const onlineFriends = presenceFriends
+    .filter((friend) => friend.online)
+    .map((friend) => ({ id: friend.id, username: friend.username }));
+
+  const offlineFriends = presenceFriends
+    .filter((friend) => !friend.online)
+    .map((friend) => ({ id: friend.id, username: friend.username }));
 
   const createFriendInviteMatch = async (friend: FriendRow) => {
     setInviteCreating(true);
@@ -789,8 +750,8 @@ export default function GameModesPage() {
         open={friendPickerOpen}
         loading={friendsLoading}
         error={friendsError}
-        onlineFriends={[]}
-        offlineFriends={friends}
+        onlineFriends={onlineFriends}
+        offlineFriends={offlineFriends}
         onClose={() => setFriendPickerOpen(false)}
         onSelect={(friend) => {
           setSelectedFriend(friend);

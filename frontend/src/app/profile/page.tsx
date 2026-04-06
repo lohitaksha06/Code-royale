@@ -45,6 +45,8 @@ function ProfileContent() {
 
   const [viewerUserId, setViewerUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserRow | null>(null);
+  const [friendCount, setFriendCount] = useState(0);
+  const [isFriendWithViewer, setIsFriendWithViewer] = useState(false);
 
   const resolvedUserId = targetUserIdParam ?? viewerUserId;
   const isSelf = Boolean(resolvedUserId && viewerUserId && resolvedUserId === viewerUserId);
@@ -73,6 +75,29 @@ function ProfileContent() {
         setLoading(false);
         return;
       }
+
+      const [friendCountResponse, relationshipResult] = await Promise.all([
+        fetch(`/api/friends/meta?userIds=${encodeURIComponent(idToLoad)}`, { cache: "no-store" }),
+        authData.user?.id && authData.user.id !== idToLoad
+          ? supabase
+              .from("connections")
+              .select("status")
+              .or(`and(user_id.eq.${authData.user.id},connection_id.eq.${idToLoad}),and(user_id.eq.${idToLoad},connection_id.eq.${authData.user.id})`)
+          : Promise.resolve({ data: [], error: null }),
+      ]);
+
+      if (!mounted) return;
+
+      if (friendCountResponse.ok) {
+        const payload = (await friendCountResponse.json()) as { counts?: Record<string, number> };
+        setFriendCount(payload.counts?.[idToLoad] ?? 0);
+      } else {
+        setFriendCount(0);
+      }
+
+      const hasFriendConnection =
+        (relationshipResult.data ?? []).some((row) => row.status === "accepted");
+      setIsFriendWithViewer(hasFriendConnection);
 
       const { data: userRow, error: profileError } = await supabase
         .from("users")
@@ -140,7 +165,16 @@ function ProfileContent() {
                     <span className={`rounded px-2 py-0.5 text-xs font-medium ${rank.color}`}>
                       {rank.name}
                     </span>
+                    {!isSelf && isFriendWithViewer && (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5 1.343 3.5 3 3.5zM8 11c1.657 0 3-1.567 3-3.5S9.657 4 8 4 5 5.567 5 7.5 6.343 11 8 11zm0 2c-2.761 0-5 2.015-5 4.5V20h10v-2.5c0-2.485-2.239-4.5-5-4.5zm8 0a5.76 5.76 0 00-1.16.118A6.52 6.52 0 0119 17.5V20h5v-2.5c0-2.485-2.239-4.5-5-4.5z" />
+                        </svg>
+                        Friends
+                      </span>
+                    )}
                   </div>
+                  <p className="mt-1 text-sm text-[var(--cr-fg-muted)]">Friends: {friendCount}</p>
                   {profile?.team_name && (
                     <p className="mt-1 text-sm text-[var(--cr-fg-muted)]">
                       Team: {profile.team_name}

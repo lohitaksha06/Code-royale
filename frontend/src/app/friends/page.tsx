@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { AppShell } from "../../components/app-shell";
 import { supabase } from "../../lib/supabase-browser";
 
@@ -25,6 +26,15 @@ type RelationshipState =
   | "blocked"
   | "blocked_by_other";
 
+type ActiveTab = "search" | "friends" | "pending";
+
+type FriendListItem = {
+  id: string;
+  username: string;
+  rating: number;
+  friendCount: number;
+};
+
 function computeRelationship(viewerId: string, otherId: string, rows: ConnectionRow[]) {
   const outgoing = rows.find((row) => row.user_id === viewerId && row.connection_id === otherId);
   const incoming = rows.find((row) => row.user_id === otherId && row.connection_id === viewerId);
@@ -38,16 +48,139 @@ function computeRelationship(viewerId: string, otherId: string, rows: Connection
 }
 
 export default function FriendsPage() {
+  const searchParams = useSearchParams();
+
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
+  const [loadingConnections, setLoadingConnections] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<UserRow[]>([]);
+  const [connectionRows, setConnectionRows] = useState<ConnectionRow[]>([]);
+  const [friends, setFriends] = useState<FriendListItem[]>([]);
+  const [incomingRequests, setIncomingRequests] = useState<FriendListItem[]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<FriendListItem[]>([]);
   const [relationshipByUserId, setRelationshipByUserId] = useState<Record<string, RelationshipState>>({});
-  const [activeTab, setActiveTab] = useState<"search" | "friends" | "pending">("friends");
+  const [friendCountByUserId, setFriendCountByUserId] = useState<Record<string, number>>({});
+  const [activeTab, setActiveTab] = useState<ActiveTab>("friends");
 
   const trimmedQuery = query.trim();
   const canSearch = trimmedQuery.length >= 2;
+
+  const getDisplayName = (value: string | null | undefined) => {
+    const trimmed = value?.trim();
+    return trimmed && trimmed.length > 0 ? trimmed : "Unknown";
+  };
+
+  const loadFriendCounts = async (userIds: string[]) => {
+    if (userIds.length === 0) {
+      return {} as Record<string, number>;
+    }
+
+    const response = await fetch(`/api/friends/meta?userIds=${encodeURIComponent(userIds.join(","))}`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return {} as Record<string, number>;
+    }
+
+    const payload = (await response.json()) as { counts?: Record<string, number> };
+    return payload.counts ?? {};
+  };
+
+  const buildRelationshipMap = (users: UserRow[], rows: ConnectionRow[], currentViewerId: string) => {
+    const relMap: Record<string, RelationshipState> = {};
+    for (const user of users) {
+      if (user.id === currentViewerId) {
+        relMap[user.id] = "none";
+      } else {
+        relMap[user.id] = computeRelationship(currentViewerId, user.id, rows);
+      }
+    }
+    return relMap;
+  };
+
+  const loadConnections = async (currentViewerId: string) => {
+    setLoadingConnections(true);
+
+    const { data: rowsData, error: rowsError } = await supabase
+      .from("connections")
+      .select("user_id,connection_id,status")
+      .or(`user_id.eq.${currentViewerId},connection_id.eq.${currentViewerId}`);
+
+    if (rowsError) {
+      setError(rowsError.message);
+      setConnectionRows([]);
+      setFriends([]);
+      setIncomingRequests([]);
+      setOutgoingRequests([]);
+      setLoadingConnections(false);
+      return;
+    }
+
+    const rows = (rowsData ?? []) as ConnectionRow[];
+    setConnectionRows(rows);
+
+    const incomingIds = rows
+      .filter((row) => row.status === "pending" && row.connection_id === currentViewerId)
+      .map((row) => row.user_id);
+
+    const outgoingIds = rows
+      .filter((row) => row.status === "pending" && row.user_id === currentViewerId)
+      .map((row) => row.connection_id);
+
+    const friendIds = rows
+      .filter((row) => row.status === "accepted")
+      .map((row) => (row.user_id === currentViewerId ? row.connection_id : row.user_id))
+      .filter((id) => id !== currentViewerId);
+
+    const uniqueIds = Array.from(new Set([...incomingIds, ...outgoingIds, ...friendIds]));
+
+    if (uniqueIds.length === 0) {
+      setFriends([]);
+      setIncomingRequests([]);
+      setOutgoingRequests([]);
+      setLoadingConnections(false);
+      return;
+    }
+
+    const { data: usersData, error: usersError } = await supabase
+      .from("users")
+      .select("id,username,rating")
+      .in("id", uniqueIds);
+
+    if (usersError) {
+      setError(usersError.message);
+      setFriends([]);
+      setIncomingRequests([]);
+      setOutgoingRequests([]);
+      setLoadingConnections(false);
+      return;
+    }
+
+    const users = (usersData ?? []) as UserRow[];
+    const userMap = new Map(users.map((user) => [user.id, user]));
+    const counts = await loadFriendCounts(uniqueIds);
+    setFriendCountByUserId((prev) => ({ ...prev, ...counts }));
+
+    const toListItem = (userId: string): FriendListItem => {
+      const user = userMap.get(userId);
+      return {
+        id: userId,
+        username: getDisplayName(user?.username),
+        rating: typeof user?.rating === "number" ? user.rating : 0,
+        friendCount: counts[userId] ?? 0,
+      };
+    };
+
+    const sortByName = (a: FriendListItem, b: FriendListItem) => a.username.localeCompare(b.username);
+
+    setIncomingRequests(incomingIds.map(toListItem).sort(sortByName));
+    setOutgoingRequests(outgoingIds.map(toListItem).sort(sortByName));
+    setFriends(friendIds.map(toListItem).sort(sortByName));
+    setLoadingConnections(false);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -56,13 +189,29 @@ export default function FriendsPage() {
       if (!mounted) return;
       if (authError) {
         setViewerId(null);
+        setLoadingConnections(false);
         return;
       }
-      setViewerId(data.user?.id ?? null);
+
+      const currentViewerId = data.user?.id ?? null;
+      setViewerId(currentViewerId);
+
+      if (currentViewerId) {
+        await loadConnections(currentViewerId);
+      } else {
+        setLoadingConnections(false);
+      }
     };
     void loadViewer();
     return () => { mounted = false; };
   }, []);
+
+  useEffect(() => {
+    const requestedTab = searchParams.get("tab");
+    if (requestedTab === "friends" || requestedTab === "pending" || requestedTab === "search") {
+      setActiveTab(requestedTab);
+    }
+  }, [searchParams]);
 
   const handleSearch = async () => {
     if (!canSearch) {
@@ -91,52 +240,99 @@ export default function FriendsPage() {
     const users = (userRows ?? []) as UserRow[];
     setResults(users);
 
+    const counts = await loadFriendCounts(users.map((user) => user.id));
+    setFriendCountByUserId((prev) => ({ ...prev, ...counts }));
+
     if (!viewerId || users.length === 0) {
       setSearching(false);
       return;
     }
 
-    const otherIds = users.map((u) => u.id).filter((id) => id !== viewerId);
-    if (otherIds.length === 0) {
-      setSearching(false);
-      return;
-    }
-
-    const { data: connRows, error: connError } = await supabase
-      .from("connections")
-      .select("user_id,connection_id,status")
-      .or(`user_id.eq.${viewerId},connection_id.eq.${viewerId}`)
-      .in("connection_id", [...otherIds, viewerId])
-      .in("user_id", [...otherIds, viewerId]);
-
-    if (connError) {
-      setSearching(false);
-      return;
-    }
-
-    const rows = (connRows ?? []) as ConnectionRow[];
-    const relMap: Record<string, RelationshipState> = {};
-    for (const user of users) {
-      if (user.id === viewerId) {
-        relMap[user.id] = "none";
-      } else {
-        relMap[user.id] = computeRelationship(viewerId, user.id, rows);
-      }
-    }
-    setRelationshipByUserId(relMap);
+    setRelationshipByUserId(buildRelationshipMap(users, connectionRows, viewerId));
     setSearching(false);
   };
 
   const handleAddFriend = async (userId: string) => {
     if (!viewerId) return;
-    await supabase.from("connections").insert({ user_id: viewerId, connection_id: userId, status: "pending" });
+    const { error: requestError } = await supabase
+      .from("connections")
+      .insert({ user_id: viewerId, connection_id: userId, status: "pending" });
+
+    if (requestError) {
+      setError(requestError.message);
+      return;
+    }
+
+    await loadConnections(viewerId);
     setRelationshipByUserId((prev) => ({ ...prev, [userId]: "outgoing_pending" }));
   };
 
   const handleAccept = async (userId: string) => {
     if (!viewerId) return;
-    await supabase.from("connections").update({ status: "accepted" }).match({ user_id: userId, connection_id: viewerId });
+    const { error: acceptError } = await supabase
+      .from("connections")
+      .update({ status: "accepted" })
+      .match({ user_id: userId, connection_id: viewerId });
+
+    if (acceptError) {
+      setError(acceptError.message);
+      return;
+    }
+
+    await loadConnections(viewerId);
     setRelationshipByUserId((prev) => ({ ...prev, [userId]: "friends" }));
+  };
+
+  const incomingCount = incomingRequests.length;
+
+  const renderUserLine = (user: FriendListItem, kind: "incoming" | "outgoing" | "friend") => {
+    const isSelf = user.id === viewerId;
+    const profileHref = isSelf ? "/profile" : `/profile?userId=${user.id}`;
+
+    return (
+      <div
+        key={`${kind}-${user.id}`}
+        className="flex items-center justify-between rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] px-4 py-3"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[rgba(var(--cr-accent-rgb),0.2)] text-sm font-medium text-[rgb(var(--cr-accent-rgb))]">
+            {user.username[0]?.toUpperCase() ?? "?"}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <Link href={profileHref} className="text-sm font-medium text-[var(--cr-fg)] hover:underline">
+                {user.username}
+              </Link>
+              {kind === "friend" && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5 1.343 3.5 3 3.5zM8 11c1.657 0 3-1.567 3-3.5S9.657 4 8 4 5 5.567 5 7.5 6.343 11 8 11zm0 2c-2.761 0-5 2.015-5 4.5V20h10v-2.5c0-2.485-2.239-4.5-5-4.5zm8 0a5.76 5.76 0 00-1.16.118A6.52 6.52 0 0119 17.5V20h5v-2.5c0-2.485-2.239-4.5-5-4.5z" />
+                  </svg>
+                  Friends
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-[var(--cr-fg-muted)]">Rating: {user.rating}</p>
+            <p className="text-xs text-[var(--cr-fg-muted)]">Friends: {user.friendCount}</p>
+          </div>
+        </div>
+
+        {kind === "incoming" && (
+          <button
+            onClick={() => handleAccept(user.id)}
+            className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-500"
+          >
+            Accept
+          </button>
+        )}
+        {kind === "outgoing" && (
+          <span className="text-xs text-[var(--cr-fg-muted)]">Request Sent</span>
+        )}
+        {kind === "friend" && (
+          <span className="text-xs text-emerald-400">Friends</span>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -153,7 +349,7 @@ export default function FriendsPage() {
         <div className="mb-6 flex gap-1 rounded-lg bg-[var(--cr-bg-secondary)] p-1">
           {[
             { id: "friends", label: "Friends" },
-            { id: "pending", label: "Pending" },
+            { id: "pending", label: `Pending${incomingCount > 0 ? ` (${incomingCount})` : ""}` },
             { id: "search", label: "Search" },
           ].map((tab) => (
             <button
@@ -215,15 +411,28 @@ export default function FriendsPage() {
                           {(user.username ?? "?")[0].toUpperCase()}
                         </div>
                         <div>
-                          <Link
-                            href={`/profile?userId=${user.id}`}
-                            className="text-sm font-medium text-[var(--cr-fg)] hover:underline"
-                          >
-                            {user.username ?? "Unknown"}
-                          </Link>
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={isSelf ? "/profile" : `/profile?userId=${user.id}`}
+                              className="text-sm font-medium text-[var(--cr-fg)] hover:underline"
+                            >
+                              {user.username ?? "Unknown"}
+                            </Link>
+                            {relationship === "friends" && (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
+                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 11c1.657 0 3-1.567 3-3.5S17.657 4 16 4s-3 1.567-3 3.5 1.343 3.5 3 3.5zM8 11c1.657 0 3-1.567 3-3.5S9.657 4 8 4 5 5.567 5 7.5 6.343 11 8 11zm0 2c-2.761 0-5 2.015-5 4.5V20h10v-2.5c0-2.485-2.239-4.5-5-4.5zm8 0a5.76 5.76 0 00-1.16.118A6.52 6.52 0 0119 17.5V20h5v-2.5c0-2.485-2.239-4.5-5-4.5z" />
+                                </svg>
+                                Friends
+                              </span>
+                            )}
+                          </div>
                           {user.rating !== undefined && (
                             <p className="text-xs text-[var(--cr-fg-muted)]">Rating: {user.rating ?? 0}</p>
                           )}
+                          <p className="text-xs text-[var(--cr-fg-muted)]">
+                            Friends: {friendCountByUserId[user.id] ?? 0}
+                          </p>
                         </div>
                       </div>
                       {!isSelf && (
@@ -268,27 +477,59 @@ export default function FriendsPage() {
 
         {/* Friends Tab */}
         {activeTab === "friends" && (
-          <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-8 text-center">
-            <svg className="mx-auto h-12 w-12 text-[var(--cr-fg-muted)] opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-            </svg>
-            <p className="mt-3 text-sm text-[var(--cr-fg-muted)]">No friends yet</p>
-            <button
-              onClick={() => setActiveTab("search")}
-              className="mt-4 text-sm text-[rgb(var(--cr-accent-rgb))] hover:underline"
-            >
-              Search for players →
-            </button>
+          <div className="space-y-3">
+            {loadingConnections && (
+              <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-6 text-center text-sm text-[var(--cr-fg-muted)]">
+                Loading friends...
+              </div>
+            )}
+            {!loadingConnections && friends.length === 0 && (
+              <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-8 text-center">
+                <p className="text-sm text-[var(--cr-fg-muted)]">No friends yet</p>
+                <button
+                  onClick={() => setActiveTab("search")}
+                  className="mt-4 text-sm text-[rgb(var(--cr-accent-rgb))] hover:underline"
+                >
+                  Search for players →
+                </button>
+              </div>
+            )}
+            {!loadingConnections && friends.length > 0 && friends.map((user) => renderUserLine(user, "friend"))}
           </div>
         )}
 
         {/* Pending Tab */}
         {activeTab === "pending" && (
-          <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-8 text-center">
-            <svg className="mx-auto h-12 w-12 text-[var(--cr-fg-muted)] opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p className="mt-3 text-sm text-[var(--cr-fg-muted)]">No pending requests</p>
+          <div className="space-y-6">
+            <section>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--cr-fg)]">
+                Incoming Requests
+              </h2>
+              <div className="space-y-3">
+                {incomingRequests.length === 0 ? (
+                  <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5 text-sm text-[var(--cr-fg-muted)]">
+                    No incoming requests.
+                  </div>
+                ) : (
+                  incomingRequests.map((user) => renderUserLine(user, "incoming"))
+                )}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--cr-fg)]">
+                Sent By You
+              </h2>
+              <div className="space-y-3">
+                {outgoingRequests.length === 0 ? (
+                  <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-5 text-sm text-[var(--cr-fg-muted)]">
+                    No outgoing requests.
+                  </div>
+                ) : (
+                  outgoingRequests.map((user) => renderUserLine(user, "outgoing"))
+                )}
+              </div>
+            </section>
           </div>
         )}
       </div>
