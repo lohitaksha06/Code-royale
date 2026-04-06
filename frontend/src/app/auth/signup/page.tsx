@@ -62,31 +62,7 @@ export default function SignupPage() {
       return;
     }
 
-    const user = authData.user;
     const hasSession = Boolean(authData.session);
-
-    if (user && hasSession) {
-      const { error: profileError } = await supabase.from("users").upsert(
-        {
-          id: user.id,
-          username: displayName,
-          rating: 0,
-          wins: 0,
-          losses: 0,
-          team_name: null,
-        },
-        {
-          onConflict: "id",
-          ignoreDuplicates: true,
-        },
-      );
-
-      if (profileError) {
-        setError(profileError.message);
-        setProcessing(false);
-        return;
-      }
-    }
 
     if (!hasSession) {
       setError(
