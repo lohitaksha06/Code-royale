@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -57,6 +57,12 @@ function ProfileContent() {
   const [isFriendWithViewer, setIsFriendWithViewer] = useState(false);
   const [relationshipStatus, setRelationshipStatus] = useState<RelationshipStatus>("none");
   const [actionBusy, setActionBusy] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("Harassment");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportSubmitted, setReportSubmitted] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   const resolvedUserId = targetUserIdParam ?? viewerUserId;
   const isSelf = Boolean(resolvedUserId && viewerUserId && resolvedUserId === viewerUserId);
@@ -156,6 +162,20 @@ function ProfileContent() {
     };
   }, [targetUserIdParam]);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [menuOpen]);
+
   const displayName = profile?.username || "Anonymous";
   const initials = initialsFromName(displayName);
   const rating = profile?.rating ?? 0;
@@ -229,6 +249,44 @@ function ProfileContent() {
     setActionBusy(false);
   };
 
+  const updateBlockStatus = async (action: "block" | "unblock") => {
+    if (!resolvedUserId || isSelf) return;
+
+    setActionBusy(true);
+    setError(null);
+
+    const response = await fetch("/api/friends/manage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action,
+        targetUserId: resolvedUserId,
+      }),
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { error?: string };
+
+    if (!response.ok) {
+      setError(payload.error ?? "Unable to update block status right now.");
+      setActionBusy(false);
+      return;
+    }
+
+    if (action === "block") {
+      setRelationshipStatus("blocked");
+      setIsFriendWithViewer(false);
+    } else {
+      setRelationshipStatus("none");
+    }
+
+    setActionBusy(false);
+    setMenuOpen(false);
+  };
+
+  const submitReport = () => {
+    setReportSubmitted(true);
+  };
+
   return (
     <AppShell>
       <div className="mx-auto max-w-4xl p-6">
@@ -255,6 +313,53 @@ function ProfileContent() {
                   {initials}
                 </div>
                 <div className="flex-1">
+                  {!isSelf && (
+                    <div className="relative mb-2 flex justify-end" ref={menuRef}>
+                      <button
+                        type="button"
+                        onClick={() => setMenuOpen((prev) => !prev)}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] text-[var(--cr-fg-muted)] hover:text-[var(--cr-fg)]"
+                        aria-label="Open profile actions"
+                      >
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75h.008v.008H12V6.75zm0 5.25h.008v.008H12V12zm0 5.25h.008v.008H12v-.008z" />
+                        </svg>
+                      </button>
+
+                      {menuOpen && (
+                        <div className="absolute right-0 top-11 z-20 w-44 rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg)] p-1 shadow-[0_12px_32px_rgba(2,8,25,0.55)]">
+                          {relationshipStatus !== "blocked" ? (
+                            <button
+                              type="button"
+                              onClick={() => void updateBlockStatus("block")}
+                              className="w-full rounded-lg px-3 py-2 text-left text-sm text-rose-300 hover:bg-rose-500/10"
+                            >
+                              Block User
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => void updateBlockStatus("unblock")}
+                              className="w-full rounded-lg px-3 py-2 text-left text-sm text-emerald-300 hover:bg-emerald-500/10"
+                            >
+                              Unblock User
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReportModalOpen(true);
+                              setReportSubmitted(false);
+                              setMenuOpen(false);
+                            }}
+                            className="w-full rounded-lg px-3 py-2 text-left text-sm text-[var(--cr-fg)] hover:bg-[var(--cr-bg-secondary)]"
+                          >
+                            Report User
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <div className="flex flex-wrap items-center gap-3">
                     <h1 className="text-2xl font-bold text-[var(--cr-fg)]">{displayName}</h1>
                     <span className={`rounded px-2 py-0.5 text-xs font-medium ${rank.color}`}>
@@ -337,6 +442,16 @@ function ProfileContent() {
                       Request Sent
                     </span>
                   )}
+                  {!isSelf && relationshipStatus === "blocked" && (
+                    <span className="mt-4 inline-flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm font-medium text-rose-200">
+                      User blocked
+                    </span>
+                  )}
+                  {!isSelf && relationshipStatus === "blocked_by_other" && (
+                    <span className="mt-4 inline-flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm font-medium text-rose-200">
+                      You are blocked by this user
+                    </span>
+                  )}
                 </div>
               </div>
             </section>
@@ -403,6 +518,82 @@ function ProfileContent() {
                 ))}
               </div>
             </section>
+          </div>
+        )}
+
+        {reportModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-5">
+            <button
+              type="button"
+              aria-label="Close report modal"
+              className="absolute inset-0 bg-black/60"
+              onClick={() => setReportModalOpen(false)}
+            />
+            <div className="relative w-full max-w-lg rounded-2xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-6 shadow-[0_12px_45px_rgba(2,8,25,0.7)]">
+              {!reportSubmitted ? (
+                <>
+                  <h2 className="text-lg font-semibold text-[var(--cr-fg)]">Report {displayName}</h2>
+                  <p className="mt-1 text-sm text-[var(--cr-fg-muted)]">Tell us what happened. This is a demo flow for now.</p>
+
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    {["Harassment", "Cheating", "Spam", "Inappropriate Name"].map((reason) => (
+                      <button
+                        key={reason}
+                        type="button"
+                        onClick={() => setReportReason(reason)}
+                        className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+                          reportReason === reason
+                            ? "border-[rgba(var(--cr-accent-rgb),0.6)] bg-[rgba(var(--cr-accent-rgb),0.12)] text-[var(--cr-fg)]"
+                            : "border-[var(--cr-border)] bg-[var(--cr-bg)] text-[var(--cr-fg-muted)] hover:text-[var(--cr-fg)]"
+                        }`}
+                      >
+                        {reason}
+                      </button>
+                    ))}
+                  </div>
+
+                  <textarea
+                    value={reportDescription}
+                    onChange={(event) => setReportDescription(event.target.value)}
+                    placeholder="Describe the issue..."
+                    className="mt-4 h-28 w-full rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-3 py-2 text-sm text-[var(--cr-fg)] placeholder:text-[var(--cr-fg-muted)] focus:border-[rgba(var(--cr-accent-rgb),0.5)] focus:outline-none"
+                  />
+
+                  <div className="mt-5 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setReportModalOpen(false)}
+                      className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2 text-sm text-[var(--cr-fg)]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={submitReport}
+                      className="rounded-lg bg-[rgb(var(--cr-accent-rgb))] px-4 py-2 text-sm font-semibold text-[var(--cr-bg)]"
+                    >
+                      Submit Report
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-lg font-semibold text-[var(--cr-fg)]">Report Submitted</h2>
+                  <p className="mt-2 text-sm text-[var(--cr-fg-muted)]">
+                    Our moderators will review your report. Thank you for helping keep Code Royale safe.
+                  </p>
+                  <div className="mt-5 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setReportModalOpen(false)}
+                      className="rounded-lg bg-[rgb(var(--cr-accent-rgb))] px-4 py-2 text-sm font-semibold text-[var(--cr-bg)]"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>

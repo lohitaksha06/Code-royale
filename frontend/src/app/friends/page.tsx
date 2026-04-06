@@ -283,6 +283,40 @@ export default function FriendsPage() {
     setRelationshipByUserId((prev) => ({ ...prev, [userId]: "friends" }));
   };
 
+  const handleDecline = async (userId: string) => {
+    if (!viewerId) return;
+
+    const { error: declineError } = await supabase
+      .from("connections")
+      .delete()
+      .match({ user_id: userId, connection_id: viewerId, status: "pending" });
+
+    if (declineError) {
+      setError(declineError.message);
+      return;
+    }
+
+    await loadConnections(viewerId);
+    setRelationshipByUserId((prev) => ({ ...prev, [userId]: "none" }));
+  };
+
+  const handleCancelOutgoing = async (userId: string) => {
+    if (!viewerId) return;
+
+    const { error: cancelError } = await supabase
+      .from("connections")
+      .delete()
+      .match({ user_id: viewerId, connection_id: userId, status: "pending" });
+
+    if (cancelError) {
+      setError(cancelError.message);
+      return;
+    }
+
+    await loadConnections(viewerId);
+    setRelationshipByUserId((prev) => ({ ...prev, [userId]: "none" }));
+  };
+
   const incomingCount = incomingRequests.length;
 
   const renderUserLine = (user: FriendListItem, kind: "incoming" | "outgoing" | "friend") => {
@@ -318,15 +352,28 @@ export default function FriendsPage() {
         </div>
 
         {kind === "incoming" && (
-          <button
-            onClick={() => handleAccept(user.id)}
-            className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-500"
-          >
-            Accept
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleAccept(user.id)}
+              className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-500"
+            >
+              Accept
+            </button>
+            <button
+              onClick={() => handleDecline(user.id)}
+              className="rounded-md border border-[var(--cr-border)] bg-[var(--cr-bg)] px-3 py-1.5 text-xs font-medium text-[var(--cr-fg)] hover:bg-[var(--cr-bg-tertiary)]"
+            >
+              Decline
+            </button>
+          </div>
         )}
         {kind === "outgoing" && (
-          <span className="text-xs text-[var(--cr-fg-muted)]">Request Sent</span>
+          <button
+            onClick={() => handleCancelOutgoing(user.id)}
+            className="rounded-md border border-[var(--cr-border)] bg-[var(--cr-bg)] px-3 py-1.5 text-xs font-medium text-[var(--cr-fg)] hover:bg-[var(--cr-bg-tertiary)]"
+          >
+            Cancel Request
+          </button>
         )}
         {kind === "friend" && (
           <span className="text-xs text-emerald-400">Friends</span>
