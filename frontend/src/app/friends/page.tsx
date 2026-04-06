@@ -6,6 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { AppShell } from "../../components/app-shell";
 import { supabase } from "../../lib/supabase-browser";
 
+export const dynamic = "force-dynamic";
+
 type UserRow = {
   id: string;
   username: string | null;
