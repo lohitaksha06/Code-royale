@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { AppShell } from "../../components/app-shell";
+import { supabase } from "../../lib/supabase-browser";
 import { useFriendPresence } from "../../lib/use-friend-presence";
 
 const battleModes = [
@@ -66,6 +67,7 @@ function initialsFromName(name: string) {
 
 export default function HomePage() {
   const { friends, loading: friendsLoading } = useFriendPresence();
+  const [welcomeName, setWelcomeName] = useState("Coder");
 
   const [telemetry, setTelemetry] = useState<TelemetrySummary>({
     activePlayers: 0,
@@ -115,6 +117,41 @@ export default function HomePage() {
 
     void fetchTelemetry();
     void fetchProgress();
+
+    const fetchWelcomeName = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!alive || error || !data.user) return;
+
+        const fallbackName =
+          (data.user.user_metadata?.display_name as string | undefined)?.trim() ||
+          (data.user.email ? data.user.email.split("@")[0] : "") ||
+          "Coder";
+
+        const { data: userRow, error: userError } = await supabase
+          .from("users")
+          .select("username")
+          .eq("id", data.user.id)
+          .maybeSingle();
+
+        if (!alive) return;
+
+        if (userError) {
+          setWelcomeName(fallbackName);
+          return;
+        }
+
+        const resolvedName =
+          (typeof userRow?.username === "string" ? userRow.username.trim() : "") || fallbackName;
+
+        setWelcomeName(resolvedName);
+      } catch {
+        // ignore
+      }
+    };
+
+    void fetchWelcomeName();
+
     const interval = window.setInterval(fetchTelemetry, 10_000);
     const progressInterval = window.setInterval(fetchProgress, 20_000);
 
@@ -138,7 +175,7 @@ export default function HomePage() {
         <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[var(--cr-bg-secondary)] to-[var(--cr-bg-tertiary)] p-8">
           <div className="relative z-10 max-w-2xl">
             <h1 className="text-3xl font-bold text-[var(--cr-fg)] md:text-4xl">
-              Welcome back, Coder
+              Welcome back, {welcomeName}
             </h1>
             <p className="mt-3 text-[var(--cr-fg-muted)]">
               Ready for your next challenge? Jump into practice mode or queue up for a real-time battle.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AppShell } from "../../components/app-shell";
@@ -47,7 +47,7 @@ function computeRelationship(viewerId: string, otherId: string, rows: Connection
   return "none";
 }
 
-export default function FriendsPage() {
+function FriendsContent() {
   const searchParams = useSearchParams();
 
   const [viewerId, setViewerId] = useState<string | null>(null);
@@ -581,5 +581,23 @@ export default function FriendsPage() {
         )}
       </div>
     </AppShell>
+  );
+}
+
+export default function FriendsPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppShell>
+          <div className="mx-auto max-w-3xl p-6">
+            <div className="rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] p-6 text-sm text-[var(--cr-fg-muted)]">
+              Loading friends...
+            </div>
+          </div>
+        </AppShell>
+      }
+    >
+      <FriendsContent />
+    </Suspense>
   );
 }
