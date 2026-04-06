@@ -14,7 +14,7 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const getEmailRedirectTo = () => {
+  const getOAuthRedirectTo = () => {
     const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
     const siteOrigin = configuredSiteUrl
       ? configuredSiteUrl.replace(/\/$/, "")
@@ -22,7 +22,7 @@ export default function SignupPage() {
         ? window.location.origin
         : undefined;
 
-    return siteOrigin ? `${siteOrigin}/auth/login` : undefined;
+    return siteOrigin ? `${siteOrigin}/home` : undefined;
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -31,8 +31,6 @@ export default function SignupPage() {
     setError(null);
     setSuccess(null);
 
-    const redirectTo = getEmailRedirectTo();
-
     let authData: Awaited<ReturnType<typeof supabase.auth.signUp>>["data"];
     let authError: Awaited<ReturnType<typeof supabase.auth.signUp>>["error"];
     try {
@@ -40,7 +38,6 @@ export default function SignupPage() {
         email,
         password,
         options: {
-          emailRedirectTo: redirectTo,
           data: {
             display_name: displayName,
           },
@@ -69,14 +66,20 @@ export default function SignupPage() {
     const hasSession = Boolean(authData.session);
 
     if (user && hasSession) {
-      const { error: profileError } = await supabase.from("users").insert({
-        id: user.id,
-        username: displayName,
-        rating: 0,
-        wins: 0,
-        losses: 0,
-        team_name: null,
-      });
+      const { error: profileError } = await supabase.from("users").upsert(
+        {
+          id: user.id,
+          username: displayName,
+          rating: 0,
+          wins: 0,
+          losses: 0,
+          team_name: null,
+        },
+        {
+          onConflict: "id",
+          ignoreDuplicates: true,
+        },
+      );
 
       if (profileError) {
         setError(profileError.message);
@@ -86,8 +89,8 @@ export default function SignupPage() {
     }
 
     if (!hasSession) {
-      setSuccess(
-        "Verification email sent. Confirm your address and you'll land on the login screen."
+      setError(
+        "Account was created but no active session was returned. Disable email confirmation in Supabase (Authentication -> Providers -> Email -> Confirm email OFF) to allow instant signup.",
       );
       setProcessing(false);
       return;
@@ -99,6 +102,34 @@ export default function SignupPage() {
 
     if (authData.session) {
       setTimeout(() => router.push("/home"), 1200);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setProcessing(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const { error: authError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: getOAuthRedirectTo(),
+        },
+      });
+
+      if (authError) {
+        setError(authError.message);
+        setProcessing(false);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(
+        message.toLowerCase().includes("failed to fetch")
+          ? "Cannot reach Supabase (network/CORS). Verify NEXT_PUBLIC_SUPABASE_URL is correct/https, and that your Supabase project is reachable."
+          : message,
+      );
+      setProcessing(false);
     }
   };
 
@@ -239,6 +270,8 @@ export default function SignupPage() {
             <div className="mt-4 grid grid-cols-2 gap-3">
               <button
                 type="button"
+                onClick={handleGoogleSignIn}
+                disabled={processing}
                 className="flex items-center justify-center gap-2 rounded-lg border border-cr-border bg-cr-bg px-4 py-2.5 text-sm font-medium text-cr-fg hover:bg-cr-bg-tertiary transition-colors"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">

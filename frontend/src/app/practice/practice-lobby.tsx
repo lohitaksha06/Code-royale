@@ -8,7 +8,7 @@ type Difficulty = "easy" | "medium" | "hard";
 type QuestionMeta = {
   id: string;
   title: string;
-  slug: string;
+  slug: string | null;
   difficulty: Difficulty;
 };
 
@@ -92,15 +92,29 @@ export function PracticeLobby() {
       return;
     }
 
+    const playableQuestions = questions.filter((question) => {
+      const slug = typeof question.slug === "string" ? question.slug.trim() : "";
+      return slug.length > 0 || question.id.trim().length > 0;
+    });
+
+    if (playableQuestions.length === 0) {
+      setError("No playable questions found. Please reseed practice data.");
+      return;
+    }
+
     setError(null);
 
-    const randomizedQuestion = questions[Math.floor(Math.random() * questions.length)];
+    const randomizedQuestion = playableQuestions[Math.floor(Math.random() * playableQuestions.length)];
+    const routeKey =
+      typeof randomizedQuestion.slug === "string" && randomizedQuestion.slug.trim().length > 0
+        ? randomizedQuestion.slug.trim()
+        : randomizedQuestion.id;
     const searchParams = new URLSearchParams({
       timer: String(timer),
       language,
     });
 
-    router.push(`/practice/${randomizedQuestion.slug}?${searchParams.toString()}`);
+    router.push(`/practice/${encodeURIComponent(routeKey)}?${searchParams.toString()}`);
   };
 
   return (

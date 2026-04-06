@@ -179,10 +179,12 @@ CREATE INDEX IF NOT EXISTS idx_practice_submissions_user_question_passed
 
 ALTER TABLE practice_submissions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "practice_submissions_select_own" ON practice_submissions;
 CREATE POLICY "practice_submissions_select_own"
   ON practice_submissions FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "practice_submissions_insert_own" ON practice_submissions;
 CREATE POLICY "practice_submissions_insert_own"
   ON practice_submissions FOR INSERT
   WITH CHECK (auth.uid() = user_id);

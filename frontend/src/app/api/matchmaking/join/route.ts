@@ -31,6 +31,13 @@ function sanitizeMatchType(value: unknown) {
   return value === "2v2" || value === "ffa" ? value : "1v1";
 }
 
+function resolveRankedDifficultyFromRating(rating: number) {
+  // Ladder progression: easy at lower ratings, then medium, then hard.
+  if (rating < 300) return "easy";
+  if (rating < 700) return "medium";
+  return "hard";
+}
+
 export async function POST(request: Request) {
   let payload: JoinRequest;
 
@@ -44,18 +51,6 @@ export async function POST(request: Request) {
   const timeLimitSeconds = sanitizeTimeLimitSeconds(payload.timeLimitSeconds);
   const language = sanitizeLanguage(payload.language);
   const matchType = sanitizeMatchType(payload.matchType);
-
-  // Determine question difficulty from explicit param or infer from time limit.
-  let difficulty: "easy" | "medium" | "hard" | null = null;
-  if (payload.difficulty === "easy" || payload.difficulty === "medium" || payload.difficulty === "hard") {
-    difficulty = payload.difficulty;
-  } else if (payload.difficulty !== "mixed") {
-    // Auto-select: short matches => easy, medium matches => medium, long => hard
-    if (timeLimitSeconds <= 2 * 60) difficulty = "easy";
-    else if (timeLimitSeconds <= 5 * 60) difficulty = "medium";
-    else difficulty = "hard";
-  }
-  // difficulty === null means "mixed" — pick from all difficulties
 
   const supabaseAuth = await createSupabaseServerClient();
   const { data: authData, error: authError } = await supabaseAuth.auth.getUser();
@@ -105,6 +100,34 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: "queued" }, { status: 200 });
   }
 
+  let difficulty: "easy" | "medium" | "hard" | null = null;
+
+  if (mode === "ranked") {
+    const { data: ratingRows, error: ratingsError } = await supabase
+      .from("users")
+      .select("id,rating")
+      .in("id", [userId, opponentRow.user_id]);
+
+    if (ratingsError) {
+      console.error("Failed to read user ratings", ratingsError);
+    }
+
+    const ratingsByUserId = new Map(
+      (ratingRows ?? []).map((row) => [
+        row.id as string,
+        typeof row.rating === "number" ? row.rating : 0,
+      ]),
+    );
+
+    const myRating = ratingsByUserId.get(userId) ?? 0;
+    const opponentRating = ratingsByUserId.get(opponentRow.user_id) ?? 0;
+    const averageRating = Math.round((myRating + opponentRating) / 2);
+
+    difficulty = resolveRankedDifficultyFromRating(averageRating);
+  }
+
+  // Unranked intentionally stays mixed (all difficulties).
+
   // Pick a PvP question, optionally filtered by difficulty.
   let questionQuery = supabase
     .from("practice_questions")
@@ -112,7 +135,16 @@ export async function POST(request: Request) {
   if (difficulty) {
     questionQuery = questionQuery.eq("difficulty", difficulty);
   }
-  const { data: availableQuestions, error: questionsError } = await questionQuery;
+  let { data: availableQuestions, error: questionsError } = await questionQuery;
+
+  if ((!availableQuestions || availableQuestions.length === 0) && difficulty) {
+    // Fallback to mixed if this difficulty bucket is empty.
+    const fallback = await supabase
+      .from("practice_questions")
+      .select("id,slug,difficulty");
+    availableQuestions = fallback.data;
+    questionsError = fallback.error;
+  }
 
   if (questionsError || !availableQuestions || availableQuestions.length === 0) {
     console.error("No PvP questions available", questionsError);

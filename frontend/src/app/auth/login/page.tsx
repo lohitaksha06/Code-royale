@@ -12,6 +12,17 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getOAuthRedirectTo = () => {
+    const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+    const siteOrigin = configuredSiteUrl
+      ? configuredSiteUrl.replace(/\/$/, "")
+      : typeof window !== "undefined"
+        ? window.location.origin
+        : undefined;
+
+    return siteOrigin ? `${siteOrigin}/home` : undefined;
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
@@ -38,7 +49,11 @@ export default function LoginPage() {
     }
 
     if (authError) {
-      setError(authError.message);
+      setError(
+        /email\s+not\s+confirmed/i.test(authError.message)
+          ? "Your account email is not confirmed yet. If you want instant signup, disable email confirmation in Supabase (Authentication -> Providers -> Email -> Confirm email OFF)."
+          : authError.message,
+      );
       setLoading(false);
       return;
     }
@@ -51,6 +66,33 @@ export default function LoginPage() {
 
     setLoading(false);
     router.push("/home");
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error: authError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: getOAuthRedirectTo(),
+        },
+      });
+
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(
+        message.toLowerCase().includes("failed to fetch")
+          ? "Cannot reach Supabase (network/CORS). Verify NEXT_PUBLIC_SUPABASE_URL is correct/https, and that your Supabase project is reachable."
+          : message,
+      );
+      setLoading(false);
+    }
   };
 
   return (
@@ -158,6 +200,8 @@ export default function LoginPage() {
             <div className="mt-4 grid grid-cols-2 gap-3">
               <button
                 type="button"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
                 className="flex items-center justify-center gap-2 rounded-lg border border-cr-border bg-cr-bg px-4 py-2.5 text-sm font-medium text-cr-fg hover:bg-cr-bg-tertiary transition-colors"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">

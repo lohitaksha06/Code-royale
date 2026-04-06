@@ -11,11 +11,12 @@ export default async function PracticeSessionPage({ params, searchParams }: Page
   const { slug } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const supabase = await createSupabaseServerClient();
+  const normalizedSlug = decodeURIComponent(slug);
 
   const { data: question, error } = await supabase
     .from("practice_questions")
     .select("*")
-    .eq("slug", slug)
+    .or(`slug.eq.${normalizedSlug},id.eq.${normalizedSlug}`)
     .single();
 
   if (error || !question) {

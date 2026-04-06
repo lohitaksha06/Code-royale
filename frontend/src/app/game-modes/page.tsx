@@ -53,6 +53,11 @@ type ModeConfigSelection = {
   players: string;
 };
 
+type RankedBand = {
+  league: string;
+  difficulty: "easy" | "medium" | "hard";
+};
+
 function resolveLanguageCode(selection: string) {
   const normalized = selection.toLowerCase();
   if (normalized.includes("javascript") || normalized.includes("node")) return "node";
@@ -68,6 +73,16 @@ function resolveMatchType(selection: string) {
   if (normalized.includes("2v2")) return "2v2";
   if (normalized.includes("free") || normalized.includes("ffa") || normalized.includes("1v1v1v1")) return "ffa";
   return "1v1";
+}
+
+function getRankedBandFromRating(rating: number): RankedBand {
+  if (rating < 300) {
+    return { league: "Bronze", difficulty: "easy" };
+  }
+  if (rating < 700) {
+    return { league: "Silver", difficulty: "medium" };
+  }
+  return { league: "Gold", difficulty: "hard" };
 }
 
 const RANKED_MODES: ModeDefinition[] = [
@@ -285,6 +300,7 @@ export default function GameModesPage() {
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteMatchId, setInviteMatchId] = useState<string | null>(null);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [viewerRating, setViewerRating] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -294,9 +310,32 @@ export default function GameModesPage() {
       if (!mounted) return;
       if (error) {
         setViewerId(null);
+        setViewerRating(0);
         return;
       }
-      setViewerId(data.user?.id ?? null);
+
+      const resolvedViewerId = data.user?.id ?? null;
+      setViewerId(resolvedViewerId);
+
+      if (!resolvedViewerId) {
+        setViewerRating(0);
+        return;
+      }
+
+      const { data: userRow, error: userError } = await supabase
+        .from("users")
+        .select("rating")
+        .eq("id", resolvedViewerId)
+        .maybeSingle();
+
+      if (!mounted) return;
+      if (userError) {
+        setViewerRating(0);
+        return;
+      }
+
+      const rating = typeof userRow?.rating === "number" ? userRow.rating : 0;
+      setViewerRating(rating);
     };
 
     void loadViewer();
@@ -627,6 +666,7 @@ export default function GameModesPage() {
   }));
 
   const activeMode = selectedMode ?? RANKED_MODES[0];
+  const rankedBand = getRankedBandFromRating(viewerRating);
 
   return (
     <AppShell>
@@ -647,10 +687,15 @@ export default function GameModesPage() {
             </div>
             <div>
               <div className="flex items-baseline gap-2 text-4xl font-semibold tracking-tight text-amber-100">
-                <span>1,240</span>
+                <span>{viewerRating.toLocaleString()}</span>
                 <span className="text-base font-medium uppercase tracking-[0.2em] text-amber-200/70">Trophies</span>
               </div>
-              <p className="text-sm uppercase tracking-[0.2em] text-amber-200/80">Rank · Gold League</p>
+              <p className="text-sm uppercase tracking-[0.2em] text-amber-200/80">
+                Rank · {rankedBand.league} League
+              </p>
+              <p className="text-xs uppercase tracking-[0.2em] text-amber-100/75">
+                Ranked question lane: {rankedBand.difficulty}
+              </p>
             </div>
           </div>
         </header>
@@ -701,6 +746,7 @@ export default function GameModesPage() {
           <ModeConfigPanel
             mode={selectedMode}
             preset={MODE_CONFIG_PRESETS[selectedMode.id] ?? DEFAULT_CONFIG_PRESET}
+            rankedBand={rankedBand}
             onBack={resetQueue}
             onStart={(selection) => {
               setConfigSelection(selection);
@@ -1071,11 +1117,12 @@ function ModeCard({ mode, onClick, playful = false }: ModeCardProps) {
 type ModeConfigPanelProps = {
   mode: ModeDefinition;
   preset: ModeConfigPreset;
+  rankedBand: RankedBand;
   onBack: () => void;
   onStart: (selection: ModeConfigSelection) => void;
 };
 
-function ModeConfigPanel({ mode, preset, onBack, onStart }: ModeConfigPanelProps) {
+function ModeConfigPanel({ mode, preset, rankedBand, onBack, onStart }: ModeConfigPanelProps) {
   const [timer, setTimer] = useState<string>(preset.timers[0] ?? DEFAULT_CONFIG_PRESET.timers[0]);
   const [language, setLanguage] = useState<string>(preset.languages[0] ?? DEFAULT_CONFIG_PRESET.languages[0]);
   const [players, setPlayers] = useState<string>(preset.playerOptions[0] ?? DEFAULT_CONFIG_PRESET.playerOptions[0]);
@@ -1110,6 +1157,11 @@ function ModeConfigPanel({ mode, preset, onBack, onStart }: ModeConfigPanelProps
           <span className="rounded-full border border-fuchsia-300/60 bg-fuchsia-400/20 px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.4em] text-fuchsia-50">
             {mode.impact}
           </span>
+          {(mode.id === "ranked" || mode.id === "unranked") && (
+            <span className="rounded-full border border-emerald-300/50 bg-emerald-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-emerald-100">
+              Ranked lane now: {rankedBand.difficulty}
+            </span>
+          )}
           {mode.limited && (
             <span className="rounded-full border border-amber-300/50 bg-amber-400/10 px-3 py-1 text-[10px] uppercase tracking-[0.4em] text-amber-100">
               Limited-time
