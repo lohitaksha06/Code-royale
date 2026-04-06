@@ -139,10 +139,20 @@ type AppShellProps = {
   showSidebar?: boolean;
 };
 
+type PendingNotification = {
+  id: string;
+  requesterId: string;
+  requesterName: string;
+  createdAt: string;
+};
+
 export function AppShell({ children, showSidebar = true }: AppShellProps) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [incomingRequestCount, setIncomingRequestCount] = useState(0);
+  const [pendingNotifications, setPendingNotifications] = useState<PendingNotification[]>([]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isNotificationPinned, setIsNotificationPinned] = useState(false);
   const [onlineToasts, setOnlineToasts] = useState<Array<{ id: string; text: string }>>([]);
   const hasInitializedPresenceRef = useRef(false);
   const previousOnlineSetRef = useRef<Set<string>>(new Set());
@@ -153,17 +163,48 @@ export function AppShell({ children, showSidebar = true }: AppShellProps) {
     let mounted = true;
 
     const refreshIncomingRequests = async (userId: string) => {
-      const { count, error } = await supabase
+      const { data: rows, count, error } = await supabase
         .from("connections")
-        .select("user_id", { head: true, count: "exact" })
+        .select("user_id,created_at", { count: "exact" })
         .eq("connection_id", userId)
-        .eq("status", "pending");
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(8);
 
       if (!mounted || error) {
         return;
       }
 
       setIncomingRequestCount(count ?? 0);
+
+      const requesterIds = Array.from(new Set((rows ?? []).map((row) => row.user_id as string).filter(Boolean)));
+
+      if (requesterIds.length === 0) {
+        setPendingNotifications([]);
+        return;
+      }
+
+      const { data: userRows, error: usersError } = await supabase
+        .from("users")
+        .select("id,username")
+        .in("id", requesterIds);
+
+      if (!mounted || usersError) {
+        return;
+      }
+
+      const usernameById = new Map(
+        (userRows ?? []).map((row) => [row.id as string, ((row.username as string | null) ?? "Unknown").trim() || "Unknown"]),
+      );
+
+      const notifications: PendingNotification[] = (rows ?? []).map((row) => ({
+        id: `${row.user_id as string}-${row.created_at as string}`,
+        requesterId: row.user_id as string,
+        requesterName: usernameById.get(row.user_id as string) ?? "Unknown",
+        createdAt: row.created_at as string,
+      }));
+
+      setPendingNotifications(notifications);
     };
 
     const bootstrap = async () => {
@@ -188,6 +229,21 @@ export function AppShell({ children, showSidebar = true }: AppShellProps) {
       window.clearInterval(timer);
     };
   }, []);
+
+  const formatNotificationTime = (isoDate: string) => {
+    const date = new Date(isoDate);
+    if (Number.isNaN(date.getTime())) return "just now";
+
+    const diffMs = Date.now() - date.getTime();
+    const minutes = Math.floor(diffMs / (1000 * 60));
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString();
+  };
 
   useEffect(() => {
     const currentSet = new Set(onlineFriendIds);
@@ -366,21 +422,84 @@ export function AppShell({ children, showSidebar = true }: AppShellProps) {
             </div>
 
             {/* Notifications */}
-            <Link
-              href="/friends?tab=pending"
-              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] text-[var(--cr-fg-muted)] transition-colors hover:text-[var(--cr-fg)]"
-              aria-label="Open friend request notifications"
-              title="Friend requests"
+            <div
+              className="relative"
+              onMouseEnter={() => setIsNotificationOpen(true)}
+              onMouseLeave={() => {
+                if (!isNotificationPinned) {
+                  setIsNotificationOpen(false);
+                }
+              }}
             >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-              </svg>
-              {incomingRequestCount > 0 && (
-                <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white">
-                  {incomingRequestCount > 99 ? "99+" : incomingRequestCount}
-                </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const nextPinned = !isNotificationPinned;
+                  setIsNotificationPinned(nextPinned);
+                  setIsNotificationOpen(nextPinned || !isNotificationOpen);
+                }}
+                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] text-[var(--cr-fg-muted)] transition-colors hover:text-[var(--cr-fg)]"
+                aria-label="Open friend request notifications"
+                title="Friend requests"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                </svg>
+                {incomingRequestCount > 0 && (
+                  <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white">
+                    {incomingRequestCount > 99 ? "99+" : incomingRequestCount}
+                  </span>
+                )}
+              </button>
+
+              {isNotificationOpen && (
+                <div className="absolute right-0 top-12 z-[80] w-80 overflow-hidden rounded-2xl border border-[var(--cr-border)] bg-[var(--cr-bg-secondary)] shadow-[0_15px_45px_rgba(2,8,25,0.6)]">
+                  <div className="border-b border-[var(--cr-border)] px-4 py-3">
+                    <p className="text-sm font-semibold text-[var(--cr-fg)]">Notifications</p>
+                  </div>
+
+                  <div className="max-h-80 overflow-y-auto p-2">
+                    {pendingNotifications.length === 0 ? (
+                      <div className="rounded-xl px-3 py-5 text-center text-sm text-[var(--cr-fg-muted)]">
+                        No new friend requests.
+                      </div>
+                    ) : (
+                      pendingNotifications.map((notification) => (
+                        <Link
+                          key={notification.id}
+                          href={`/friends?tab=pending&focusUserId=${notification.requesterId}`}
+                          onClick={() => {
+                            setIsNotificationPinned(false);
+                            setIsNotificationOpen(false);
+                          }}
+                          className="mb-2 block rounded-xl border border-[var(--cr-border)] bg-[var(--cr-bg)] px-3 py-3 transition-colors hover:border-[rgba(var(--cr-accent-rgb),0.5)]"
+                        >
+                          <p className="text-sm font-medium text-[var(--cr-fg)]">
+                            {notification.requesterName} sent you a friend request.
+                          </p>
+                          <p className="mt-1 text-xs text-[var(--cr-fg-muted)]">
+                            {formatNotificationTime(notification.createdAt)}
+                          </p>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="border-t border-[var(--cr-border)] px-3 py-2">
+                    <Link
+                      href="/friends?tab=pending"
+                      onClick={() => {
+                        setIsNotificationPinned(false);
+                        setIsNotificationOpen(false);
+                      }}
+                      className="block rounded-lg px-3 py-2 text-center text-xs font-semibold uppercase tracking-[0.2em] text-[rgb(var(--cr-accent-rgb))] hover:bg-[var(--cr-bg)]"
+                    >
+                      Open Pending Requests
+                    </Link>
+                  </div>
+                </div>
               )}
-            </Link>
+            </div>
 
             {/* User avatar */}
             <Link

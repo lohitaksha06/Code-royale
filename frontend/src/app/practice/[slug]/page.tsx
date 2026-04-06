@@ -13,11 +13,24 @@ export default async function PracticeSessionPage({ params, searchParams }: Page
   const supabase = await createSupabaseServerClient();
   const normalizedSlug = decodeURIComponent(slug);
 
-  const { data: question, error } = await supabase
+  const { data: bySlug, error: bySlugError } = await supabase
     .from("practice_questions")
     .select("*")
-    .or(`slug.eq.${normalizedSlug},id.eq.${normalizedSlug}`)
-    .single();
+    .eq("slug", normalizedSlug)
+    .maybeSingle();
+
+  let question = bySlug;
+  let error = bySlugError;
+
+  if (!question) {
+    const byId = await supabase
+      .from("practice_questions")
+      .select("*")
+      .eq("id", normalizedSlug)
+      .maybeSingle();
+    question = byId.data;
+    error = byId.error;
+  }
 
   if (error || !question) {
     notFound();

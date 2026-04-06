@@ -20,6 +20,14 @@ type UserRow = {
   club_trophies?: number | null;
 };
 
+type RelationshipStatus =
+  | "none"
+  | "incoming_pending"
+  | "outgoing_pending"
+  | "friends"
+  | "blocked"
+  | "blocked_by_other";
+
 function getRankFromRating(rating: number) {
   if (rating >= 600) return { name: "Gold", color: "text-amber-400" };
   if (rating >= 400) return { name: "Silver", color: "text-slate-300" };
@@ -47,6 +55,8 @@ function ProfileContent() {
   const [profile, setProfile] = useState<UserRow | null>(null);
   const [friendCount, setFriendCount] = useState(0);
   const [isFriendWithViewer, setIsFriendWithViewer] = useState(false);
+  const [relationshipStatus, setRelationshipStatus] = useState<RelationshipStatus>("none");
+  const [actionBusy, setActionBusy] = useState(false);
 
   const resolvedUserId = targetUserIdParam ?? viewerUserId;
   const isSelf = Boolean(resolvedUserId && viewerUserId && resolvedUserId === viewerUserId);
@@ -81,7 +91,7 @@ function ProfileContent() {
         authData.user?.id && authData.user.id !== idToLoad
           ? supabase
               .from("connections")
-              .select("status")
+            .select("user_id,connection_id,status")
               .or(`and(user_id.eq.${authData.user.id},connection_id.eq.${idToLoad}),and(user_id.eq.${idToLoad},connection_id.eq.${authData.user.id})`)
           : Promise.resolve({ data: [], error: null }),
       ]);
@@ -95,8 +105,29 @@ function ProfileContent() {
         setFriendCount(0);
       }
 
-      const hasFriendConnection =
-        (relationshipResult.data ?? []).some((row) => row.status === "accepted");
+      const connectionRows = (relationshipResult.data ?? []) as Array<{
+        user_id: string;
+        connection_id: string;
+        status: "pending" | "accepted" | "blocked";
+      }>;
+
+      const outgoing = connectionRows.find(
+        (row) => row.user_id === authData.user?.id && row.connection_id === idToLoad,
+      );
+      const incoming = connectionRows.find(
+        (row) => row.user_id === idToLoad && row.connection_id === authData.user?.id,
+      );
+
+      let resolvedRelationship: RelationshipStatus = "none";
+      if (outgoing?.status === "blocked") resolvedRelationship = "blocked";
+      else if (incoming?.status === "blocked") resolvedRelationship = "blocked_by_other";
+      else if (outgoing?.status === "accepted" || incoming?.status === "accepted") resolvedRelationship = "friends";
+      else if (outgoing?.status === "pending") resolvedRelationship = "outgoing_pending";
+      else if (incoming?.status === "pending") resolvedRelationship = "incoming_pending";
+
+      setRelationshipStatus(resolvedRelationship);
+
+      const hasFriendConnection = resolvedRelationship === "friends";
       setIsFriendWithViewer(hasFriendConnection);
 
       const { data: userRow, error: profileError } = await supabase
@@ -133,6 +164,70 @@ function ProfileContent() {
   const losses = profile?.losses ?? 0;
   const totalMatches = wins + losses;
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+
+  const sendFriendRequest = async () => {
+    if (!viewerUserId || !resolvedUserId || isSelf) return;
+
+    setActionBusy(true);
+    setError(null);
+
+    const { error: requestError } = await supabase
+      .from("connections")
+      .insert({ user_id: viewerUserId, connection_id: resolvedUserId, status: "pending" });
+
+    if (requestError) {
+      setError(requestError.message);
+      setActionBusy(false);
+      return;
+    }
+
+    setRelationshipStatus("outgoing_pending");
+    setActionBusy(false);
+  };
+
+  const acceptFriendRequest = async () => {
+    if (!viewerUserId || !resolvedUserId || isSelf) return;
+
+    setActionBusy(true);
+    setError(null);
+
+    const { error: acceptError } = await supabase
+      .from("connections")
+      .update({ status: "accepted" })
+      .match({ user_id: resolvedUserId, connection_id: viewerUserId });
+
+    if (acceptError) {
+      setError(acceptError.message);
+      setActionBusy(false);
+      return;
+    }
+
+    setRelationshipStatus("friends");
+    setIsFriendWithViewer(true);
+    setFriendCount((prev) => prev + 1);
+    setActionBusy(false);
+  };
+
+  const declineFriendRequest = async () => {
+    if (!viewerUserId || !resolvedUserId || isSelf) return;
+
+    setActionBusy(true);
+    setError(null);
+
+    const { error: declineError } = await supabase
+      .from("connections")
+      .delete()
+      .match({ user_id: resolvedUserId, connection_id: viewerUserId, status: "pending" });
+
+    if (declineError) {
+      setError(declineError.message);
+      setActionBusy(false);
+      return;
+    }
+
+    setRelationshipStatus("none");
+    setActionBusy(false);
+  };
 
   return (
     <AppShell>
@@ -206,6 +301,41 @@ function ProfileContent() {
                       </svg>
                       Edit Profile
                     </Link>
+                  )}
+                  {!isSelf && relationshipStatus === "none" && (
+                    <button
+                      type="button"
+                      onClick={sendFriendRequest}
+                      disabled={actionBusy}
+                      className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2 text-sm font-medium text-[var(--cr-fg)] transition-colors hover:bg-[var(--cr-bg-tertiary)] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {actionBusy ? "Sending..." : "Add Friend"}
+                    </button>
+                  )}
+                  {!isSelf && relationshipStatus === "incoming_pending" && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={acceptFriendRequest}
+                        disabled={actionBusy}
+                        className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {actionBusy ? "Updating..." : "Accept Request"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={declineFriendRequest}
+                        disabled={actionBusy}
+                        className="inline-flex items-center gap-2 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2 text-sm font-medium text-[var(--cr-fg)] transition-colors hover:bg-[var(--cr-bg-tertiary)] disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  )}
+                  {!isSelf && relationshipStatus === "outgoing_pending" && (
+                    <span className="mt-4 inline-flex items-center gap-2 rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] px-4 py-2 text-sm font-medium text-[var(--cr-fg-muted)]">
+                      Request Sent
+                    </span>
                   )}
                 </div>
               </div>
