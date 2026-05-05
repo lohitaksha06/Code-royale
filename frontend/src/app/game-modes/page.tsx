@@ -289,6 +289,7 @@ export default function GameModesPage() {
   const [matchId, setMatchId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [pollRef, setPollRef] = useState<ReturnType<typeof setInterval> | null>(null);
+  const [searchSecondsRemaining, setSearchSecondsRemaining] = useState(60);
 
   const [viewerId, setViewerId] = useState<string | null>(null);
   const [friendPickerOpen, setFriendPickerOpen] = useState(false);
@@ -305,6 +306,17 @@ export default function GameModesPage() {
     error: friendsError,
     friends: presenceFriends,
   } = useFriendPresence();
+
+  // Countdown timer for matchmaking search
+  useEffect(() => {
+    if (state !== "searching") return;
+
+    const timer = window.setInterval(() => {
+      setSearchSecondsRemaining((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [state]);
 
   useEffect(() => {
     let mounted = true;
@@ -482,6 +494,7 @@ export default function GameModesPage() {
   const startMatchmaking = async (modeId: string, selection: ModeConfigSelection | null) => {
     setErrorMessage(null);
     setMatchId(null);
+    setSearchSecondsRemaining(60);
 
     const matchType = resolveMatchType(selection?.players ?? "1v1");
     if (matchType !== "1v1") {
@@ -560,6 +573,10 @@ export default function GameModesPage() {
       if (Date.now() - started > timeoutMs) {
         clearInterval(interval);
         setPollRef(null);
+
+        // Cancel the queue entry since we timed out
+        await fetch("/api/matchmaking/cancel", { method: "POST" }).catch(() => {});
+
         setErrorMessage("Failed to find a match in 1 minute. Try again.");
         setState("error");
         return;
@@ -722,6 +739,7 @@ export default function GameModesPage() {
             mode={activeMode}
             config={configSelection}
             onCancel={handleCancelSearch}
+            secondsRemaining={searchSecondsRemaining}
           />
         )}
 
@@ -1194,9 +1212,15 @@ type MatchmakingPanelProps = {
   mode: ModeDefinition;
   config: ModeConfigSelection | null;
   onCancel: () => void;
+  secondsRemaining: number;
 };
 
-function MatchmakingPanel({ mode, config, onCancel }: MatchmakingPanelProps) {
+function MatchmakingPanel({ mode, config, onCancel, secondsRemaining }: MatchmakingPanelProps) {
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
   const labelColor = mode.category === "non-ranked" ? "text-fuchsia-300/80" : "text-sky-300/80";
   const gradient =
     mode.category === "non-ranked"
@@ -1216,8 +1240,8 @@ function MatchmakingPanel({ mode, config, onCancel }: MatchmakingPanelProps) {
         </div>
         <div className="space-y-2">
           <p className={`text-sm uppercase tracking-[0.45em] ${labelColor}`}>{mode.title}</p>
-          <h2 className="text-3xl font-semibold text-sky-50">Finding opponent…</h2>
-          <p className="text-sm text-sky-100/70">Estimated wait time · 00:30</p>
+          <h2 className="text-3xl font-semibold text-sky-50">Searching for opponent…</h2>
+          <p className="text-sm text-sky-100/70">Time remaining · {formatTime(secondsRemaining)}</p>
           <p className="text-xs uppercase tracking-[0.35em] text-sky-200/70">{mode.impact}</p>
         </div>
         {config && (

@@ -7,6 +7,14 @@ import Link from "next/link";
 import { AppShell } from "../../components/app-shell";
 import { supabase } from "../../lib/supabase-browser";
 
+type Badge = {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  awarded_at: string;
+};
+
 type UserRow = {
   id: string;
   username: string | null;
@@ -18,6 +26,7 @@ type UserRow = {
   club_name?: string | null;
   club_logo?: string | null;
   club_trophies?: number | null;
+  badges?: Badge[];
 };
 
 type RelationshipStatus =
@@ -136,11 +145,25 @@ function ProfileContent() {
       const hasFriendConnection = resolvedRelationship === "friends";
       setIsFriendWithViewer(hasFriendConnection);
 
-      const { data: userRow, error: profileError } = await supabase
-        .from("users")
-        .select("id, username, rating, wins, losses, team_name")
-        .eq("id", idToLoad)
-        .maybeSingle();
+      const [{ data: userRow, error: profileError }, { data: badgesData }] = await Promise.all([
+        supabase
+          .from("users")
+          .select("id, username, rating, wins, losses, team_name")
+          .eq("id", idToLoad)
+          .maybeSingle(),
+        supabase
+          .from("user_badges")
+          .select(`
+            awarded_at,
+            badge:badges (
+              id,
+              name,
+              description,
+              icon
+            )
+          `)
+          .eq("user_id", idToLoad)
+      ]);
 
       if (!mounted) return;
 
@@ -149,7 +172,18 @@ function ProfileContent() {
       } else if (!userRow) {
         setError("User not found.");
       } else {
-        setProfile(userRow as UserRow);
+        const parsedBadges = (badgesData as any[] | null)?.map((b) => ({
+          id: b.badge.id,
+          name: b.badge.name,
+          description: b.badge.description,
+          icon: b.badge.icon,
+          awarded_at: b.awarded_at,
+        })) || [];
+        
+        setProfile({
+          ...userRow as UserRow,
+          badges: parsedBadges
+        });
       }
 
       setLoading(false);
@@ -396,6 +430,28 @@ function ProfileContent() {
                       </span>
                     </Link>
                   )}
+
+                  {/* Badges */}
+                  {profile?.badges && profile.badges.length > 0 && (
+                    <div className="mt-4">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--cr-fg-muted)] mb-2">Badges ({profile.badges.length})</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.badges.map((badge) => (
+                          <div
+                            key={badge.id}
+                            title={badge.description}
+                            className="group relative flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--cr-border)] bg-[var(--cr-bg)] transition-colors hover:border-[rgba(var(--cr-accent-rgb),0.3)]"
+                          >
+                            <span className="text-xl cursor-help">{badge.icon}</span>
+                            <div className="pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 z-10 shadow-lg">
+                              <p className="font-semibold">{badge.name}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {isSelf && (
                     <Link
                       href="/settings"
