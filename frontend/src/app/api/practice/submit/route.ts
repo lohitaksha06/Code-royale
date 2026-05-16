@@ -134,8 +134,21 @@ export async function POST(request: Request) {
 
       if (!response.ok) {
         const message = await response.text();
-        console.error("Piston submission error", message);
-        return NextResponse.json({ error: "Code execution failed" }, { status: 502 });
+        console.error("Piston submission error", message, "Status:", response.status);
+        
+        let errorMessage = "Code execution failed";
+        try {
+          const parsed = JSON.parse(message);
+          if (parsed.message) {
+            errorMessage = parsed.message;
+          } else if (parsed.error) {
+            errorMessage = parsed.error;
+          }
+        } catch (_) {
+          if (message) errorMessage = message;
+        }
+        
+        return NextResponse.json({ error: errorMessage }, { status: 502 });
       }
 
       const submission = (await response.json()) as {
