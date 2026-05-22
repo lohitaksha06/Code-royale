@@ -508,11 +508,18 @@ export default function GameModesPage() {
     const timeLimitSeconds = parseTimerSeconds(selection);
     const language = resolveLanguageCode(selection?.language ?? "");
 
+    const { data: { session } } = await supabase.auth.getSession();
+
     let joinResponse: Response;
     try {
       joinResponse = await fetch("/api/matchmaking/join", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token
+            ? { Authorization: `Bearer ${session.access_token}` }
+            : {}),
+        },
         body: JSON.stringify({
           mode: modeId === "unranked" ? "unranked" : "ranked",
           timeLimitSeconds,
@@ -583,7 +590,12 @@ export default function GameModesPage() {
       }
 
       try {
-        const res = await fetch("/api/matchmaking/status", { method: "GET" });
+        const res = await fetch("/api/matchmaking/status", { 
+          method: "GET",
+          headers: session?.access_token
+            ? { Authorization: `Bearer ${session.access_token}` }
+            : {},
+        });
         if (!res.ok) return;
         const data = (await res.json().catch(() => ({}))) as { matchId?: string | null };
         if (data.matchId) {

@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { PracticeScaffold } from "@/app/practice/practice-scaffold";
-import { PracticeArenaShell } from "@/app/practice/[slug]/practice-arena-shell";
+import { MatchArenaShell } from "./match-arena-shell";
 
 type PageProps = {
   params: { matchId: string };
@@ -121,7 +121,7 @@ export default async function MatchPage({ params }: PageProps) {
 
   return (
     <PracticeScaffold>
-      <PracticeArenaShell
+      <MatchArenaShell
         question={{
           id: question.id,
           title: question.title,
