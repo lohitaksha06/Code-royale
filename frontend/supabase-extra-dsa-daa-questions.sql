@@ -59,7 +59,7 @@ values
     'Reverse String',
     'Return the reverse of the input string.\nInput: JSON string\nOutput: JSON string',
     'easy',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"\"hello\"","output":"\"olleh\""},{"input":"\"abba\"","output":"\"abba\""}]'::jsonb,
     '{"timeComplexity":"O(n)","spaceComplexity":"O(n)","topics":["strings","dsa"]}'::jsonb
   ),
@@ -90,7 +90,7 @@ values
     'Range Sum Queries',
     'Given nums and queries [l,r], return sum for each range.\nInput: JSON object {"nums":number[],"queries":number[][]}\nOutput: JSON array',
     'medium',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"{\"nums\":[1,2,3,4],\"queries\":[[0,1],[1,3]]}","output":"[3,9]"},{"input":"{\"nums\":[5,-2,7],\"queries\":[[0,2],[2,2]]}","output":"[10,7]"}]'::jsonb,
     '{"timeComplexity":"O(n+q)","spaceComplexity":"O(n)","topics":["prefix-sum","arrays","dsa"]}'::jsonb
   ),
@@ -99,7 +99,7 @@ values
     'Longest Unique Substring Length',
     'Return the length of the longest substring without repeating characters.\nInput: JSON string\nOutput: number',
     'medium',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"\"abcabcbb\"","output":"3"},{"input":"\"bbbbb\"","output":"1"}]'::jsonb,
     '{"timeComplexity":"O(n)","spaceComplexity":"O(k)","topics":["sliding-window","strings","dsa"]}'::jsonb
   ),
@@ -108,7 +108,7 @@ values
     'Group Anagrams',
     'Group strings by anagram class. Sort each group and groups by first item.\nInput: JSON array of strings\nOutput: JSON array of string arrays',
     'medium',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]","output":"[[\"ate\",\"eat\",\"tea\"],[\"bat\"],[\"nat\",\"tan\"]]"},{"input":"[\"\"]","output":"[[\"\"]]"}]'::jsonb,
     '{"timeComplexity":"O(n*k log k)","spaceComplexity":"O(n*k)","topics":["hash-table","strings","dsa"]}'::jsonb
   ),
@@ -117,7 +117,7 @@ values
     'Kth Largest Element',
     'Return the kth largest value in an unsorted array.\nInput: JSON object {"nums":number[],"k":number}\nOutput: number',
     'medium',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"{\"nums\":[3,2,1,5,6,4],\"k\":2}","output":"5"},{"input":"{\"nums\":[3,2,3,1,2,4,5,5,6],\"k\":4}","output":"4"}]'::jsonb,
     '{"timeComplexity":"O(n log k)","spaceComplexity":"O(k)","topics":["heap","arrays","dsa"]}'::jsonb
   ),
@@ -126,7 +126,7 @@ values
     'Merge Intervals',
     'Merge all overlapping intervals.\nInput: JSON array of [start,end]\nOutput: JSON array of merged intervals',
     'medium',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"[[1,3],[2,6],[8,10],[15,18]]","output":"[[1,6],[8,10],[15,18]]"},{"input":"[[1,4],[4,5]]","output":"[[1,5]]"}]'::jsonb,
     '{"timeComplexity":"O(n log n)","spaceComplexity":"O(n)","topics":["sorting","intervals","dsa"]}'::jsonb
   ),
@@ -139,7 +139,7 @@ values
     'Trapping Rain Water',
     'Given elevation map heights, compute trapped water units.\nInput: JSON array of numbers\nOutput: number',
     'hard',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"[0,1,0,2,1,0,1,3,2,1,2,1]","output":"6"},{"input":"[4,2,0,3,2,5]","output":"9"}]'::jsonb,
     '{"timeComplexity":"O(n)","spaceComplexity":"O(1)","topics":["two-pointers","arrays","dsa"]}'::jsonb
   ),
@@ -148,7 +148,7 @@ values
     'Minimum Window Substring',
     'Return the shortest substring of s containing all characters of t (with multiplicity).\nInput: JSON object {"s":string,"t":string}\nOutput: JSON string',
     'hard',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"{\"s\":\"ADOBECODEBANC\",\"t\":\"ABC\"}","output":"\"BANC\""},{"input":"{\"s\":\"a\",\"t\":\"aa\"}","output":"\"\""}]'::jsonb,
     '{"timeComplexity":"O(n)","spaceComplexity":"O(k)","topics":["sliding-window","strings","dsa"]}'::jsonb
   ),
@@ -157,7 +157,7 @@ values
     'LRU Cache Operations',
     'Simulate LRU cache and return outputs for get operations.\nInput: JSON object {"capacity":number,"ops":string[],"args":any[]}\nOutput: JSON array',
     'hard',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"{\"capacity\":2,\"ops\":[\"put\",\"put\",\"get\",\"put\",\"get\",\"put\",\"get\",\"get\",\"get\"],\"args\":[[1,1],[2,2],[1],[3,3],[2],[4,4],[1],[3],[4]]}","output":"[1,-1,-1,3,4]"}]'::jsonb,
     '{"timeComplexity":"O(1) avg/op","spaceComplexity":"O(capacity)","topics":["linked-list","hash-table","design","dsa"]}'::jsonb
   ),
@@ -166,7 +166,7 @@ values
     'Word Ladder Length',
     'Find shortest transformation length from beginWord to endWord by changing one char each step.\nInput: JSON object {"begin":string,"end":string,"list":string[]}\nOutput: number',
     'hard',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"{\"begin\":\"hit\",\"end\":\"cog\",\"list\":[\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]}","output":"5"},{"input":"{\"begin\":\"hit\",\"end\":\"cog\",\"list\":[\"hot\",\"dot\",\"dog\",\"lot\",\"log\"]}","output":"0"}]'::jsonb,
     '{"timeComplexity":"O(N*L*26)","spaceComplexity":"O(N)","topics":["bfs","graphs","dsa"]}'::jsonb
   ),
@@ -175,7 +175,7 @@ values
     'Median of Two Sorted Arrays',
     'Return median of two sorted arrays in logarithmic time.\nInput: JSON object {"a":number[],"b":number[]}\nOutput: number',
     'hard',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"{\"a\":[1,3],\"b\":[2]}","output":"2"},{"input":"{\"a\":[1,2],\"b\":[3,4]}","output":"2.5"}]'::jsonb,
     '{"timeComplexity":"O(log(min(n,m)))","spaceComplexity":"O(1)","topics":["binary-search","arrays","dsa"]}'::jsonb
   ),
@@ -255,7 +255,7 @@ values
     'Activity Selection',
     'Choose maximum number of non-overlapping activities by finish time.\nInput: JSON object {"start":number[],"finish":number[]}\nOutput: number',
     'medium',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"{\"start\":[1,3,0,5,8,5],\"finish\":[2,4,6,7,9,9]}","output":"4"},{"input":"{\"start\":[1,2,3],\"finish\":[2,3,4]}","output":"3"}]'::jsonb,
     '{"timeComplexity":"O(n log n)","spaceComplexity":"O(1)","topics":["greedy","daa"]}'::jsonb
   ),
@@ -264,7 +264,7 @@ values
     'Coin Change Minimum Coins',
     'Find minimum number of coins to make amount, or -1 if impossible.\nInput: JSON object {"coins":number[],"amount":number}\nOutput: number',
     'medium',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"{\"coins\":[1,2,5],\"amount\":11}","output":"3"},{"input":"{\"coins\":[2],\"amount\":3}","output":"-1"}]'::jsonb,
     '{"timeComplexity":"O(n*amount)","spaceComplexity":"O(amount)","topics":["dynamic-programming","daa"]}'::jsonb
   ),
@@ -273,7 +273,7 @@ values
     '0/1 Knapsack',
     'Maximize value with weight capacity using 0/1 knapsack.\nInput: JSON object {"weights":number[],"values":number[],"capacity":number}\nOutput: number',
     'medium',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"{\"weights\":[1,3,4,5],\"values\":[1,4,5,7],\"capacity\":7}","output":"9"},{"input":"{\"weights\":[2,3,4],\"values\":[4,5,6],\"capacity\":5}","output":"9"}]'::jsonb,
     '{"timeComplexity":"O(n*W)","spaceComplexity":"O(n*W)","topics":["dynamic-programming","daa"]}'::jsonb
   ),
@@ -286,7 +286,7 @@ values
     'Dijkstra Shortest Path',
     'Find shortest distance from source to all nodes in weighted graph with non-negative weights.\nInput: JSON object {"n":number,"edges":number[][],"src":number}\nOutput: JSON array',
     'hard',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"{\"n\":5,\"edges\":[[0,1,2],[0,2,4],[1,2,1],[1,3,7],[2,4,3],[3,4,1]],\"src\":0}","output":"[0,2,3,8,6]"}]'::jsonb,
     '{"timeComplexity":"O((V+E) log V)","spaceComplexity":"O(V+E)","topics":["graphs","shortest-path","daa"]}'::jsonb
   ),
@@ -295,7 +295,7 @@ values
     'Floyd Warshall APSP',
     'Compute all-pairs shortest paths matrix. Use 1000000000 as INF sentinel.\nInput: JSON matrix\nOutput: JSON matrix',
     'hard',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"[[0,3,1000000000],[2,0,1000000000],[1000000000,7,0]]","output":"[[0,3,1000000000],[2,0,1000000000],[9,7,0]]"}]'::jsonb,
     '{"timeComplexity":"O(n^3)","spaceComplexity":"O(1) extra","topics":["graphs","dynamic-programming","daa"]}'::jsonb
   ),
@@ -304,7 +304,7 @@ values
     'Matrix Chain Multiplication Cost',
     'Given dimensions array p where matrix i has size p[i-1] x p[i], return minimum scalar multiplications.\nInput: JSON array\nOutput: number',
     'hard',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"[40,20,30,10,30]","output":"26000"},{"input":"[10,20,30,40,30]","output":"30000"}]'::jsonb,
     '{"timeComplexity":"O(n^3)","spaceComplexity":"O(n^2)","topics":["dynamic-programming","daa"]}'::jsonb
   ),
@@ -313,7 +313,7 @@ values
     'N Queens Count Solutions',
     'Return number of valid N-Queens arrangements for n.\nInput: JSON number\nOutput: number',
     'hard',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"4","output":"2"},{"input":"5","output":"10"}]'::jsonb,
     '{"timeComplexity":"O(n!) approx","spaceComplexity":"O(n)","topics":["backtracking","daa"]}'::jsonb
   ),
@@ -322,7 +322,7 @@ values
     'Max Flow (Edmonds Karp)',
     'Compute maximum flow from source to sink using Edmonds-Karp.\nInput: JSON object {"n":number,"edges":number[][],"s":number,"t":number}\nOutput: number',
     'hard',
-    array['javascript','python','cpp','java'],
+    array['javascript','python','cpp','java','c'],
     '[{"input":"{\"n\":6,\"edges\":[[0,1,16],[0,2,13],[1,2,10],[2,1,4],[1,3,12],[2,4,14],[3,2,9],[4,3,7],[3,5,20],[4,5,4]],\"s\":0,\"t\":5}","output":"23"}]'::jsonb,
     '{"timeComplexity":"O(V*E^2)","spaceComplexity":"O(V^2)","topics":["graphs","network-flow","daa"]}'::jsonb
   )

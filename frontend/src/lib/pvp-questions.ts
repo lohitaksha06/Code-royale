@@ -58,7 +58,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Count the number of vowels (a,e,i,o,u) in a string. Case-insensitive.\n\nInput: JSON string\nOutput: number",
     difficulty: "easy",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "\"hello\"", output: "2" },
       { input: "\"CODE\"", output: "2" },
@@ -136,7 +136,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Remove duplicates from an array while preserving first occurrence order.\n\nInput: JSON array of numbers\nOutput: JSON array of numbers",
     difficulty: "easy",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "[1,2,2,3]", output: "[1,2,3]" },
       { input: "[4,4,4]", output: "[4]" },
@@ -175,7 +175,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Return the longest word in a sentence. If there is a tie, return the first longest. Words are separated by spaces.\n\nInput: JSON string\nOutput: JSON string",
     difficulty: "easy",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "\"I love competitive coding\"", output: "\"competitive\"" },
       { input: "\"to be or not\"", output: "\"not\"" },
@@ -201,7 +201,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Convert a sentence to title case — capitalize the first letter of each word, lowercase the rest. Words are separated by spaces.\n\nInput: JSON string\nOutput: JSON string",
     difficulty: "easy",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "\"hello world\"", output: "\"Hello World\"" },
       { input: "\"jAVAsCRIPT is FUN\"", output: "\"Javascript Is Fun\"" },
@@ -214,7 +214,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Return the intersection of two arrays (elements present in both). Each element in the result should appear as many times as it shows in both arrays. Order does not matter — sort the result ascending.\n\nInput: JSON object {\"a\": number[], \"b\": number[]}\nOutput: JSON array of numbers (sorted ascending)",
     difficulty: "easy",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "{\"a\":[1,2,2,1],\"b\":[2,2]}", output: "[2,2]" },
       { input: "{\"a\":[4,9,5],\"b\":[9,4,9,8,4]}", output: "[4,9]" },
@@ -240,7 +240,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Convert a roman numeral string to an integer. Valid symbols: I(1) V(5) X(10) L(50) C(100) D(500) M(1000). Input is guaranteed to be a valid roman numeral in range [1, 3999].\n\nInput: JSON string\nOutput: number",
     difficulty: "easy",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "\"III\"", output: "3" },
       { input: "\"MCMXCIV\"", output: "1994" },
@@ -281,7 +281,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Check if two strings are anagrams (case-insensitive). Ignore spaces.\n\nInput: JSON object {\"a\": string, \"b\": string}\nOutput: boolean",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "{\"a\":\"listen\",\"b\":\"silent\"}", output: "true" },
       { input: "{\"a\":\"rat\",\"b\":\"car\"}", output: "false" },
@@ -307,7 +307,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Return the first character that does not repeat in a string. If none exists, return -1.\n\nInput: JSON string\nOutput: JSON string (single character) OR number -1",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "\"swiss\"", output: "\"w\"" },
       { input: "\"aabb\"", output: "-1" },
@@ -333,7 +333,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Rotate an array to the right by k steps.\n\nInput: JSON object {\"nums\": number[], \"k\": number}\nOutput: JSON array of numbers",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "{\"nums\":[1,2,3,4],\"k\":1}", output: "[4,1,2,3]" },
       { input: "{\"nums\":[1,2,3,4],\"k\":2}", output: "[3,4,1,2]" },
@@ -346,7 +346,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Return true if brackets are balanced. Only characters ()[]{} will be present.\n\nInput: JSON string\nOutput: boolean",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "\"()[]{}\"", output: "true" },
       { input: "\"(]\"", output: "false" },
@@ -359,7 +359,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Return the length of the longest substring without repeating characters.\n\nInput: JSON string\nOutput: number",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "\"abcabcbb\"", output: "3" },
       { input: "\"bbbbb\"", output: "1" },
@@ -372,7 +372,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Group an array of strings so that anagrams are together. Return a sorted array of sorted groups (sort each group alphabetically, then sort groups by their first element).\n\nInput: JSON array of strings\nOutput: JSON array of arrays of strings",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]", output: "[[\"ate\",\"eat\",\"tea\"],[\"bat\"],[\"nat\",\"tan\"]]" },
       { input: "[\"\"]", output: "[[\"\"]]" },
@@ -385,7 +385,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Return an array where each element is the product of all other elements. Do NOT use division.\n\nInput: JSON array of numbers\nOutput: JSON array of numbers",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "[1,2,3,4]", output: "[24,12,8,6]" },
       { input: "[-1,1,0,-3,3]", output: "[0,0,9,0,0]" },
@@ -411,7 +411,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Find all unique triplets in the array that sum to zero. Return them sorted, with each triplet sorted ascending.\n\nInput: JSON array of numbers\nOutput: JSON array of arrays (sorted triplets, sorted lexicographically)",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "[-1,0,1,2,-1,-4]", output: "[[-1,-1,2],[-1,0,1]]" },
       { input: "[0,0,0]", output: "[[0,0,0]]" },
@@ -437,7 +437,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Given an array of coin denominations and an amount, return the fewest number of coins needed to make up that amount. Return -1 if it cannot be made.\n\nInput: JSON object {\"coins\": number[], \"amount\": number}\nOutput: number",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "{\"coins\":[1,5,10,25],\"amount\":30}", output: "2" },
       { input: "{\"coins\":[2],\"amount\":3}", output: "-1" },
@@ -463,7 +463,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Return all elements of an m x n matrix in spiral order.\n\nInput: JSON 2D array of numbers\nOutput: JSON array of numbers",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "[[1,2,3],[4,5,6],[7,8,9]]", output: "[1,2,3,6,9,8,7,4,5]" },
       { input: "[[1,2],[3,4]]", output: "[1,2,4,3]" },
@@ -476,7 +476,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Compress a string by replacing consecutive duplicate characters with the character followed by the count. If the count is 1, do not include it.\n\nInput: JSON string\nOutput: JSON string",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "\"aabcccccaaa\"", output: "\"a2bc5a3\"" },
       { input: "\"abc\"", output: "\"abc\"" },
@@ -489,7 +489,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Return the k most frequent elements in an array. Return them sorted in descending order of frequency; break ties by value ascending.\n\nInput: JSON object {\"nums\": number[], \"k\": number}\nOutput: JSON array of numbers",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "{\"nums\":[1,1,1,2,2,3],\"k\":2}", output: "[1,2]" },
       { input: "{\"nums\":[1],\"k\":1}", output: "[1]" },
@@ -502,7 +502,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Return the longest palindromic substring. If there are multiple of the same length, return the first one found (leftmost).\n\nInput: JSON string\nOutput: JSON string",
     difficulty: "medium",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "\"babad\"", output: "\"bab\"" },
       { input: "\"cbbd\"", output: "\"bb\"" },
@@ -517,7 +517,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Given an array of intervals [start, end], merge all overlapping intervals and return the result sorted by start.\n\nInput: JSON array of [number, number] pairs\nOutput: JSON array of [number, number] pairs",
     difficulty: "hard",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "[[1,3],[2,6],[8,10],[15,18]]", output: "[[1,6],[8,10],[15,18]]" },
       { input: "[[1,4],[4,5]]", output: "[[1,5]]" },
@@ -556,7 +556,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Given a string s and a dictionary of words, return true if s can be segmented into space-separated sequence of dictionary words.\n\nInput: JSON object {\"s\": string, \"wordDict\": string[]}\nOutput: boolean",
     difficulty: "hard",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "{\"s\":\"leetcode\",\"wordDict\":[\"leet\",\"code\"]}", output: "true" },
       { input: "{\"s\":\"catsandog\",\"wordDict\":[\"cats\",\"dog\",\"sand\",\"and\",\"cat\"]}", output: "false" },
@@ -569,7 +569,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Find the median of two sorted arrays. The overall run time complexity should be O(log(m+n)).\n\nInput: JSON object {\"nums1\": number[], \"nums2\": number[]}\nOutput: number (can be float)",
     difficulty: "hard",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "{\"nums1\":[1,3],\"nums2\":[2]}", output: "2" },
       { input: "{\"nums1\":[1,2],\"nums2\":[3,4]}", output: "2.5" },
@@ -582,7 +582,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Given strings s and t, return the minimum window substring of s that contains all characters of t (including duplicates). If no such window exists, return an empty string.\n\nInput: JSON object {\"s\": string, \"t\": string}\nOutput: JSON string",
     difficulty: "hard",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "{\"s\":\"ADOBECODEBANC\",\"t\":\"ABC\"}", output: "\"BANC\"" },
       { input: "{\"s\":\"a\",\"t\":\"aa\"}", output: "\"\"" },
@@ -595,7 +595,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Design an algorithm to encode a list of strings to a single string and decode it back. Implement both functions. Your output should be the decoded result of the encoded input — i.e. the same as the input.\n\nInput: JSON array of strings\nOutput: JSON array of strings (identical to input)",
     difficulty: "hard",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "[\"hello\",\"world\"]", output: "[\"hello\",\"world\"]" },
       { input: "[\"we\",\"say\",\":\",\"yes\"]", output: "[\"we\",\"say\",\":\",\"yes\"]" },
@@ -608,7 +608,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Given an array of prices, find the maximum profit. After selling you must wait one day before buying again (cooldown). You may complete as many transactions as you like.\n\nInput: JSON array of numbers (prices)\nOutput: number",
     difficulty: "hard",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "[1,2,3,0,2]", output: "3" },
       { input: "[1]", output: "0" },
@@ -621,7 +621,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "Given a list of tasks (characters) and a cooldown interval n, return the minimum number of intervals the CPU needs to finish all tasks. Idle slots are allowed.\n\nInput: JSON object {\"tasks\": string[], \"n\": number}\nOutput: number",
     difficulty: "hard",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "{\"tasks\":[\"A\",\"A\",\"A\",\"B\",\"B\",\"B\"],\"n\":2}", output: "8" },
       { input: "{\"tasks\":[\"A\",\"A\",\"A\",\"B\",\"B\",\"B\"],\"n\":0}", output: "6" },
@@ -647,7 +647,7 @@ export const PVP_QUESTION_SEEDS: PvPQuestionSeed[] = [
     description:
       "A message encoded with 'A'=1, 'B'=2, ..., 'Z'=26. Given a string of digits, return the total number of ways to decode it. Leading zeros are invalid.\n\nInput: JSON string of digits\nOutput: number",
     difficulty: "hard",
-    languages: ["javascript", "python", "cpp", "java"],
+    languages: ["javascript", "python", "cpp", "java", "c"],
     testcases: [
       { input: "\"226\"", output: "3" },
       { input: "\"06\"", output: "0" },

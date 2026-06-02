@@ -263,7 +263,7 @@ const MODE_CONFIG_PRESETS: Record<string, ModeConfigPreset> = {
   },
   ffa: {
     timers: ["6 minutes", "8 minutes", "10 minutes"],
-    languages: ["Any language", "JavaScript", "Python", "C++"],
+    languages: ["Any language", "JavaScript", "Python", "C++", "Java"],
     playerOptions: ["3 players", "4 players", "5 players", "6 players"],
     note: "Leaderboard rank updates in real time.",
   },
@@ -507,7 +507,7 @@ export default function GameModesPage() {
 
     const timeLimitSeconds = parseTimerSeconds(selection);
     const language = resolveLanguageCode(selection?.language ?? "");
-hi
+
     const { data: { session } } = await supabase.auth.getSession();
 
     let joinResponse: Response;
