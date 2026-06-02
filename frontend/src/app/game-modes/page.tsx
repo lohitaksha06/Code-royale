@@ -507,7 +507,7 @@ export default function GameModesPage() {
 
     const timeLimitSeconds = parseTimerSeconds(selection);
     const language = resolveLanguageCode(selection?.language ?? "");
-
+hi
     const { data: { session } } = await supabase.auth.getSession();
 
     let joinResponse: Response;
